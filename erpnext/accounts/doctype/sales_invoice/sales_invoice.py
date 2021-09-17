@@ -2670,8 +2670,7 @@ def create_dunning(source_name, target_doc=None, ignore_permissions=False):
 				target.closing_text = letter_text.get('closing_text')
 				target.language = letter_text.get('language')
 
-	def postprocess_overdue_payment(source, target, source_parent):
-		target.overdue_days = (getdate(nowdate()) - getdate(source.due_date)).days
+		target.validate()
 
 	return get_mapped_doc(
 		from_doctype="Sales Invoice",
@@ -2690,8 +2689,7 @@ def create_dunning(source_name, target_doc=None, ignore_permissions=False):
 					"name": "payment_schedule",
 					"parent": "sales_invoice"
 				},
-				"condition": lambda doc: doc.outstanding > 0,
-				"postprocess": postprocess_overdue_payment
+				"condition": lambda doc: doc.outstanding > 0
 			}
 		},
 		target_doc=target_doc,
