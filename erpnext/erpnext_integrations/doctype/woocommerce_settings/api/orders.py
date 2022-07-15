@@ -523,7 +523,7 @@ def _make_delivery_note(woocommerce_order, sales_order):
 
 def refund_sales_order(settings, woocommerce_order, sales_order):
 	sales_invoices = frappe.get_all("Sales Invoice Item",
-		filters={"sales_order": sales_order.name},
+		filters={"sales_order": sales_order.name, "is_return": 0, "docstatus": 1},
 		pluck="parent",
 		distinct=True
 	)
