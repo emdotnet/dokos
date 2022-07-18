@@ -82,6 +82,7 @@ def sync_order(wc_api, woocommerce_order):
 				_new_sales_order(wc_api.settings, woocommerce_order, customer)
 		except Exception:
 			frappe.log_error(f"WooCommerce Order: {woocommerce_order.get('id')}\n\n{frappe.get_traceback()}", "WooCommerce Order Sync Error")
+			raise Exception
 
 def _sync_customer(wc_api, id):
 	try:
@@ -523,7 +524,7 @@ def _make_delivery_note(woocommerce_order, sales_order):
 
 def refund_sales_order(settings, woocommerce_order, sales_order):
 	sales_invoices = frappe.get_all("Sales Invoice Item",
-		filters={"sales_order": sales_order.name, "is_return": 0, "docstatus": 1},
+		filters={"sales_order": sales_order.name},
 		pluck="parent",
 		distinct=True
 	)
@@ -537,6 +538,10 @@ def refund_sales_order(settings, woocommerce_order, sales_order):
 			payment_entry.submit()
 
 	for sales_invoice in sales_invoices:
+		details = frappe.db.get_value("Sales Invoice", sales_invoice, ("is_return", "docstatus"), as_dict=True)
+		if details.get("is_return") or details.get("docstatus") != 1:
+			continue
+
 		has_return = frappe.db.exists("Sales Invoice", dict(docstatus=1, is_return=1, return_against=sales_invoice))
 		if not has_return:
 			cn = make_sales_return(sales_invoice)
