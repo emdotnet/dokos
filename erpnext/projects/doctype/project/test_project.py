@@ -80,7 +80,7 @@ class TestProject(FrappeTestCase):
 			)
 
 		template = make_project_template(
-			"Test Project Template  - Tasks with Parent-Child Relation", [task1, task2, task3]
+			"Test Project Template - Tasks with Parent-Child Relation", [task1, task2, task3]
 		)
 		project = get_project(project_name, template)
 		tasks = frappe.get_all(
@@ -110,7 +110,10 @@ class TestProject(FrappeTestCase):
 			project_name,
 		)
 		project_id = frappe.db.get_value("Project", dict(project_name=project_name))
-		frappe.delete_doc("Project", project_id)
+		frappe.delete_doc("Project", project_id, force=1, ignore_on_trash=1)
+		frappe.delete_doc(
+			"Project Template", "Test Project with Template - Dependent Tasks", force=1, ignore_on_trash=1
+		)
 
 		task1 = task_exists("Test Template Task for Dependency")
 		if not task1:
@@ -129,6 +132,7 @@ class TestProject(FrappeTestCase):
 			)
 
 		template = make_project_template("Test Project with Template - Dependent Tasks", [task1, task2])
+
 		project = get_project(project_name, template)
 		tasks = frappe.get_all(
 			"Task",
@@ -136,7 +140,7 @@ class TestProject(FrappeTestCase):
 			dict(project=project.name),
 			order_by="creation asc",
 		)
-		print(frappe.get_all("Task", fields=["*"]))
+
 		self.assertEqual(tasks[1].subject, "Test Template Task with Dependency")
 		self.assertEqual(getdate(tasks[1].exp_end_date), calculate_end_date(project, 2, 2))
 		self.assertTrue(tasks[1].depends_on_tasks.find(tasks[0].name) >= 0)
