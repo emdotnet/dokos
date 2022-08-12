@@ -136,7 +136,7 @@ class TestProject(FrappeTestCase):
 			dict(project=project.name),
 			order_by="creation asc",
 		)
-
+		print(frappe.get_all("Task", fields=["*"]))
 		self.assertEqual(tasks[1].subject, "Test Template Task with Dependency")
 		self.assertEqual(getdate(tasks[1].exp_end_date), calculate_end_date(project, 2, 2))
 		self.assertTrue(tasks[1].depends_on_tasks.find(tasks[0].name) >= 0)
