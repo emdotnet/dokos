@@ -105,12 +105,10 @@ class TestProject(FrappeTestCase):
 
 	def test_project_template_having_dependent_tasks(self):
 		project_name = "Test Project with Template - Dependent Tasks"
-		frappe.db.sql(
-			""" delete from tabTask where project = %s or subject in ('Test Template Task for Dependency', 'Test Template Task with Dependency')""",
-			project_name,
-		)
+		frappe.db.delete("Task")
 		project_id = frappe.db.get_value("Project", dict(project_name=project_name))
-		frappe.delete_doc("Project", project_id, force=1, ignore_on_trash=1)
+		if project_id:
+			frappe.delete_doc("Project", project_id, force=1, ignore_on_trash=1)
 		frappe.delete_doc(
 			"Project Template", "Test Project with Template - Dependent Tasks", force=1, ignore_on_trash=1
 		)
@@ -140,7 +138,13 @@ class TestProject(FrappeTestCase):
 			dict(project=project.name),
 			order_by="creation asc",
 		)
-
+		print(
+			frappe.get_all(
+				"Task",
+				["subject", "exp_end_date", "depends_on_tasks", "name"],
+				order_by="creation asc",
+			)
+		)
 		self.assertEqual(tasks[1].subject, "Test Template Task with Dependency")
 		self.assertEqual(getdate(tasks[1].exp_end_date), calculate_end_date(project, 2, 2))
 		self.assertTrue(tasks[1].depends_on_tasks.find(tasks[0].name) >= 0)
