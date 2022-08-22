@@ -143,6 +143,9 @@ frappe.ui.form.on("Project", {
 function open_form(frm, doctype, child_doctype, parentfield) {
 	frappe.model.with_doctype(doctype, () => {
 		let new_doc = frappe.model.get_new_doc(doctype);
+		new_doc.project = frm.doc.name;
+		// For timesheets
+		new_doc.parent_project = frm.doc.name;
 
 		// add a new row and set the project
 		let new_child_doc = frappe.model.get_new_doc(child_doctype);
