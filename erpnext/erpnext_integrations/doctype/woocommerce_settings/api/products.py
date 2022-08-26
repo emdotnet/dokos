@@ -401,14 +401,13 @@ def update_stock(doc, method):
 def _update_stock(doc):
 	try:
 		wc_api = WooCommerceProducts()
-		if not wc_api.api:
+		if not wc_api.api or frappe.conf.no_woocommerce_stock_synchronization:
 			return
 
 		item = frappe.get_cached_doc("Item", doc.item_code)
 
 		if item.get("woocommerce_id") and item.get("sync_with_woocommerce"):
-			if item.get("website_warehouse") == doc.warehouse or \
-				(not item.get("website_warehouse") and wc_api.settings.warehouse == doc.warehouse):
+			if wc_api.settings.warehouse == doc.warehouse:
 
 				product = wc_api.get(f"products/{item.get('woocommerce_id')}").json()
 
