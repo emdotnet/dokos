@@ -412,7 +412,15 @@ def _update_stock(doc):
 				product = wc_api.get(f"products/{item.get('woocommerce_id')}").json()
 
 				if product.get("stock_quantity") != doc.actual_qty:
-					wc_api.put(f"products/{item.get('woocommerce_id')}", {
+					if item.variant_of:
+						parent_woocommerce_id = frappe.db.get_cached_value("Item", item.variant_of, "woocommerce_id")
+						if not parent_woocommerce_id:
+							frappe.log_error(f"Stock update error for variant {item.name}: No WooCommerce ID in template")
+						url = f"products/{parent_woocommerce_id}/variations/{item.get('woocommerce_id')}"
+					else:
+						url = f"products/{item.get('woocommerce_id')}"
+
+					wc_api.put(url, {
 						"stock_quantity": doc.actual_qty
 					})
 
