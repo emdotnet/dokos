@@ -116,7 +116,7 @@ class BookingCalendar {
 			],
 			showNonCurrentDates: false,
 			locale: this.locale,
-			timeZone: frappe.boot.timeZone || 'UTC',
+			timeZone: frappe.boot.time_zone.system || 'UTC',
 			initialDate: this.parent.date ? momentjs(this.parent.date).format("YYYY-MM-DD") : momentjs().add(1,'d').format("YYYY-MM-DD"),
 			noEventsContent: __("No slot available"),
 			selectAllow: this.getSelectAllow,

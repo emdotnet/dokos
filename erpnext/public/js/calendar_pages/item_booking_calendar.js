@@ -94,7 +94,7 @@ class ItemCalendar {
 			],
 			showNonCurrentDates: false,
 			locale: frappe.get_cookie('preferred_language') || frappe.boot.lang || 'en',
-			timeZone: frappe.boot.timeZone || 'UTC',
+			timeZone: frappe.boot.time_zone.system || 'UTC',
 			initialDate: moment().add(1,'d').format("YYYY-MM-DD"),
 			noEventsContent: __("No events to display"),
 			editable: false,
