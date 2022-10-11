@@ -47,7 +47,7 @@
 
 <script>
 import { VueGoodTable } from 'vue-good-table';
-import FileUploader from 'frappe/public/js/frappe/file_uploader/FileUploader.vue';
+import FileUploader from '../../../../../../frappe/frappe/public/js/frappe/file_uploader/FileUploader.vue';
 import BankAccountPreview from './BankAccountPreview.vue';
 
 export default {
