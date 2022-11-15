@@ -1211,6 +1211,15 @@
    "print_hide": 1
   },
   {
+   "collapsible": 1,
+   "collapsible_depends_on": "write_off_amount",
+   "depends_on": "is_pos",
+   "fieldname": "column_break4",
+   "fieldtype": "Section Break",
+   "label": "Write Off",
+   "width": "50%"
+  },
+  {
    "fieldname": "write_off_amount",
    "fieldtype": "Currency",
    "label": "Write Off Amount",
@@ -1831,7 +1840,7 @@
    "link_fieldname": "consolidated_invoice"
   }
  ],
- "modified": "2022-11-07 16:02:07.972258",
+ "modified": "2022-11-15 09:33:47.870616",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice",
