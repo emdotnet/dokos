@@ -288,6 +288,7 @@ class SalesInvoice(SellingController):
 		if self.is_return and self.update_stock:
 			update_serial_nos_after_submit(self, "items")
 
+		self.render_remarks()
 		# this sequence because outstanding may get -ve
 		self.make_gl_entries()
 
@@ -850,7 +851,10 @@ class SalesInvoice(SellingController):
 					self.po_no, formatdate(self.po_date)
 				)
 			else:
-				self.remarks = _("No Remarks")
+				customer = self.customer
+				if self.customer_name != self.customer:
+					customer = f"{self.customer_name} ({self.customer})"
+				self.remarks = f'{_("Sales Invoice")}: {{{{ doc.name }}}} / {_("Customer")}: {customer}'
 
 	def validate_auto_set_posting_time(self):
 		# Don't auto set the posting date and time if invoice is amended
@@ -1231,6 +1235,7 @@ class SalesInvoice(SellingController):
 								else flt(amount, tax.precision("tax_amount_after_discount_amount"))
 							),
 							"cost_center": tax.cost_center,
+							"remarks": f'{tax.description} / {_("Customer")}: {self.customer}',
 						},
 						account_currency,
 						item=tax,
@@ -1314,6 +1319,8 @@ class SalesInvoice(SellingController):
 								),
 								"cost_center": item.cost_center,
 								"project": item.project or self.project,
+								"remarks": item.get("remarks")
+								or f'{_("Item")}: {item.qty} {item.item_code} - {_(item.uom)} / {_("Customer")}: {self.customer}',
 							},
 							account_currency,
 							item=item,
