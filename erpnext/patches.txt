@@ -154,7 +154,6 @@ erpnext.patches.v13_0.update_deferred_settings
 erpnext.patches.v12_0.set_multi_uom_in_rfq
 erpnext.patches.v13_0.delete_old_sales_reports
 erpnext.patches.v13_0.loyalty_points_entry_for_pos_invoice #22-07-2020
-erpnext.patches.v12_0.add_taxjar_integration_field
 erpnext.patches.v12_0.fix_percent_complete_for_projects
 erpnext.patches.v13_0.delete_report_requested_items_to_order
 erpnext.patches.v12_0.update_item_tax_template_company
@@ -200,9 +199,7 @@ erpnext.patches.v13_0.shopify_deprecation_warning
 erpnext.patches.v13_0.remove_bad_selling_defaults
 erpnext.patches.v13_0.trim_whitespace_from_serial_nos
 erpnext.patches.v13_0.einvoicing_deprecation_warning
-execute:frappe.reload_doc("erpnext_integrations", "doctype", "TaxJar Settings")
 execute:frappe.reload_doc("regional", "doctype", "Product Tax Category")
-erpnext.patches.v13_0.custom_fields_for_taxjar_integration #08-11-2021
 erpnext.patches.v13_0.set_operation_time_based_on_operating_cost
 erpnext.patches.v13_0.create_gst_payment_entry_fields #27-11-2021
 erpnext.patches.v13_0.fix_invoice_statuses
@@ -233,6 +230,7 @@ erpnext.patches.v13_0.enable_provisional_accounting
 erpnext.patches.v13_0.enable_ksa_vat_docs
 erpnext.patches.v13_0.reset_corrupt_defaults
 erpnext.patches.v13_0.create_accounting_dimensions_for_asset_repair
+erpnext.patches.v15_0.delete_taxjar_doctypes
 
 
 # Dokos
