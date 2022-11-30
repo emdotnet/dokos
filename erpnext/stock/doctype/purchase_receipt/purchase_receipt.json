@@ -63,6 +63,7 @@
    "tax_category",
    "column_break_53",
    "shipping_rule",
+   "incoterm",
    "taxes_section",
    "taxes",
    "totals",
@@ -1218,6 +1219,12 @@
    {
     "fieldname": "column_break_104",
     "fieldtype": "Column Break"
+   },
+   {
+    "fieldname": "incoterm",
+    "fieldtype": "Link",
+    "label": "Incoterm",
+    "options": "Incoterm"
    }
   ],
   "icon": "fa fa-truck",

@@ -70,6 +70,7 @@
   "tax_category",
   "column_break_49",
   "shipping_rule",
+  "incoterm",
   "section_break_51",
   "taxes",
   "totals",
@@ -1576,6 +1577,12 @@
     "options": "currency",
     "print_hide": 1,
     "read_only": 1
+  },
+  {
+   "fieldname": "incoterm",
+   "fieldtype": "Link",
+   "label": "Incoterm",
+   "options": "Incoterm"
    }
  ],
  "icon": "fa fa-file-text",
@@ -1583,7 +1590,7 @@
  "is_sealed": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-11-22 12:44:29.935567",
+ "modified": "2022-11-25 12:44:29.935567",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
