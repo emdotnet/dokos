@@ -19,9 +19,6 @@ form_grid_templates = {"items": "templates/form_grid/material_request_grid.html"
 
 
 class MaterialRequest(BuyingController):
-	def get_feed(self):
-		return
-
 	def check_if_already_pulled(self):
 		pass
 
