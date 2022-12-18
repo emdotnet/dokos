@@ -65,6 +65,7 @@
         "column_break_49",
         "shipping_rule",
         "incoterm",
+        "named_place",
         "section_break_40",
         "taxes",
         "section_break_43",
@@ -1646,6 +1647,12 @@
             "fieldtype": "Link",
             "label": "Incoterm",
             "options": "Incoterm"
+        },
+        {
+            "depends_on": "incoterm",
+            "fieldname": "named_place",
+            "fieldtype": "Data",
+            "label": "Named Place"
         }
     ],
     "icon": "fa fa-file-text",

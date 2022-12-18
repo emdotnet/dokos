@@ -46,6 +46,7 @@
     "column_break_36",
     "shipping_rule",
     "incoterm",
+    "named_place",
     "section_break_38",
     "taxes",
     "totals",
@@ -830,7 +831,13 @@
       "fieldtype": "Link",
       "label": "Incoterm",
       "options": "Incoterm"
-    }
+    },
+    {
+      "depends_on": "incoterm",
+      "fieldname": "named_place",
+      "fieldtype": "Data",
+      "label": "Named Place"
+      }
   ],
   "icon": "fa fa-shopping-cart",
   "idx": 29,

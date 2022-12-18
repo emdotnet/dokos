@@ -64,6 +64,7 @@
    "column_break_53",
    "shipping_rule",
    "incoterm",
+   "named_place",
    "taxes_section",
    "taxes",
    "totals",
@@ -1225,7 +1226,13 @@
     "fieldtype": "Link",
     "label": "Incoterm",
     "options": "Incoterm"
-   }
+   },
+   {
+    "depends_on": "incoterm",
+    "fieldname": "named_place",
+    "fieldtype": "Data",
+    "label": "Named Place"
+  }
   ],
   "icon": "fa fa-truck",
   "idx": 261,
