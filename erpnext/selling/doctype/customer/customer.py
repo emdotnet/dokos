@@ -797,7 +797,7 @@ def get_customer_primary_address(doctype, txt, searchfield, start, page_len, fil
 		qb.from_(con)
 		.join(dlink)
 		.on(con.name == dlink.parent)
-		.select(con.name, con.full_name, con.email_id)
+		.select(con.name, con.email_id)
 		.where((dlink.link_name == customer) & (con.name.like(f"%{txt}%")))
 		.run()
 	)
