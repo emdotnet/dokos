@@ -139,7 +139,7 @@
   "contact_display",
   "contact_mobile",
   "contact_email",
-  "company_shipping_address_section",
+  "shipping_address_section",
   "shipping_address",
   "column_break_126",
   "shipping_address_display",
@@ -467,7 +467,7 @@
   {
    "fieldname": "shipping_address",
    "fieldtype": "Link",
-   "label": "Select Shipping Address",
+   "label": "Shipping Address",
    "options": "Address",
    "print_hide": 1
   },
@@ -1523,11 +1523,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "company_shipping_address_section",
-   "fieldtype": "Section Break",
-   "label": "Company Shipping Address"
-  },
-  {
    "fieldname": "column_break_126",
    "fieldtype": "Column Break"
   },
@@ -1590,6 +1585,11 @@
    "fieldname": "named_place",
    "fieldtype": "Data",
    "label": "Named Place"
+  },
+  {
+   "fieldname": "shipping_address_section",
+   "fieldtype": "Section Break",
+   "label": "Shipping Address"
    }
  ],
  "icon": "fa fa-file-text",
@@ -1597,7 +1597,7 @@
  "is_sealed": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-12-12 18:37:38.142688",
+ "modified": "2022-12-25 18:08:59.074182",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
