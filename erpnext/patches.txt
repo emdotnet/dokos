@@ -229,6 +229,7 @@ erpnext.patches.v13_0.enable_ksa_vat_docs
 erpnext.patches.v13_0.reset_corrupt_defaults
 erpnext.patches.v13_0.create_accounting_dimensions_for_asset_repair
 erpnext.patches.v15_0.delete_taxjar_doctypes
+erpnext.patches.v15_0.create_asset_depreciation_schedules_from_assets
 
 
 # Dokos
