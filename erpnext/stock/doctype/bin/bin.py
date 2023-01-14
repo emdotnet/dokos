@@ -198,3 +198,6 @@ def update_qty(bin_name, args):
 		},
 		update_modified=True,
 	)
+
+	for hook in frappe.get_hooks("after_bin_qty_update"):
+		frappe.get_attr(hook)(bin_name)
