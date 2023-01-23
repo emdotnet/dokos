@@ -236,8 +236,10 @@ def validate_item_details(args, item):
 
 	validate_end_of_life(item.name, item.end_of_life, item.disabled)
 
-	if args.transaction_type == "selling" and cint(item.has_variants):
-		throw(_("Item {0} is a template, please select one of its variants").format(item.name))
+	if cint(item.has_variants):
+		msg = f"Item {item.name} is a template, please select one of its variants"
+
+		throw(_(msg), title=_("Template Item Selected"))
 
 	elif args.transaction_type == "buying" and args.doctype != "Material Request":
 		if args.get("is_subcontracted"):
@@ -1352,7 +1354,7 @@ def get_price_list_currency_and_exchange_rate(args):
 	price_list_details = get_price_list_details(args.price_list)
 
 	price_list_currency = price_list_details.get("currency")
-	price_list_uom_dependant = price_list_details.get("price_list_uom_dependant")
+	price_list_uom_dependant = not price_list_details.get("price_not_uom_dependent")
 
 	plc_conversion_rate = args.plc_conversion_rate
 	company_currency = get_company_currency(args.company)
