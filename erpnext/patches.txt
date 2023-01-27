@@ -268,7 +268,6 @@ erpnext.patches.dokos.v2_0.default_accounting_journals
 erpnext.patches.dokos.v2_0.update_document_status
 erpnext.patches.dokos.v2_0.update_custom_fields_for_france
 erpnext.patches.dokos.v2_0.venue_module
-erpnext.patches.dokos.v2_0.subscription_cycle_on_stripe
 erpnext.patches.dokos.v2_0.correct_unreconciled_amount_for_internal_transfers
 erpnext.patches.dokos.v2_0.update_website_settings
 erpnext.patches.dokos.v2_0.delete_subscription_portal
@@ -338,3 +337,4 @@ erpnext.patches.dokos.v3_0.add_expiration_date_to_booking_legder
 erpnext.patches.dokos.v3_0.setup_item_wise_tax_info_for_france
 execute:frappe.delete_doc('Report', 'GoCardless Payments', ignore_missing=True)
 erpnext.patches.dokos.v3_0.update_custom_fields_for_france #2022-12-16
+erpnext.accounts.doctype.subscription.patches.set_an_invoicing_day_on_existing_subscriptions

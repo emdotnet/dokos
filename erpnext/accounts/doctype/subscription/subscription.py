@@ -32,6 +32,7 @@ class Subscription(Document):
 		SubscriptionPlansManager(self).set_plans_rates()
 
 	def validate(self):
+		self.set_invoicing_day()
 		self.get_billing_contact()
 		self.validate_interval_count()
 		self.validate_trial_period()
@@ -317,6 +318,17 @@ class Subscription(Document):
 		if self.customer and not self.contact_person:
 			self.contact_person = get_default_contact("Customer", self.customer)
 
+	def set_invoicing_day(self):
+		if not self.invoicing_day or getdate(self.trial_period_end) > getdate(nowdate()):
+			self.invoicing_day = (
+				getdate(add_days(self.trial_period_end, 1)).day
+				if self.trial_period_end
+				else getdate(self.start).day
+			)
+
+		elif self.get_doc_before_save().billing_interval != self.billing_interval:
+			self.invoicing_day = add_days(getdate(self.current_invoice_end), 1).day
+
 
 def update_grand_total():
 	subscriptions = frappe.get_all(
@@ -464,17 +476,13 @@ def new_invoice_end(subscription, end_date):
 	doc = frappe.get_doc("Subscription", subscription)
 
 	doc.current_invoice_end = new_date
+	doc.invoicing_date = add_days(new_date, 1).day
 	doc.add_subscription_event("New period")
 	doc.save()
 
 
 def get_list_context(context=None):
-	templates = frappe.get_all(
-		"Subscription Template",
-		filters={"enable_on_portal": 1},
-		fields=["name", "portal_description", "portal_image"],
-	)
-
+	templates = get_published_subscription_templates()
 	context.update(
 		{
 			"show_sidebar": True,
@@ -493,6 +501,15 @@ def get_list_context(context=None):
 			else None,
 			"base_scripts": ["dialog.bundle.js", "controls.bundle.js"],
 		}
+	)
+
+
+@frappe.whitelist(allow_guest=True)
+def get_published_subscription_templates():
+	return frappe.get_all(
+		"Subscription Template",
+		filters={"enable_on_portal": 1},
+		fields=["name", "portal_description", "portal_image"],
 	)
 
 
