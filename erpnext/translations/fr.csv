@@ -4658,7 +4658,7 @@ Group by employee,Grouper par employé,
 Group by shift type,Grouper par type de quart,
 Group by,Grouper par,
 Group node warehouse is not allowed to select for transactions,Un noeud de groupe d'entrepôt ne peut pas être sélectionné pour les transactions,
-Group same items,Groupe les éléments identiques,
+Group same items,Grouper les articles identiques,
 Group to Non-Group,Groupe vers Non-Groupe,
 Group,Groupes,
 Groups,Groupes,
@@ -12878,3 +12878,4 @@ Do not merge similar accounting entries,Ne pas fusionner les écritures liées a
 Please select a posting date and time after {0},Veuillez sélectionner une date de comptabilisation après le {0},
 Validate posting date chronology in sales invoices,Valider la chronologie des dates dans les factures de vente,
 Child Bookings,Réservations Enfants,
+Make,Constructeur,Vehicle
