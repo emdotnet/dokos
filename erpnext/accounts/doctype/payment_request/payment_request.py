@@ -31,6 +31,7 @@ from erpnext.erpnext_integrations.doctype.integration_references.integration_ref
 )
 from erpnext.utilities import payment_app_import_guard
 
+from erpnext.e_commerce.shopping_cart.cart import get_shopping_cart_settings
 
 def _get_payment_gateway_controller(*args, **kwargs):
 	with payment_app_import_guard():
@@ -246,12 +247,12 @@ class PaymentRequest(Document):
 		return controller.get_payment_url(
 			**{
 				"amount": flt(self.grand_total, self.precision("grand_total")),
-				"title": frappe.safe_encode(data.title),
-				"description": frappe.safe_encode(self.subject),
+				"title": data.title,
+				"description": self.subject or data.title,
 				"reference_doctype": "Payment Request",
 				"reference_docname": self.name,
 				"payer_email": self.email_to or frappe.session.user,
-				"payer_name": frappe.safe_encode(data.customer_name),
+				"payer_name": data.customer_name,
 				"order_id": self.name,
 				"currency": self.currency,
 				"payment_key": self.payment_key,
@@ -279,9 +280,13 @@ class PaymentRequest(Document):
 
 		if controller.doctype == "Stripe Settings":
 			doc.stripe_customer_id = controller.get_customer_id(reference_no)
+			if not doc.stripe_customer_id:
+				return
 			doc.stripe_settings = controller.name
 		elif controller.doctype == "GoCardless Settings":
 			doc.gocardless_customer_id = controller.get_customer_id(reference_no)
+			if not doc.gocardless_customer_id:
+				return
 			doc.gocardless_settings = self.gateway.name
 
 		doc.customer = self.customer
@@ -485,24 +490,33 @@ class PaymentRequest(Document):
 		if not status:
 			return
 
-		if status in ["Authorized", "Completed", "Paid"]:
-			self.run_method("set_as_paid", reference_no)
-			self.db_set("status", "Paid", commit=True)
+		PAID_STATUSES = ("Authorized", "Completed", "Paid")
+		curr_status, next_status = self.status, status
+		is_not_draft = not self.docstatus.is_draft()
 
-		elif status == "Pending" and not self.docstatus.is_draft():
+		# Only change status to Paid or Pending *once*.
+
+		if (curr_status not in PAID_STATUSES) and (next_status in PAID_STATUSES):
+			self.db_set("status", "Paid", commit=True)
+			self.run_method("set_as_paid", reference_no)
+		elif (curr_status == "Initiated") and (next_status == "Pending") and is_not_draft:
 			self.db_set("status", "Pending", commit=True)
+		elif (curr_status in ("Pending", "Initiated")) and (next_status == "Payment Method Registered"):
+			self.run_method("set_payment_method_registered")
 
 		self.db_set("transaction_reference", reference_no, commit=True)
 
 		return self.get_redirection()
 
+	def set_payment_method_registered(self):
+		"""Called when payment method is registered for off-session payments"""
+		self.process_payment_immediately()
+
 	def get_redirection(self):
 		redirect_to = "no-redirection"
 
 		# if shopping cart enabled and in session
-		shopping_cart_settings = frappe.db.get_value(
-			"E Commerce Settings", None, ["enabled", "payment_success_url"], as_dict=1
-		)
+		shopping_cart_settings = get_shopping_cart_settings()
 
 		if (
 			shopping_cart_settings.get("enabled")
@@ -674,7 +688,7 @@ def get_gateway_details(args):  # nosemgrep
 		return get_payment_gateway_account(filters)
 
 	if args.order_type == "Shopping Cart":
-		payment_gateway_account = frappe.get_doc("E Commerce Settings").payment_gateway_account
+		payment_gateway_account = get_shopping_cart_settings().payment_gateway_account
 		return get_payment_gateway_account(payment_gateway_account)
 
 	filters.update({"is_default": 1})
