@@ -22,7 +22,7 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 		super.onload();
 
 		this.frm.ignore_doctypes_on_cancel_all = ['POS Invoice', 'Timesheet', 'POS Invoice Merge Log',
-			'POS Closing Entry', 'Journal Entry', 'Payment Entry', 'Archived Document'];
+			'POS Closing Entry', 'Journal Entry', 'Payment Entry', 'Archived Document', 'Repost Payment Ledger'];
 
 		if(!this.frm.doc.__islocal && !this.frm.doc.customer && this.frm.doc.debit_to) {
 			// show debit_to in print format

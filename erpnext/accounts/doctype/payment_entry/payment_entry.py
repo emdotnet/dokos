@@ -105,6 +105,8 @@ class PaymentEntry(AccountsController):
 			"Payment Ledger Entry",
 			"Sepa Direct Debit Details",
 			"Archived Document",
+			"Repost Payment Ledger",
+			"Repost Payment Ledger Items",
 		)
 		delete_linked_subscription_events(self)
 		self.make_gl_entries(cancel=1)

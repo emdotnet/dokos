@@ -1448,6 +1448,8 @@ class PurchaseInvoice(BuyingController):
 			"GL Entry",
 			"Stock Ledger Entry",
 			"Repost Item Valuation",
+			"Repost Payment Ledger",
+			"Repost Payment Ledger Items",
 			"Payment Ledger Entry",
 			"Archived Document",
 			"Tax Withheld Vouchers",
