@@ -364,14 +364,9 @@ doc_events = {
 	"Sales Invoice": {
 		"on_submit": [
 			"erpnext.regional.italy.utils.sales_invoice_on_submit",
-			"erpnext.regional.saudi_arabia.utils.create_qr_code",
 		],
-		"on_cancel": [
-			"erpnext.regional.italy.utils.sales_invoice_on_cancel",
-			"erpnext.regional.saudi_arabia.utils.delete_qr_code_file",
-		],
+		"on_cancel": ["erpnext.regional.italy.utils.sales_invoice_on_cancel"],
 	},
-	"POS Invoice": {"on_submit": ["erpnext.regional.saudi_arabia.utils.create_qr_code"]},
 	"Purchase Invoice": {
 		"validate": [
 			"erpnext.regional.united_arab_emirates.utils.update_grand_total_for_rcm",
@@ -404,11 +399,6 @@ doc_events = {
 		"on_update": ["erpnext.venue.doctype.item_booking.item_booking.update_event_in_google_calendar"],
 		"on_cancel": "erpnext.venue.doctype.item_booking.item_booking.delete_event_in_google_calendar",
 		"on_trash": "erpnext.venue.doctype.item_booking.item_booking.delete_event_in_google_calendar",
-	},
-	"Company": {
-		"on_trash": [
-			"erpnext.regional.saudi_arabia.utils.delete_vat_settings_for_company",
-		]
 	},
 	"Sales Order": {
 		"on_submit": "erpnext.accounts.doctype.subscription_template.subscription_template.make_subscription_from_sales_order_item"
