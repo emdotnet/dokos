@@ -398,9 +398,9 @@
       "hide_border": 1,
       "label": "Taxes and Charges",
       "oldfieldtype": "Section Break",
-      "options": "fa fa-money"
-    },
-    {
+      "options": "uil uil-money-bill"
+     },
+     {
       "fieldname": "tax_category",
       "fieldtype": "Link",
       "label": "Tax Category",
@@ -459,9 +459,9 @@
       "fieldname": "totals",
       "fieldtype": "Section Break",
       "oldfieldtype": "Section Break",
-      "options": "fa fa-money"
-    },
-    {
+      "options": "uil uil-money-bill"
+     },
+     {
       "fieldname": "base_taxes_and_charges_added",
       "fieldtype": "Currency",
       "label": "Taxes and Charges Added (Company Currency)",

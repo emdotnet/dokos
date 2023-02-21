@@ -628,9 +628,9 @@
       "hide_border": 1,
       "label": "Taxes and Charges",
       "oldfieldtype": "Section Break",
-      "options": "fa fa-money"
-    },
-    {
+      "options": "uil uil-money-bill"
+     },
+     {
       "fieldname": "tax_category",
       "fieldtype": "Link",
       "label": "Tax Category",
@@ -757,9 +757,9 @@
       "fieldtype": "Section Break",
       "label": "Totals",
       "oldfieldtype": "Section Break",
-      "options": "fa fa-money"
-    },
-    {
+      "options": "uil uil-money-bill"
+     },
+     {
       "fieldname": "base_grand_total",
       "fieldtype": "Currency",
       "label": "Grand Total (Company Currency)",
@@ -1155,7 +1155,7 @@
       "fieldtype": "Section Break",
       "label": "Commission",
       "oldfieldtype": "Section Break",
-      "options": "fa fa-group",
+      "options": "uil uil-users-alt",
       "print_hide": 1
     },
     {

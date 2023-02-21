@@ -351,11 +351,11 @@
       "fieldtype": "Column Break"
     }
   ],
-  "icon": "fa fa-ticket",
+  "icon": "uil uil-ticket",
   "idx": 70,
   "is_submittable": 1,
   "links": [],
-  "modified": "2022-09-27 17:58:26.366469",
+  "modified": "2023-02-20 16:33:50.446725",
   "modified_by": "Administrator",
   "module": "Stock",
   "name": "Material Request",

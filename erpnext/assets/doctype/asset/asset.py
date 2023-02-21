@@ -247,7 +247,8 @@ class Asset(AccountsController):
 		# otherwise, if number_of_depreciations_booked = 2, available_for_use_date = 01/01/2020 and frequency_of_depreciation = 12
 		# from_date = 01/01/2022
 		from_date = self.get_modified_available_for_use_date(row)
-		days = date_diff(row.depreciation_start_date, from_date) + 1
+		# Regionalized date difference calculation
+		days = date_difference(row.depreciation_start_date, from_date) + 1
 
 		# if frequency_of_depreciation is 12 months, total_days = 365
 		total_days = get_total_days(row.depreciation_start_date, row.frequency_of_depreciation)
@@ -874,6 +875,7 @@ def get_asset_value_after_depreciation(asset_name, finance_book=None):
 	return asset.get_value_after_depreciation(finance_book)
 
 
+@erpnext.allow_regional
 def get_total_days(date, frequency):
 	period_start_date = add_months(date, cint(frequency) * -1)
 
@@ -881,6 +883,11 @@ def get_total_days(date, frequency):
 		period_start_date = get_last_day(period_start_date)
 
 	return date_diff(date, period_start_date)
+
+
+@erpnext.allow_regional
+def date_difference(to_date, from_date):
+	return date_diff(to_date, from_date)
 
 
 @frappe.whitelist()

@@ -1655,7 +1655,7 @@
             "label": "Named Place"
         }
     ],
-    "icon": "fa fa-file-text",
+    "icon": "uil uil-file-alt",
     "idx": 105,
     "is_submittable": 1,
     "links": [],
