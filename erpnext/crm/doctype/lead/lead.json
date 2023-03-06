@@ -156,6 +156,7 @@
   {
    "fieldname": "gender",
    "fieldtype": "Link",
+   "in_preview": 1,
    "label": "Gender",
    "options": "Gender"
   },
@@ -210,12 +211,14 @@
   {
    "fieldname": "contact_html",
    "fieldtype": "HTML",
+   "in_preview": 1,
    "label": "Contact HTML",
    "read_only": 1
   },
   {
    "fieldname": "phone",
    "fieldtype": "Data",
+   "in_preview": 1,
    "label": "Phone",
    "oldfieldname": "contact_no",
    "oldfieldtype": "Data",
@@ -224,6 +227,7 @@
   {
    "fieldname": "mobile_no",
    "fieldtype": "Data",
+   "in_preview": 1,
    "label": "Mobile No",
    "oldfieldname": "mobile_no",
    "oldfieldtype": "Data",
@@ -483,39 +487,39 @@
    "fieldname": "disabled",
    "fieldtype": "Check",
    "label": "Disabled"
-},
-{
- "fieldname": "column_break_38",
- "fieldtype": "Column Break"
-},
-{
- "fieldname": "city",
- "fieldtype": "Data",
- "label": "City"
-},
-{
- "fieldname": "state",
- "fieldtype": "Data",
- "label": "State"
-},
-{
- "fieldname": "country",
- "fieldtype": "Link",
- "label": "Country",
- "options": "Country"
-},
-{
- "fieldname": "dashboard_tab",
- "fieldtype": "Tab Break",
- "label": "Connections",
- "show_dashboard": 1
+  },
+  {
+   "fieldname": "column_break_38",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
+  },
+  {
+   "fieldname": "dashboard_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   }
  ],
  "icon": "fa fa-user",
  "idx": 5,
  "image_field": "image",
  "links": [],
- "modified": "2023-01-24 18:20:05.044791",
+ "modified": "2023-02-24 16:58:00.314169",
  "modified_by": "Administrator",
  "module": "CRM",
  "name": "Lead",
@@ -577,6 +581,7 @@
  "search_fields": "lead_name,lead_owner,status",
  "sender_field": "email_id",
  "show_name_in_global_search": 1,
+ "show_preview_popup": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

@@ -1265,65 +1265,66 @@
    "fieldname": "named_place",
    "fieldtype": "Data",
    "label": "Named Place"
-   }
-  ],
-  "icon": "uil uil-file-alt",
-  "idx": 105,
-  "is_submittable": 1,
-  "links": [],
-  "modified": "2023-02-20 16:33:50.446725",
-  "modified_by": "Administrator",
-  "module": "Buying",
-  "name": "Purchase Order",
-  "naming_rule": "By \"Naming Series\" field",
-  "owner": "Administrator",
-  "permissions": [
-   {
-    "read": 1,
-    "report": 1,
-    "role": "Stock User"
-   },
-   {
-    "amend": 1,
-    "cancel": 1,
-    "create": 1,
-    "delete": 1,
-    "email": 1,
-    "print": 1,
-    "read": 1,
-    "report": 1,
-    "role": "Purchase Manager",
-    "share": 1,
-    "submit": 1,
-    "write": 1
-   },
-   {
-    "amend": 1,
-    "cancel": 1,
-    "create": 1,
-    "delete": 1,
-    "email": 1,
-    "print": 1,
-    "read": 1,
-    "report": 1,
-    "role": "Purchase User",
-    "share": 1,
-    "submit": 1,
-    "write": 1
-   },
-   {
-    "permlevel": 1,
-    "read": 1,
-    "role": "Purchase Manager",
-    "write": 1
-   }
-  ],
-  "search_fields": "status, transaction_date, supplier, grand_total",
-  "show_name_in_global_search": 1,
-  "sort_field": "modified",
-  "sort_order": "DESC",
-  "states": [],
-  "timeline_field": "supplier",
-  "title_field": "supplier_name",
-  "track_changes": 1
- }
+  }
+ ],
+ "icon": "uil uil-file-alt",
+ "idx": 105,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-02-24 16:58:02.816467",
+ "modified_by": "Administrator",
+ "module": "Buying",
+ "name": "Purchase Order",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "report": 1,
+   "role": "Stock User"
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Purchase User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "permlevel": 1,
+   "read": 1,
+   "role": "Purchase Manager",
+   "write": 1
+  }
+ ],
+ "search_fields": "status, transaction_date, supplier, grand_total",
+ "show_name_in_global_search": 1,
+ "show_preview_popup": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "timeline_field": "supplier",
+ "title_field": "supplier_name",
+ "track_changes": 1
+}
