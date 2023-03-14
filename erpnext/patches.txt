@@ -332,7 +332,7 @@ erpnext.patches.v14_0.set_pick_list_status
 erpnext.patches.v15_0.update_asset_value_for_manual_depr_entries
 
 erpnext.patches.dokos.v3_0.add_expiration_date_to_booking_legder
-erpnext.patches.dokos.v3_0.setup_item_wise_tax_info_for_france
+erpnext.patches.dokos.v3_0.setup_item_wise_tax_info_for_france #2023-03-09
 execute:frappe.delete_doc('Report', 'GoCardless Payments', ignore_missing=True)
 erpnext.patches.dokos.v3_0.update_custom_fields_for_france #2022-12-16
 erpnext.accounts.doctype.subscription.patches.set_an_invoicing_day_on_existing_subscriptions
