@@ -1223,20 +1223,9 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
-  },
-  {
-   "columns": 0,
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Tax Detail",
-   "link_count": 0,
-   "link_to": "Tax Detail",
-   "link_type": "Report",
-   "onboard": 0,
-   "type": "Link"
   }
  ],
- "modified": "2022-12-15 09:32:21.019379",
+ "modified": "2023-02-23 15:32:12.135355",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounting",
