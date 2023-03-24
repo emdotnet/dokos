@@ -43,7 +43,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Last Name",
-   "reqd": 1
+   "reqd": 0
   },
   {
    "fieldname": "mobile_number",

@@ -68,6 +68,16 @@
 			"non_negative": 1
 		},
 		{
+			"depends_on": "eval:doc.registration_form&&doc.allow_registrations",
+			"dt": "Event",
+			"fieldname": "registration_item_code",
+			"fieldtype": "Link",
+			"insert_after": "registration_amount",
+			"is_system_generated": 1,
+			"label": "Billed Item for registration",
+			"options": "Item"
+		},
+		{
 			"dt": "Event",
 			"fieldname": "column_break_38",
 			"fieldtype": "Column Break",
