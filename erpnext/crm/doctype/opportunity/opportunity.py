@@ -118,10 +118,6 @@ class Opportunity(TransactionBase, CRMNote):
 				prospect.flags.ignore_mandatory = True
 				prospect.save()
 
-	def disable_lead(self):
-		if self.opportunity_from == "Lead":
-			frappe.db.set_value("Lead", self.party_name, {"disabled": 1})
-
 	def make_new_lead_if_required(self):
 		"""Set lead against new opportunity"""
 		if (not self.get("party_name")) and self.contact_email:
