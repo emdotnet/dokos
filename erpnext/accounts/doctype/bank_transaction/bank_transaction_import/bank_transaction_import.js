@@ -1,3 +1,4 @@
+import { createApp } from "vue";
 import BankTransactionImporter from './BankTransactionImporter.vue';
 frappe.provide("erpnext.bank_transaction")
 
@@ -74,12 +75,12 @@ erpnext.accounts.bankTransactionUpload = class bankTransactionUpload {
 
 		frappe.xcall('erpnext.accounts.doctype.bank_transaction.bank_transaction_upload.get_bank_accounts_list')
 		.then(r => {
-			new Vue({
-				el: this.wrapper,
-				render: h => h(BankTransactionImporter, {
-					props: { upload_type: this.upload_type, bank_accounts: r }
-				})
+			const app = createApp(BankTransactionImporter, {
+				upload_type: this.upload_type,
+				bank_accounts: r
 			})
+			window.SetVueGlobals(app);
+			app.mount(this.wrapper);
 		})
 	}
 }

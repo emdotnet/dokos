@@ -1,3 +1,4 @@
+import { createApp } from "vue";
 import BankReconciliation from './BankReconciliation.vue';
 frappe.provide("erpnext.bank_reconciliation")
 
@@ -91,12 +92,12 @@ erpnext.accounts.bankReconciliationPage = class BankReconciliationPage {
 	}
 
 	make_reconciliation_tool() {
-		new Vue({
-			el: this.$main_section[0],
-			render: h => h(BankReconciliation, {
-				props: { bank_account: this.bank_account, date_range: this.date_range }
-			})
-		})
+		const app = createApp(BankReconciliation, {
+			bank_account: this.bank_account,
+			date_range: this.date_range
+		});
+		window.SetVueGlobals(app);
+		app.mount(this.$main_section[0]);
 	}
 
 	add_actions() {
