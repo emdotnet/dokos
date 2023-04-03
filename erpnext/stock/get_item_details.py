@@ -996,6 +996,64 @@ def get_price_list_rate_for(args, item_code):
 			return item_price_data[0][1]
 
 
+def get_price_list_rate_for_selling(
+	*,
+	item_code: str,
+	company: str,
+	currency: str,
+	uom: str,
+	transaction_date,
+	qty: float | int = 1,
+	customer: str | None = None,
+):
+	from erpnext.accounts.party import get_default_price_list
+
+	price_list = None
+	if customer:
+		customer_doc = frappe.get_doc("Customer", customer)
+		price_list = get_default_price_list(customer_doc)
+	if not price_list:
+		price_list = frappe.db.get_single_value("Selling Settings", "selling_price_list")
+
+	args = {
+		"company": company,
+		"uom": uom,
+		"price_list": price_list,
+		"currency": currency,
+		"transaction_date": transaction_date,
+		"qty": qty,
+	}
+
+	if frappe.db.get_value("Item", item_code, "stock_uom") != uom:
+		item = frappe.get_doc("Item", item_code)
+		conversion_factors = [cf.conversion_factor for cf in item.uoms if cf.uom == uom]
+		if conversion_factors:
+			args.update({"conversion_factor": conversion_factors[0]})
+
+	if customer:
+		args.update({"customer": customer})
+
+	price_list_rate = get_price_list_rate_for(args, item_code)
+
+	args.update(
+		{
+			"item_code": item_code,
+			"stock_qty": qty,
+			"transaction_type": "selling",
+			"price_list_rate": price_list_rate,
+			"price_list_currency": frappe.db.get_value("Price List", price_list, "currency"),
+			"transaction_date": transaction_date,
+			"warehouse": frappe.db.get_value("Warehouse", dict(is_group=1, parent_warehouse="")),
+		}
+	)
+	rule = get_pricing_rule_for_item(frappe._dict(args))
+
+	if rule.get("price_list_rate"):
+		price_list_rate = rule.get("price_list_rate")
+
+	return price_list_rate or 0
+
+
 def check_packing_list(price_list_rate_name, desired_qty, item_code):
 	"""
 	Check if the desired qty is within the increment of the packing list.
