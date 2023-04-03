@@ -4,6 +4,17 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import nowdate
+
+from erpnext.stock.get_item_details import get_price_list_rate_for_selling
+
+
+class EventRegistrationInvoicingDetails:
+	company: str
+	currency: str
+	customer: str
+	item_code: str
+	rate: float
 
 
 class DuplicateRegistration(frappe.ValidationError):
@@ -103,7 +114,7 @@ class EventRegistration(Document):
 
 	def create_or_link_with_contact(self):
 		contact = self.contact
-		if not contact:
+		if not contact and self.email:
 			contact = frappe.db.get_value("Contact", dict(email_id=self.email))
 
 		if not contact and self.user:
@@ -139,16 +150,17 @@ class EventRegistration(Document):
 		new_status = status
 		curr_status = self.payment_status or "Unpaid"  # Probably created from the desk
 
-		if self.get_payment_amount() <= 0:
+		self.set_invoicing_details()
+
+		if self.amount <= 0:
 			self.db_set("payment_status", new_status)
 			return
 
 		PAID_STATUSES = ("Authorized", "Completed", "Paid")
 		if new_status in PAID_STATUSES and curr_status in ("Unpaid", "Pending"):
 			self.flags.ignore_permissions = True
-			self.db_set(
-				"payment_status", "Paid", commit=True
-			)  # Commit because we this is a change we don't want to lose
+			# Commit because we this is a change we don't want to lose in case of an error
+			self.db_set("payment_status", "Paid", commit=True)
 			self.submit()
 
 			if not self.payment_gateway:
@@ -160,6 +172,9 @@ class EventRegistration(Document):
 			self.make_payment_entry(
 				reference_no=reference_no, payment_gateway=self.payment_gateway, invoice_doc=invoice
 			)
+		elif new_status in PAID_STATUSES:
+			# Already paid, do nothing more than updating the status
+			self.db_set("payment_status", "Paid")
 		elif new_status in ("Failed", "Cancelled"):
 			self.set("payment_status", new_status)
 			self.cancel()
@@ -181,25 +196,59 @@ class EventRegistration(Document):
 			self.payment_status = "Unpaid"
 			self.save()
 
-	def get_payment_amount(self) -> float:
-		# TODO: Fetch from item instead
-		return self.amount
+	def _get_payment_amount(self, details: EventRegistrationInvoicingDetails) -> float:
+		# TODO: What if the item can be free for some users, but not for others?
+		try:
+			if price := self._get_payment_amount_from_item(details):
+				# price is not zero or None
+				return price
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "Event Registration: Error getting price from Item")
+			pass
+		return self.get("amount", 0.0)
 
-	def get_item_code(self):
+	def _get_payment_amount_from_item(
+		self, details: EventRegistrationInvoicingDetails
+	) -> float | None:
+		from erpnext.e_commerce.doctype.e_commerce_settings.e_commerce_settings import (
+			get_shopping_cart_settings,
+		)
+
+		cart_settings = get_shopping_cart_settings()
+
+		item_uom: str = frappe.get_cached_value(
+			"Item", details.item_code, ["sales_uom", "stock_uom"], as_dict=True
+		)
+		item_uom = item_uom.sales_uom or item_uom.stock_uom
+
+		transaction_date = getattr(self, "transaction_date", None) or nowdate()
+
+		return get_price_list_rate_for_selling(
+			item_code=details.item_code,
+			company=cart_settings.company,
+			currency=cart_settings.currency,
+			uom=item_uom,
+			transaction_date=transaction_date,
+			qty=1,
+			customer=details.customer,
+		)
+
+	def _get_item_code(self):
 		"""Returns the item_code of the Item used for the invoicing.
 		The Item is fetched, in order, from the Event Registration, Event, Venue Settings.
 		"""
-		if item_code := self.get("item_code", None):
+		if item_code := self.get("item_code"):
 			return str(item_code)
-		elif item_code := frappe.get_cached_value("Event", self.event, "registration_item_code"):
+		elif item_code := frappe.db.get_value("Event", self.event, "registration_item_code"):
 			return str(item_code)
-		elif item_code := frappe.get_cached_value(
-			"Venue Settings", "Venue Settings", "registration_item_code"
-		):
+		elif item_code := frappe.db.get_single_value("Venue Settings", "registration_item_code"):
 			return str(item_code)
 		frappe.throw(_("Item code not specified for Event Registration"))
 
-	def get_or_make_customer(self) -> str:
+	def _get_or_make_customer(self) -> str:
+		if self.customer:
+			return self.customer
+
 		"""Returns the Customer associated with the Contact, creating it if needed."""
 		contact_name = self.contact
 		D = frappe.qb.DocType("Dynamic Link")
@@ -248,6 +297,9 @@ class EventRegistration(Document):
 
 	@cache  # noqa
 	def get_invoicing_details(self):
+		return self.set_invoicing_details()
+
+	def set_invoicing_details(self) -> EventRegistrationInvoicingDetails:
 		company = None
 		if self.meta.has_field("company"):
 			# Get company from Registration, useful for multi-company mode
@@ -261,13 +313,20 @@ class EventRegistration(Document):
 			company = get_shopping_cart_settings().company
 
 		currency = frappe.get_cached_value("Company", company, "default_currency")
-		return frappe._dict(
+		details = frappe._dict(
 			company=company,
 			currency=currency,
-			rate=self.get_payment_amount(),
-			customer=self.get_or_make_customer(),
-			item_code=self.get_item_code(),
+			customer=self._get_or_make_customer(),
+			item_code=self._get_item_code(),
 		)
+		details.rate = self._get_payment_amount(details)
+
+		self.amount = details.rate
+		self.company = details.company
+		self.currency = details.currency
+		self.customer = details.customer
+		self.item_code = details.item_code
+		return details
 
 	def _set_fields_in_invoice(self, si: Document):
 		details = self.get_invoicing_details()
