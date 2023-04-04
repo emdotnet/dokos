@@ -571,7 +571,6 @@ accounting_dimension_doctypes = [
 	"Subcontracting Order Item",
 	"Subcontracting Receipt",
 	"Subcontracting Receipt Item",
-	"Account Closing Balance",
 ]
 
 # get matching queries for Bank Reconciliation
