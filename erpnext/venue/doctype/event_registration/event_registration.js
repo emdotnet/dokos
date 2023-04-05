@@ -13,16 +13,17 @@ frappe.ui.form.on("Event Registration", {
 			const is_unpaid = frm.doc.payment_status.match(/^(|Unpaid|Pending)$/)
 			const is_paid = frm.doc.payment_status === "Paid"
 
-			if (!is_cancelled && is_unpaid) {
-				// Registration is not yet paid, so an invoice can be created.
-				const msg = __("Submit then create draft invoice", null, "Event Registration")
-				frm.page.set_primary_action(msg, () => {
-					frappe.model.open_mapped_doc({
-						method: "erpnext.venue.doctype.event_registration.event_registration.submit_then_make_invoice",
-						frm: frm,
-					});
-				});
-			}
+			// TODO: Fix invoice generation
+			// if (!is_cancelled && is_unpaid) {
+			// 	// Registration is not yet paid, so an invoice can be created.
+			// 	const msg = __("Submit then create draft invoice", null, "Event Registration")
+			// 	frm.page.set_primary_action(msg, () => {
+			// 		frappe.model.open_mapped_doc({
+			// 			method: "erpnext.venue.doctype.event_registration.event_registration.submit_then_make_invoice",
+			// 			frm: frm,
+			// 		});
+			// 	});
+			// }
 
 			if (is_cancelled && is_paid) {
 				// Registration was paid by the client, but then cancelled

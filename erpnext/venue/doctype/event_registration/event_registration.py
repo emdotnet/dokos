@@ -154,9 +154,10 @@ class EventRegistration(Document):
 			if not self.payment_gateway:
 				frappe.throw(_("Missing Payment Gateway"))
 			if not reference_no:
-				frappe.throw(_("Missing Reference Number"))
+				reference_no = self.name
 
-			invoice = self.make_and_submit_invoice()
+			# TODO: Fix invoice generation
+			invoice = None  # self.make_and_submit_invoice()
 			self.make_payment_entry(
 				reference_no=reference_no, payment_gateway=self.payment_gateway, invoice_doc=invoice
 			)
@@ -362,14 +363,15 @@ class EventRegistration(Document):
 				"paid_to": paid_to,
 			}
 		)
-		pe.append(
-			"references",
-			{
-				"reference_doctype": invoice_doc.doctype,
-				"reference_name": invoice_doc.name,
-				"allocated_amount": base_amount,
-			},
-		)
+		if invoice_doc:
+			pe.append(
+				"references",
+				{
+					"reference_doctype": invoice_doc.doctype,
+					"reference_name": invoice_doc.name,
+					"allocated_amount": base_amount,
+				},
+			)
 
 		if fee_amount > 0.0:
 			write_off_account, default_cost_center = frappe.get_cached_value(
