@@ -121,6 +121,7 @@
   "paid_amount",
   "advances_section",
   "allocate_advances_automatically",
+  "only_include_allocated_payments",
   "get_advances",
   "advances",
   "advance_tax",
@@ -1592,6 +1593,14 @@
    "fieldname": "shipping_address_section",
    "fieldtype": "Section Break",
    "label": "Shipping Address"
+  },
+  {
+   "default": "0",
+   "depends_on": "allocate_advances_automatically",
+   "description": "Advance payments allocated against orders will only be fetched",
+   "fieldname": "only_include_allocated_payments",
+   "fieldtype": "Check",
+   "label": "Only Include Allocated Payments"
    }
  ],
  "icon": "uil uil-file-alt",
@@ -1599,12 +1608,11 @@
  "is_sealed": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-02-20 16:33:50.446725",
+ "modified": "2023-04-03 22:57:14.074982",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
  "name_after_submit": 1,
- "name_case": "Title Case",
  "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
