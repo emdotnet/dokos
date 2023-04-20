@@ -472,18 +472,33 @@ def get_bookings_list(doctype, txt, filters, limit_start, limit_page_length=20, 
 def get_bookings_list_for_map(start, end):
 	bookings_list = _get_events(getdate(start), getdate(end), item=None, user=frappe.session.user)
 
+	def get_title(x):
+		return x.get("title", x.get("item_name", x.name))
+
+	def is_all_day(x):
+		return x.get("all_day", x.get("allDay", False))
+
+	def get_color(x):
+		if x.ends_on < frappe.utils.now_datetime():
+			return "darkgray"
+		if x.status == "Cancelled":
+			return "#ff4d4d"
+		elif x.status == "Confirmed":
+			return "#6195ff"
+		elif x.status == "In cart":
+			return "#b67890"
+		return "#ff7846"
+
 	return [
 		dict(
 			start=x.starts_on,
 			end=x.ends_on,
-			title=x.item_name,
+			title=get_title(x),
 			status=x.status,
 			id=x.name,
-			backgroundColor="darkgray"
-			if x.ends_on < frappe.utils.now_datetime()
-			else (
-				"#ff4d4d" if x.status == "Cancelled" else ("#6195ff" if x.status == "Confirmed" else "#ff7846")
-			),
+			allDay=is_all_day(x),
+			item_name=x.get("item_name"),
+			backgroundColor=get_color(x),
 			borderColor="darkgray",
 		)
 		for x in bookings_list
@@ -1078,22 +1093,24 @@ def _get_subscriptions_as_events(start, end, item=None, user=None, fields=None, 
 		)
 
 		events.append(
-			{
-				**sub,
-				"starts_on": sub["start"],
-				"ends_on": sub["end"],
-				"item_name": booked_item,
-				"title": title,
-				"name": sub["name"],
-				"doctype": "Subscription",
-				# "repeat_this_event": 1,
-				# "rrule": "RRULE:FREQ=HOURLY",
-				# "user": sub["_customers"][0] if sub["_customers"] and len(sub["_customers"]) > 0,
-				# "status": "Active",
-				"all_day": 1,
-				"startEditable": False,
-				"durationEditable": False,
-			}
+			frappe._dict(
+				{
+					**sub,
+					"starts_on": get_datetime(sub["start"]),
+					"ends_on": get_datetime(sub["end"]),
+					"item_name": booked_item,
+					"title": title,
+					"name": sub["name"],
+					"doctype": "Subscription",
+					# "repeat_this_event": 1,
+					# "rrule": "RRULE:FREQ=HOURLY",
+					# "user": sub["_customers"][0] if sub["_customers"] and len(sub["_customers"]) > 0,
+					"status": "Confirmed",
+					"all_day": 1,
+					"startEditable": False,
+					"durationEditable": False,
+				}
+			)
 		)
 	return events
 
