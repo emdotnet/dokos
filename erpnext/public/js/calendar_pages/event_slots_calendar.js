@@ -1,11 +1,7 @@
 // Copyright (c) 2020, Dokos SAS and Contributors
 // See license.txt
 
-import { Calendar } from '@fullcalendar/core';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import listPlugin from '@fullcalendar/list';
-import interactionPlugin from '@fullcalendar/interaction';
-import dayGridPlugin from '@fullcalendar/daygrid';
+import "./base_calendar";
 
 erpnext.eventSlotsBookings = class EventSlotsBookings {
 	constructor(opts) {
@@ -20,114 +16,61 @@ erpnext.eventSlotsBookings = class EventSlotsBookings {
 	}
 
 	build_calendar() {
-		this.calendar = new EventsCalendar(this)
+		this.calendar = new EventSlotsCalendar({
+			wrapper: this.wrapper,
+			parent: this,
+		})
 	}
 }
 
-class EventsCalendar {
-	constructor(parent) {
-		this.parent = parent;
+class EventSlotsCalendar extends frappe.ui.BaseWebCalendar {
+	init(opts) {
+		this.parent = opts.parent;
 		this.render();
-	}
-
-	render() {
-		const calendarEl = $('<div></div>').appendTo($(this.parent.wrapper));
-		this.fullCalendar = new Calendar(
-			calendarEl[0],
-			this.calendar_options()
-		)
-		this.fullCalendar.render();
-	}
-
-	//TODO: Commonify
-	get_initial_display_view() {
-		return frappe.is_mobile() ? 'listDay' : 'timeGridWeek'
-	}
-
-	set_initial_display_view() {
-		this.fullCalendar&&this.fullCalendar.changeView(this.get_initial_display_view());
 	}
 
 	get_header_toolbar() {
 		return {
-			left: frappe.is_mobile() ? 'today' : 'dayGridMonth,timeGridWeek,listDay',
+			left: frappe.is_mobile() ? 'today' : 'dayGridMonth,timeGridWeek,timeGridDay',
 			center: 'prev,title,next',
-			right: frappe.is_mobile() ? 'closeButton' : 'today closeButton',
+			right: frappe.is_mobile() ? '' : 'today',
 		}
-	}
-
-	get_time_display() {
-		return !(this.get_initial_display_view() === "dayGridMonth")
-	}
-
-	set_option(option, value) {
-		this.fullCalendar&&this.fullCalendar.setOption(option, value);
-	}
-
-	destroy() {
-		this.fullCalendar&&this.fullCalendar.destroy();
-	}
-
-	refresh() {
-		this.fullCalendar&&this.fullCalendar.refetchEvents();
 	}
 
 	calendar_options() {
-		const me = this;
-		return {
+		return Object.assign(super.calendar_options(), {
 			eventClassNames: 'event-slot-calendar',
-			initialView: me.get_initial_display_view(),
-			headerToolbar: me.get_header_toolbar(),
-			weekends: true,
-			allDayContent: function() {
-				return __("All Day");
-			},
-			buttonText: {
-				today: __("Today"),
-				timeGridWeek: __("Week"),
-				listDay: __("Day"),
-				dayGridMonth: __("Month")
-			},
-			plugins: [
-				timeGridPlugin,
-				listPlugin,
-				interactionPlugin,
-				dayGridPlugin
-			],
-			showNonCurrentDates: false,
-			locale: frappe.get_cookie('preferred_language') || frappe.boot.lang || 'en',
-			timeZone: frappe.boot.timeZone || 'UTC',
-			initialDate: moment().add(1,'d').format("YYYY-MM-DD"),
+			initialView: frappe.is_mobile() ? 'listDay' : 'timeGridWeek',
+			headerToolbar: this.get_header_toolbar(),
 			noEventsContent: __("No events to display"),
-			events: function(info, callback) {
-				return me.getAvailableSlots(info, callback)
-			},
-			eventContent: function(info) {
+			weekends: true,
+			allDayContent: __("All Day"),
+			showNonCurrentDates: false,
+			eventContent(info) {
 				return { html: `${info.event.extendedProps.description}`};
 			},
-			selectAllow: this.getSelectAllow,
-			validRange: this.getValidRange,
-			defaultDate: this.getDefaultDate,
-			eventClick: function(event) {
-				me.eventClick(event)
-			},
-			displayEventTime: this.get_time_display(),
-			height: "auto"
-		}
+			displayEventTime: console.log,
+		});
 	}
 
-	getAvailableSlots(parameters, callback) {
-		frappe.call("erpnext.venue.doctype.event_slot.event_slot.get_available_slots", {
+	onEventsUpdated() {
+		this.set_min_max_times({ min: "09:00:00", max: "17:00:00"});
+	}
+
+	getEvents(parameters) {
+		return this.getAvailableSlots(parameters);
+	}
+
+	getAvailableSlots(parameters) {
+		return frappe.call("erpnext.venue.doctype.event_slot.event_slot.get_available_slots", {
 			start: moment(parameters.start).format("YYYY-MM-DD"),
 			end: moment(parameters.end).format("YYYY-MM-DD")
 		}).then(result => {
-			this.slots = result.message || []
-
-			callback(this.slots);
-		})
+			return result.message || []
+		});
 	}
 
-	eventClick(event) {
+	onEventClick(event) {
 		const me = this;
 		const dialog = new frappe.ui.Dialog ({
 			size: 'large',
@@ -146,7 +89,7 @@ class EventsCalendar {
 					})
 					.then(() => {
 						dialog.hide()
-						me.refresh();
+						me.refetchEvents();
 					})
 				});
 			}
@@ -164,13 +107,5 @@ class EventsCalendar {
 			dialog.disable_primary_action();
 		}
 		dialog.show()
-	}
-
-	getSelectAllow(selectInfo) {
-		return moment().diff(selectInfo.start) <= 0
-	}
-
-	getValidRange() {
-		return { start: moment().add(1,'d').format("YYYY-MM-DD") }
 	}
 }

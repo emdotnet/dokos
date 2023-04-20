@@ -1,12 +1,9 @@
 // Copyright (c) 2023, Dokos SAS and Contributors
 // See license.txt
 
-import { Calendar } from '@fullcalendar/core';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import listPlugin from '@fullcalendar/list';
-import interactionPlugin from '@fullcalendar/interaction';
-import dayGridPlugin from '@fullcalendar/daygrid';
 import EventEmitterMixin from 'frappe/public/js/frappe/event_emitter';
+
+import './base_calendar';
 
 frappe.provide("erpnext.booking_section");
 frappe.provide("erpnext.booking_section_update")
@@ -18,6 +15,7 @@ erpnext.booking_section = class BookingDialog {
 		Object.assign(this, opts);
 		Object.assign(erpnext.booking_section_update, EventEmitterMixin);
 
+		this.skip_cart = this.skip_cart == "True";
 		this.read_only = frappe.session.user === "Guest";
 		this.wrapper = document.getElementsByClassName(this.parentId)[0];
 
@@ -25,38 +23,47 @@ erpnext.booking_section = class BookingDialog {
 	}
 
 	build_calendar() {
-		this.calendar = new BookingCalendar(this)
+		this.booking_calendar = new BookingCalendar({
+			wrapper: this.wrapper,
+			booking_dialog: this,
+		})
 
 		erpnext.booking_section_update.on("update_calendar", r => {
 			this.uom = r;
-			this.calendar.booking_selector&&this.calendar.booking_selector.empty();
-			this.calendar.fullCalendar&&this.calendar.fullCalendar.refetchEvents();
+			this.booking_calendar.booking_selector?.empty();
+			this.booking_calendar?.refetchEvents();
 		})
 	}
 
 	destroy_calendar() {
-		this.calendar.destroy();
+		this.booking_calendar.destroy();
 	}
 }
 
-class BookingCalendar {
-	constructor(parent) {
-		this.parent = parent;
+class BookingCalendar extends frappe.ui.BaseWebCalendar {
+	init() {
 		this.slots = [];
-		this.booking_selector = null;
-		this.locale = frappe.get_cookie('preferred_language') || frappe.boot.lang || 'en';
-		this.skip_cart = this.parent.skip_cart == "True"
-		this.render();
+		this.booking_dialog = this.options.booking_dialog;
 	}
 
-	render() {
-		$(this.parent.wrapper).empty()
-		const calendarEl = $('<div></div>').appendTo($(this.parent.wrapper));
-		this.fullCalendar = new Calendar(
-			calendarEl[0],
-			this.calendar_options()
-		)
-		this.fullCalendar.render();
+	async getEvents(parameters) {
+		const result = await frappe.call("erpnext.templates.pages.cart.get_availabilities_for_cart", {
+			start: this.format_ymd(parameters.start),
+			end: this.format_ymd(parameters.end),
+			item: this.booking_dialog.item,
+			uom: this.booking_dialog.uom
+		});
+
+		this.slots = result.message;
+
+		const date = this.booking_dialog.date
+		if (date && !this.booking_selector) {
+			this._make_booking_selector({ date });
+		} else {
+			this.booking_selector?.make();
+		}
+
+		return this.slots;
 	}
 
 	get_header_toolbar() {
@@ -67,100 +74,40 @@ class BookingCalendar {
 		}
 	}
 
-	set_option(option, value) {
-		this.fullCalendar&&this.fullCalendar.setOption(option, value);
+	_make_booking_selector(date_info) {
+		this.booking_selector = new BookingSelector({
+			booking_calendar: this,
+			booking_dialog: this.booking_dialog,
+			date_info: date_info,
+		});
 	}
 
-	get_option(option) {
-		return this.fullCalendar&&this.fullCalendar.getOption(option);
+	onDateClick(info) {
+		this._make_booking_selector(info);
 	}
 
-	destroy() {
-		this.fullCalendar&&this.fullCalendar.destroy();
-	}
-
-	getSelectAllow(selectInfo) {
-		return momentjs().diff(selectInfo.start) <= 0
-	}
-
-	getValidRange() {
-		return { start: momentjs().format("YYYY-MM-DD") }
-	}
-
-	set_loading_state(state) {
-		state ? frappe.freeze(__("Please wait...")) : frappe.unfreeze();
+	onDatesSet(info) {
+		this.booking_selector?.empty();
 	}
 
 	calendar_options() {
-		const me = this;
-
 		let initialDate;
 		const queryParamStartDate = new URLSearchParams(window.location.search).get("start_date");
-		if (this.parent.date) {
-			initialDate = momentjs(this.parent.date).format("YYYY-MM-DD");
+		if (this.booking_dialog.date) {
+			initialDate = this.format_ymd(this.booking_dialog.date);
 		} else if (queryParamStartDate) {
 			initialDate = queryParamStartDate;
 		} else {
 			initialDate = momentjs().add(1,'d').format("YYYY-MM-DD");
 		}
 
-		return {
-			eventClassNames: function(arg) {
-				return ['booking-calendar', arg.event.extendedProps.status || ""]
-			},
-			initialView: "dayGridMonth",
-			contentHeight: 'auto',
-			headerToolbar: me.get_header_toolbar(),
-			weekends: true,
-			buttonText: {
-				today: __("Today"),
-				timeGridWeek: __("Week"),
-				listDay: __("Day")
-			},
-			plugins: [
-				timeGridPlugin,
-				listPlugin,
-				interactionPlugin,
-				dayGridPlugin
-			],
-			showNonCurrentDates: false,
-			locale: this.locale,
-			timeZone: frappe.boot.timeZone || 'UTC',
-			initialDate: initialDate,
+		return Object.assign(super.calendar_options(), {
+			initialDate,
 			noEventsContent: __("No slot available"),
-			selectAllow: this.getSelectAllow,
-			validRange: this.getValidRange,
-			displayEventTime: false,
-			dateClick: function(info) {
-				me.booking_selector = new BookingSelector({
-					parent: me,
-					date_info: info
-				})
+			eventClassNames(arg) {
+				return ["booking-calendar", arg.event.extendedProps.status || ""]
 			},
-			datesSet: (info) => {
-				this.booking_selector&&this.booking_selector.empty();
-			},
-			events: function(info, callback) {
-				frappe.call("erpnext.templates.pages.cart.get_availabilities_for_cart", {
-					start: momentjs(info.start).format("YYYY-MM-DD"),
-					end: momentjs(info.end).format("YYYY-MM-DD"),
-					item: me.parent.item,
-					uom: me.parent.uom
-				}).then(result => {
-					me.slots = result.message;
-					callback(result.message);
-
-					if (me.parent.date && !me.booking_selector) {
-						me.booking_selector = new BookingSelector({
-							parent: me,
-							date_info: {date: me.parent.date}
-						})
-					} else {
-						me.booking_selector && me.booking_selector.make()
-					}
-				})
-			},
-		}
+		});
 	}
 }
 
@@ -175,14 +122,14 @@ class BookingSelector {
 		frappe.call({
 			method: "erpnext.venue.doctype.booking_credit.booking_credit.get_booking_credits_by_item",
 			args: {
-				item: this.parent.parent.item,
-				uom: this.parent.parent.uom
+				item: this.booking_dialog.item,
+				uom: this.booking_dialog.uom
 			}
 		}).then(r => {
 			if (r.message) {
 				this.credits = r.message;
 			}
-			this.slots = this.parent.slots.filter(s => (
+			this.slots = this.booking_calendar.slots.filter(s => (
 				frappe.datetime.get_date(s.start) <= frappe.datetime.get_date(this.date_info.date)
 				) && (
 					frappe.datetime.get_date(this.date_info.date) <= frappe.datetime.get_date(s.end)
@@ -196,6 +143,11 @@ class BookingSelector {
 
 	build() {
 		const me = this;
+		const locale = this.booking_calendar.locale;
+
+		/** @type {Date | null} */
+		const date = this.date_info.date;
+
 		const slots_div = this.slots.length ? this.slots.sort((a,b) => new Date(a.start) - new Date(b.start)).map(s => {
 			const number_indicator = s.number > 0 ? `<div class="cart-indicator list-indicator ml-0">${s.number}</div>` : ""
 
@@ -203,7 +155,7 @@ class BookingSelector {
 				<button class="btn btn-outline-secondary ${s.status}" type="button">
 					<div class="d-flex justify-content-center">
 						<div class="mx-auto">
-							${momentjs(s.start).locale(this.parent.locale).format('LT')} - ${momentjs(s.end).locale(this.parent.locale).format('LT')}
+							${momentjs(s.start).locale(locale).format('LT')} - ${momentjs(s.end).locale(locale).format('LT')}
 						</div>
 						${number_indicator}
 					</div>
@@ -212,7 +164,7 @@ class BookingSelector {
 		}): [];
 
 		this.$content = $(`<div>
-			<h2 class="timeslot-options-title text-muted mb-4">${this.date_info.date ? momentjs(this.date_info.date).locale(this.parent.locale).format('LL') : ""}</h2>
+			<h2 class="timeslot-options-title text-muted mb-4">${date ? momentjs(date).locale(locale).format('LL') : ""}</h2>
 			${slots_div.join('')}
 		</div>`)
 
@@ -284,42 +236,42 @@ class BookingSelector {
 		frappe.call("erpnext.venue.doctype.item_booking.item_booking.book_new_slot", {
 			start: moment.utc(event.start).format("YYYY-MM-DD H:mm:SS"),
 			end: moment.utc(event.end).format("YYYY-MM-DD H:mm:SS"),
-			item: this.parent.parent.item,
-			uom: this.parent.parent.uom,
+			item: this.booking_dialog.item,
+			uom: this.booking_dialog.uom,
 			user: frappe.session.user,
-			status: this.parent.skip_cart ? "Confirmed": null,
+			status: this.booking_dialog.skip_cart ? "Confirmed": null,
 			with_credits: with_credits
 		}).then(r => {
 			console.log(r)
-			if (!this.parent.skip_cart) {
+			if (!this.booking_dialog.skip_cart) {
 				this.update_cart(r.message.name, 1)
 			} else {
-				this.parent.fullCalendar&&this.parent.fullCalendar.refetchEvents();
+				this.booking_calendar?.refetchEvents();
 			}
 		})
 	}
 
 	remove_booked_slot(booking_id) {
-		if (!this.parent.skip_cart) {
+		if (!this.booking_dialog.skip_cart) {
 			this.update_cart(booking_id, 0)
 		} else {
 			frappe.call("erpnext.venue.doctype.item_booking.item_booking.remove_booked_slot", {
 				name: booking_id
 			}).then(r => {
-				this.parent.fullCalendar&&this.parent.fullCalendar.refetchEvents();
+				this.booking_calendar?.refetchEvents();
 			})
 		}
 	}
 
 	update_cart(booking, qty) {
 		erpnext.e_commerce.shopping_cart.shopping_cart_update({
-			item_code: this.parent.parent.item,
+			item_code: this.booking_dialog.item,
 			qty: qty,
-			uom: this.parent.parent.uom,
+			uom: this.booking_dialog.uom,
 			booking: booking,
 			cart_dropdown: true,
 		}).then(() => {
-			this.parent.fullCalendar&&this.parent.fullCalendar.refetchEvents();
+			this.booking_calendar?.refetchEvents();
 		})
 	}
 }
