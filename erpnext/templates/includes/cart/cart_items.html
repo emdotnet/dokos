@@ -97,9 +97,9 @@
 	<td class="text-right" style="width: 25%;">
 		<div class="d-flex">
 			{% if d.item_booking %}
-			<div class="modify-booking-btn column-sm-view d-flex" {{ dataAttributes }}>
-				<a href="{{ d.route }}?date={{ frappe.utils.getdate(item_booking_doc.starts_on) }}">{{ _("Modify") }}</a>
-			</div>
+			<a class="modify-booking-btn column-sm-view d-flex" {{ dataAttributes }} href="{{ d.route }}?date={{ frappe.utils.getdate(item_booking_doc.starts_on) }}">
+				{{ _("Modify") }}
+			</a>
 			{% else %}
 			{% set disabled = 'disabled' if d.is_free_item else '' %}
 			<div class="input-group number-spinner mt-1 mb-4">

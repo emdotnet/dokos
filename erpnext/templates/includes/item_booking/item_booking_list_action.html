@@ -1,4 +1,7 @@
-<div class="pull-right">
+<div class="d-flex pull-right">
+	<a class="btn btn-primary btn-sm mr-2" href="/book-resources">
+		{{ _("Book Resources") }}
+	</a>
 	<button class="btn btn-default btn-sm view-switcher list-view">
 		{{ _("Calendar view") }}
 	</button>
@@ -6,17 +9,19 @@
 
 <script>
 	frappe.ready(function() {
-		const content = document.getElementsByClassName("page_content")[0]
-		const calendar = content.appendChild(document.createElement('div'))
-		const listview = content.getElementsByClassName("website-list")[0]
+		const content = document.querySelector(".page_content")
+		const listview = content.querySelector(".website-list")
+		const calendar = document.createElement("div")
+		listview.parentNode.insertBefore(calendar, listview.nextSibling);
+		const viewSwitcher = document.querySelector(".view-switcher");
 
 		if (listview) {
 			listview.classList.add("d-block");
 			calendar.id = "calendar-section";
 			calendar.classList.add("d-none");
-			document.getElementsByClassName("view-switcher")[0].addEventListener("click", function(e) {
+			viewSwitcher.addEventListener("click", function(e) {
 				e.preventDefault();
-				const switcher = document.getElementsByClassName("view-switcher")[0]
+				const switcher = viewSwitcher
 				if (switcher.classList.contains("list-view")) {
 					switcher.innerHTML = __("List view")
 					switcher.classList.replace("list-view", "calendar-view")
@@ -37,7 +42,7 @@
 				}
 			})
 		} else {
-			document.getElementsByClassName("view-switcher")[0].classList.add("d-none");
+			viewSwitcher.classList.add("d-none");
 		}
 	});
 </script>
