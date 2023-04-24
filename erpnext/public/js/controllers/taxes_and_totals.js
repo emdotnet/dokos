@@ -323,6 +323,7 @@ erpnext.taxes_and_totals = class TaxesAndTotals extends erpnext.payments {
 					child.account_head = tax.account;
 					child.description = tax.description;
 					child.rate = 0;
+					child.included_in_print_rate = tax.included_in_print_rate;
 				}
 			});
 		}

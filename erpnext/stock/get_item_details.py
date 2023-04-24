@@ -646,7 +646,14 @@ def get_item_tax_map(company, item_tax_template, as_json=True):
 		template = frappe.get_cached_doc("Item Tax Template", item_tax_template)
 		for d in template.taxes:
 			if frappe.get_cached_value("Account", d.tax_type, "company") == company:
-				item_tax_map.append({"account": d.tax_type, "rate": d.tax_rate, "description": d.description})
+				item_tax_map.append(
+					{
+						"account": d.tax_type,
+						"rate": d.tax_rate,
+						"description": d.description,
+						"included_in_print_rate": d.get("included_in_print_rate", 0),
+					}
+				)
 
 	return json.dumps(item_tax_map) if as_json else item_tax_map
 

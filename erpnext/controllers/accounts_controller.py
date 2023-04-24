@@ -2567,6 +2567,7 @@ def add_taxes_from_tax_template(child_item, parent_doc, db_insert=True):
 						"charge_type": "On Net Total",
 						"account_head": tax_type["account"],
 						"rate": tax_rate,
+						"included_in_print_rate": tax_type.get("included_in_print_rate", 0),
 					}
 				)
 				if parent_doc.doctype == "Purchase Order":

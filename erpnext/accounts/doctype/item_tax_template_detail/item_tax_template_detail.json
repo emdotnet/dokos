@@ -7,6 +7,7 @@
  "field_order": [
   "tax_type",
   "tax_rate",
+  "included_in_print_rate",
   "description"
  ],
  "fields": [
@@ -28,14 +29,21 @@
    "fieldname": "description",
    "fieldtype": "Text Editor",
    "in_list_view": 1,
-   "label": "Description",
-   "show_days": 1,
-   "show_seconds": 1
+   "label": "Description"
+  },
+  {
+   "default": "0",
+   "description": "If checked, the tax amount will be considered as already included in the Print Rate / Print Amount",
+   "fieldname": "included_in_print_rate",
+   "fieldtype": "Check",
+   "label": "Is this Tax included in Basic Rate?",
+   "print_hide": 1,
+   "report_hide": 1
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2020-06-01 16:15:54.252804",
+ "modified": "2023-04-21 16:35:25.702359",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Item Tax Template Detail",
@@ -44,5 +52,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }
