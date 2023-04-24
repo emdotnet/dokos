@@ -667,6 +667,37 @@ class AccountsController(TransactionBase):
 					)
 
 			self.append_taxes_from_master(tax_master_doctype)
+			self.append_taxes_for_items()
+
+	def append_taxes_for_items(self):
+		item_df = self.meta.get_field("items")
+		if not item_df:
+			return
+
+		tax_df = frappe.get_meta(item_df.options).get_field("item_tax_template")
+		if not tax_df:
+			return
+
+		item_tax_template_dt = tax_df.options
+
+		# apply item tax template
+		for item in self.get("items", []):
+			if item_tax_template := item.get("item_tax_template"):
+				template = frappe.get_doc(item_tax_template_dt, item_tax_template)
+				for row in template.get("taxes", []):
+					account_head = row.get("account_head", row.get("tax_type"))
+					# rate = row.get("rate", row.get("tax_rate"))
+					rate = 0  # Rate is zero by convention when applied from item tax template
+					self.append(
+						"taxes",
+						{
+							"charge_type": row.get("charge_type", "On Net Total"),
+							"account_head": account_head,
+							"description": row.get("description"),
+							"rate": rate,
+							"included_in_print_rate": row.get("included_in_print_rate", 0),
+						},
+					)
 
 	def is_pos_profile_changed(self):
 		if (
@@ -681,7 +712,9 @@ class AccountsController(TransactionBase):
 			if not tax_master_doctype:
 				tax_master_doctype = self.meta.get_field("taxes_and_charges").options
 
-			self.extend("taxes", get_taxes_and_charges(tax_master_doctype, self.get("taxes_and_charges")))
+			if rows := get_taxes_and_charges(tax_master_doctype, self.get("taxes_and_charges")):
+				print(rows)
+				self.extend("taxes", rows)
 
 	def set_other_charges(self):
 		self.set("taxes", [])
