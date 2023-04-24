@@ -11834,7 +11834,7 @@ Total Costing Amount (via Timesheets),Montant total des coûts (via les feuilles
 Total Costing Amount,Montant total des coûts,
 Total Credit/ Debit Amount should be same as linked Journal Entry,Le montant total du crédit / débit doit être le même que dans l'Écriture de journal liée,
 Total Credit,Total Crédit,
-Total Debit must be equal to Total Credit. The difference is {0},Le Total du Débit doit être égal au Total du Crédit. La différence est de {0},
+Total Debit must be equal to Total Credit. The difference is {0},Le total du débit doit être égal au total du crédit. La différence est de {0},
 Total Debit,Total Débit,
 Total Declared Amount,Montant déclaré total,
 Total Deductible,Total déductible,
