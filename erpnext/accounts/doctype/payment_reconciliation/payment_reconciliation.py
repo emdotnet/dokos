@@ -7,9 +7,12 @@ from frappe import _, msgprint, qb
 from frappe.model.document import Document
 from frappe.query_builder.custom import ConstantColumn
 from frappe.query_builder.functions import IfNull
-from frappe.utils import flt, getdate, nowdate, today
+from frappe.utils import flt, get_link_to_form, getdate, nowdate, today
 
 import erpnext
+from erpnext.accounts.doctype.process_payment_reconciliation.process_payment_reconciliation import (
+	is_any_doc_running,
+)
 from erpnext.accounts.utils import (
 	QueryPaymentLedger,
 	get_outstanding_invoices,
@@ -246,7 +249,7 @@ class PaymentReconciliation(Document):
 	def allocate_entries(self, args):
 		self.validate_entries()
 
-		invoice_exchange_map = self.get_invoice_exchange_map(args.get("invoices"))
+		invoice_exchange_map = self.get_invoice_exchange_map(args.get("invoices"), args.get("payments"))
 		default_exchange_gain_loss_account = frappe.get_cached_value(
 			"Company", self.company, "exchange_gain_loss_account"
 		)
@@ -265,6 +268,9 @@ class PaymentReconciliation(Document):
 					pay["amount"] = 0
 
 				inv["exchange_rate"] = invoice_exchange_map.get(inv.get("invoice_number"))
+				if pay.get("reference_type") in ["Sales Invoice", "Purchase Invoice"]:
+					pay["exchange_rate"] = invoice_exchange_map.get(pay.get("reference_name"))
+
 				res.difference_amount = self.get_difference_amount(pay, inv, res["allocated_amount"])
 				res.difference_account = default_exchange_gain_loss_account
 				res.exchange_rate = inv.get("exchange_rate")
@@ -301,9 +307,7 @@ class PaymentReconciliation(Document):
 			}
 		)
 
-	@frappe.whitelist()
-	def reconcile(self):
-		self.validate_allocation()
+	def reconcile_allocations(self, skip_ref_details_update_for_pe=False):
 		dr_or_cr = (
 			"credit_in_account_currency"
 			if erpnext.get_party_account_type(self.party_type) == "Receivable"
@@ -327,12 +331,35 @@ class PaymentReconciliation(Document):
 					self.make_difference_entry(payment_details)
 
 		if entry_list:
-			reconcile_against_document(entry_list)
+			reconcile_against_document(entry_list, skip_ref_details_update_for_pe)
 
 		if dr_or_cr_notes:
 			reconcile_dr_cr_note(dr_or_cr_notes, self.company)
 
+	@frappe.whitelist()
+	def reconcile(self):
+		if frappe.db.get_single_value("Accounts Settings", "auto_reconcile_payments"):
+			running_doc = is_any_doc_running(
+				dict(
+					company=self.company,
+					party_type=self.party_type,
+					party=self.party,
+					receivable_payable_account=self.receivable_payable_account,
+				)
+			)
+
+			if running_doc:
+				frappe.throw(
+					_("A Reconciliation Job {0} is running for the same filters. Cannot reconcile now").format(
+						get_link_to_form("Auto Reconcile", running_doc)
+					)
+				)
+				return
+
+		self.validate_allocation()
+		self.reconcile_allocations()
 		msgprint(_("Successfully Reconciled"))
+
 		self.get_unreconciled_entries()
 
 	def make_difference_entry(self, row):
@@ -420,13 +447,21 @@ class PaymentReconciliation(Document):
 		if not self.get("payments"):
 			frappe.throw(_("No records found in the Payments table"))
 
-	def get_invoice_exchange_map(self, invoices):
+	def get_invoice_exchange_map(self, invoices, payments):
 		sales_invoices = [
 			d.get("invoice_number") for d in invoices if d.get("invoice_type") == "Sales Invoice"
 		]
+
+		sales_invoices.extend(
+			[d.get("reference_name") for d in payments if d.get("reference_type") == "Sales Invoice"]
+		)
 		purchase_invoices = [
 			d.get("invoice_number") for d in invoices if d.get("invoice_type") == "Purchase Invoice"
 		]
+		purchase_invoices.extend(
+			[d.get("reference_name") for d in payments if d.get("reference_type") == "Purchase Invoice"]
+		)
+
 		invoice_exchange_map = frappe._dict()
 
 		if sales_invoices:
