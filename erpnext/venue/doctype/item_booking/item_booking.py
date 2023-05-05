@@ -5,6 +5,7 @@ import calendar
 import datetime
 import json
 from datetime import timedelta
+from functools import cache, cached_property
 from typing import TYPE_CHECKING
 
 import frappe
@@ -833,14 +834,16 @@ class ItemBookingAvailabilities:
 
 		return available_slots
 
+	@cached_property
+	def simultaneous_booking_allowed(self):
+		return frappe.db.get_single_value("Venue Settings", "enable_simultaneous_booking")
+
 	def _find_available_slot(self, line, scheduled_items):
 		slots = []
 		output = []
 		user_scheduled_items = [x for x in scheduled_items if x.get("user") == self.user]
 
-		simultaneous_booking_allowed = frappe.get_cached_value(
-			"Venue Settings", None, "enable_simultaneous_booking"
-		)
+		simultaneous_booking_allowed = self.simultaneous_booking_allowed
 		if simultaneous_booking_allowed:
 			scheduled_items = self.check_simultaneaous_bookings(scheduled_items)
 
@@ -1202,8 +1205,8 @@ def _get_booking_subscriptions_between(
 	for s in subscriptions:
 		if abs(round(s["qty"]) - s["qty"]) > 1e-6:
 			raise ValueError("Non integer quantity of booked slots.")
-		s["start"] = get_datetime(s["start"]).date()
-		s["end"] = get_datetime(s["end"]).date()
+		s["start"] = getdate(s["start"])
+		s["end"] = getdate(s["end"])
 		s["qty"] = int(s["qty"])
 		s["color"] = s.get("color", "#77bbff")
 
@@ -1211,8 +1214,9 @@ def _get_booking_subscriptions_between(
 
 
 @frappe.whitelist(allow_guest=True)
+@cache
 def get_item_calendar(item=None, uom=None):
-	if not uom:
+	if item and not uom:
 		uom = frappe.get_cached_value("Item", item, "sales_uom")
 
 	calendars = frappe.get_all("Item Booking Calendar", fields=["name", "item", "uom"])
