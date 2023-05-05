@@ -29,27 +29,18 @@ class EventSlotsCalendar extends frappe.ui.BaseWebCalendar {
 		this.render();
 	}
 
-	get_header_toolbar() {
-		return {
-			left: frappe.is_mobile() ? 'today' : 'dayGridMonth,timeGridWeek,timeGridDay',
-			center: 'prev,title,next',
-			right: frappe.is_mobile() ? '' : 'today',
-		}
-	}
-
 	calendar_options() {
 		return Object.assign(super.calendar_options(), {
-			eventClassNames: 'event-slot-calendar',
-			initialView: frappe.is_mobile() ? 'listDay' : 'timeGridWeek',
-			headerToolbar: this.get_header_toolbar(),
-			noEventsContent: __("No events to display"),
-			weekends: true,
-			allDayContent: __("All Day"),
-			showNonCurrentDates: false,
+			eventClassNames: "event-slot-calendar",
+			initialView: frappe.is_mobile() ? "listDay" : "timeGridWeek",
+			headerToolbar: {
+				left: frappe.is_mobile() ? "listWeek,listDay" : "dayGridMonth,timeGridWeek,listDay",
+				center: frappe.is_mobile() ? "" : "prev,title,next",
+				right: frappe.is_mobile() ? "prev,title,next" : "today",
+			},
 			eventContent(info) {
 				return { html: `${info.event.extendedProps.description}`};
 			},
-			displayEventTime: console.log,
 		});
 	}
 
@@ -72,8 +63,8 @@ class EventSlotsCalendar extends frappe.ui.BaseWebCalendar {
 
 	onEventClick(event) {
 		const me = this;
-		const dialog = new frappe.ui.Dialog ({
-			size: 'large',
+		const dialog = new frappe.ui.Dialog({
+			size: "large",
 			title: __(event.event.title),
 			fields: [
 				{
@@ -83,7 +74,7 @@ class EventSlotsCalendar extends frappe.ui.BaseWebCalendar {
 			],
 			primary_action_label: __("Register"),
 			primary_action() {
-				frappe.confirm(__('Do you want to register yourself for this slot ?'), () => {
+				frappe.confirm(__("Do you want to register yourself for this slot ?"), () => {
 					frappe.call("erpnext.venue.doctype.event_slot_booking.event_slot_booking.register_for_slot", {
 						slot: event.event.id
 					})
@@ -107,5 +98,14 @@ class EventSlotsCalendar extends frappe.ui.BaseWebCalendar {
 			dialog.disable_primary_action();
 		}
 		dialog.show()
+	}
+
+	getSelectAllow(selectInfo) {
+		console.log(selectInfo.start, new Date());
+		return moment().diff(selectInfo.start) <= 0
+	}
+
+	getValidRange() {
+		return { start: moment().format("YYYY-MM-DD") }
 	}
 }

@@ -66,14 +66,6 @@ class BookingCalendar extends frappe.ui.BaseWebCalendar {
 		return this.slots;
 	}
 
-	get_header_toolbar() {
-		return {
-			left: '',
-			center: 'prev,title,next',
-			right: 'today',
-		}
-	}
-
 	_make_booking_selector(date_info) {
 		this.booking_selector = new BookingSelector({
 			booking_calendar: this,
@@ -98,16 +90,35 @@ class BookingCalendar extends frappe.ui.BaseWebCalendar {
 		} else if (queryParamStartDate) {
 			initialDate = queryParamStartDate;
 		} else {
-			initialDate = momentjs().add(1,'d').format("YYYY-MM-DD");
+			initialDate = moment().add(1,'d').format("YYYY-MM-DD");
 		}
 
 		return Object.assign(super.calendar_options(), {
 			initialDate,
+			initialView: "dayGridMonth",
 			noEventsContent: __("No slot available"),
+			showNonCurrentDates: false,
+			headerToolbar: {
+				left: 'prev,title,next',
+				center: '',
+				right: 'today',
+			},
 			eventClassNames(arg) {
 				return ["booking-calendar", arg.event.extendedProps.status || ""]
 			},
 		});
+	}
+
+	set_loading_state(state) {
+		super.set_loading_state(state);
+		const element = document.querySelector(".item-booking-section");
+		if (state === "loading") {
+			element?.setAttribute("loading", "loading");
+		} else if (state === "longloading") {
+			element?.setAttribute("loading", "loading");
+		} else if (state === "done") {
+			element?.removeAttribute("loading");
+		}
 	}
 }
 
@@ -242,7 +253,6 @@ class BookingSelector {
 			status: this.booking_dialog.skip_cart ? "Confirmed": null,
 			with_credits: with_credits
 		}).then(r => {
-			console.log(r)
 			if (!this.booking_dialog.skip_cart) {
 				this.update_cart(r.message.name, 1)
 			} else {
@@ -273,5 +283,14 @@ class BookingSelector {
 		}).then(() => {
 			this.booking_calendar?.refetchEvents();
 		})
+	}
+
+	getSelectAllow(selectInfo) {
+		console.log(selectInfo.start, new Date());
+		return moment().diff(selectInfo.start) <= 0
+	}
+
+	getValidRange() {
+		return { start: moment().format("YYYY-MM-DD") }
 	}
 }
