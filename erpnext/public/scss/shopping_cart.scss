@@ -485,6 +485,11 @@ body.product-page {
 		min-height: 0px;
 	}
 
+	&[loading] {
+		opacity: 0.5;
+		cursor: progress;
+	}
+
 	.fc-scrollgrid-section-header th,
 	.fc-theme-standard td,
 	.fc-theme-standard th {

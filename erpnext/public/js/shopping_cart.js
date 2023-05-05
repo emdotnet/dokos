@@ -96,7 +96,7 @@ $.extend(shopping_cart, {
 					uom: opts.uom,
 				},
 				btn: opts.btn,
-				callback: function(r) {
+				always: function(r) {
 					shopping_cart.unfreeze();
 					shopping_cart.set_cart_count(true);
 					if(opts.callback)
@@ -254,6 +254,7 @@ $.extend(shopping_cart, {
 			uom: uom,
 			booking: booking,
 			callback: function(r) {
+				frappe.unfreeze();
 				if(!r.exc) {
 					$(".cart-items").html(r.message.items);
 					$(".cart-tax-items").html(r.message.total);
