@@ -61,7 +61,7 @@ class BookingCalendar {
 
 	get_header_toolbar() {
 		return {
-			left: '',
+			left: 'dayGridMonth,timeGridWeek,listDay',
 			center: 'prev,title,next',
 			right: 'today',
 		}
@@ -123,6 +123,7 @@ class BookingCalendar {
 				interactionPlugin,
 				dayGridPlugin
 			],
+			eventOrder: "start,status",
 			showNonCurrentDates: false,
 			locale: this.locale,
 			timeZone: frappe.boot.timeZone || 'UTC',
@@ -137,8 +138,64 @@ class BookingCalendar {
 					date_info: info
 				})
 			},
+			eventClick: function(info) {
+				me.booking_selector = new BookingSelector({
+					parent: me,
+					date_info: { date: info.event.start },
+				});
+
+				if (info.event.extendedProps.slot) {
+					me.booking_selector.select_slot([info.event.extendedProps.slot]);
+				}
+			},
 			datesSet: (info) => {
 				this.booking_selector&&this.booking_selector.empty();
+			},
+			eventDidMount: (info) => {
+				const classNames = info.event.classNames ?? [];
+				const view = info.view.type;
+				let visible = true;
+				const isSingleSlot = classNames.includes("booking-slot-single");
+				if (isSingleSlot && view === "dayGridMonth") {
+					visible = false;
+				} else if (!isSingleSlot && ["timeGridWeek", "listDay"].includes(view)) {
+					visible = false;
+				}
+
+				if (visible) {
+					delete info.el.style.display;
+				} else {
+					info.el.style.display = "none";
+				}
+
+				// Create the icon
+				if (isSingleSlot && visible) {
+					const status = info.event.extendedProps.status;
+					const iconName = {
+						"selected": "assets",
+						"confirmed": "tick",
+					}[status] ?? "";
+
+					if (iconName) {
+						info.el.querySelector(".booking-slot-icon")?.remove();
+
+						const icon = document.createElement("span");
+						icon.classList.add("booking-slot-icon");
+
+						if (view.includes("list")) {
+							/** @type {HTMLElement} */
+							icon.innerHTML = frappe.utils.icon(iconName, "md");
+							const dot = info.el.querySelector(".fc-list-event-dot");
+							dot.style.display = "none";
+							dot.after(icon);
+						} else {
+							icon.innerHTML = frappe.utils.icon(iconName, "lg");
+							const titleEl = info.el.querySelector(".fc-event-title");
+							titleEl.innerHTML = "";
+							info.el.append(icon);
+						}
+					}
+				}
 			},
 			events: function(info, callback) {
 				frappe.call("erpnext.templates.pages.cart.get_availabilities_for_cart", {
@@ -147,8 +204,98 @@ class BookingCalendar {
 					item: me.parent.item,
 					uom: me.parent.uom
 				}).then(result => {
+					console.log("result.message", result.message);
+
+					const aggregatedSlots = {};
+					const counterStatusPerDay = {};
+					for (const slot of result.message) {
+						const date = momentjs(slot.start).format("YYYY-MM-DD");
+						const status = slot.status;
+
+						if (!(date in aggregatedSlots)) {
+							aggregatedSlots[date] = [];
+							counterStatusPerDay[date] = {};
+						}
+						aggregatedSlots[date].push(slot);
+
+						if (!(status in counterStatusPerDay[date])) {
+							counterStatusPerDay[date][status] = 0;
+						}
+						counterStatusPerDay[date][status]++;
+					}
+
+					console.log(Object.entries(aggregatedSlots).sort(([a], [b]) => a.localeCompare(b)));
+
+					const mapStatusToColor = {
+						"available": "var(--green-600)",
+						"selected": "var(--orange-500)",
+						"confirmed": "var(--blue-400)",
+					};
+					const getSingleTitle = (slot) => {
+						const s = momentjs(slot.start).format("HH:mm")
+						const e = momentjs(slot.end).format("HH:mm")
+						let title = s + "–" + e;
+						if (slot.status === "selected") {
+							title += " · " + __("In Cart");
+						} else if (slot.status === "confirmed") {
+							title += " · " + __("Confirmed");
+						}
+						return title;
+					}
+					const events = Object.entries(aggregatedSlots)
+						.sort(([a], [b]) => a.localeCompare(b))
+						.flatMap(([key, slots]) => {
+							const date = momentjs(slots[0].start).format("YYYY-MM-DD");
+
+							let status = "available";
+							if (counterStatusPerDay[date].selected > 0) {
+								status = "selected";
+							}
+
+							const color = mapStatusToColor[status];
+							const title = [
+								counterStatusPerDay[date].available,
+								counterStatusPerDay[date].selected,
+							].filter(x => x > 0).join(" + ") || "0";
+
+							return [
+								{
+									// Badge
+									start: date,
+									end: date,
+									title,
+									textColor: color,
+									borderColor: color,
+									backgroundColor: "white",
+									extendedProps: { status },
+									allDay: 1,
+									className: "booking-slot-badge",
+								},
+								{
+									// Background
+									start: date,
+									end: date,
+									color,
+									display: "background",
+									allDay: 1,
+									className: "booking-slot-background",
+								},
+								...slots.map(slot => ({
+									...slot,
+									color: mapStatusToColor[slot.status],
+									display: "block",
+									allDay: false,
+									className: "booking-slot-single",
+									extendedProps: { slot },
+									title: getSingleTitle(slot),
+								})),
+							]
+						});
+
+					console.log(events);
+
 					me.slots = result.message;
-					callback(result.message);
+					callback(events);
 
 					if (me.parent.date && !me.booking_selector) {
 						me.booking_selector = new BookingSelector({
@@ -182,12 +329,8 @@ class BookingSelector {
 			if (r.message) {
 				this.credits = r.message;
 			}
-			this.slots = this.parent.slots.filter(s => (
-				frappe.datetime.get_date(s.start) <= frappe.datetime.get_date(this.date_info.date)
-				) && (
-					frappe.datetime.get_date(this.date_info.date) <= frappe.datetime.get_date(s.end)
-				)
-			)
+			const date = frappe.datetime.get_date(this.date_info.date);
+			this.slots = this.parent.slots.filter(s => frappe.datetime.get_date(s.start) == date)
 
 			this.build();
 			this.render();
@@ -242,6 +385,8 @@ class BookingSelector {
 
 			if (selected_slot.status == "selected") {
 				this.remove_booked_slot(selected_slot.id)
+			} else if (selected_slot.status == "confirmed") {
+				return;
 			} else {
 				if (this.credits > 0) {
 					const d = new frappe.ui.Dialog({

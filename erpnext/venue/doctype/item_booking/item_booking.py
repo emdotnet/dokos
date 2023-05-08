@@ -4,7 +4,9 @@
 import calendar
 import datetime
 import json
+from collections import defaultdict
 from datetime import timedelta
+from functools import cached_property
 from typing import TYPE_CHECKING
 
 import frappe
@@ -130,7 +132,10 @@ class ExceptionBookingOverlap(BookingException):
 class ExceptionTooManyBookings(ExceptionBookingOverlap):
 	@classmethod
 	def throw_website(cls, doc: "ItemBooking", overlaps: list):
-		cls.throw_desk(doc, overlaps)
+		frappe.throw(
+			_("The maximum number of simultaneous bookings allowed for this item has been reached."),
+			exc=cls,
+		)
 
 	@classmethod
 	def throw_desk(cls, doc: "ItemBooking", overlaps: list):
@@ -353,6 +358,15 @@ class ItemBooking(Document):
 			child = frappe.get_doc("Item Booking", child)
 			child.set_status(status)
 			gcalendar_method(child)
+
+		for bcu in frappe.get_all(
+			"Booking Credit Usage",
+			filters={"item_booking": self.name},
+			pluck="name",
+		):
+			bcu_doc = frappe.get_doc("Booking Credit Usage", bcu)
+			bcu_doc.flags.ignore_permissions = True
+			bcu_doc.cancel()
 
 	def on_update(self):
 		self.synchronize_child_bookings()
@@ -738,23 +752,23 @@ class ItemBookingAvailabilities:
 			return []
 
 		output = []
+		item_calendar = get_item_calendar(self.item, self.uom)
+		all_events = _get_events(self.init, self.finish, item=self.item_doc)
 		for dt in daterange_including_start(self.init, self.finish):
 			# For each day, get the available slots
-			calendar_availability = self._check_availability(dt)
+			calendar_availability = self._check_availability(dt, item_calendar, all_events)
 			if calendar_availability:
 				output.extend(calendar_availability)
 
 		return output
 
-	def _check_availability(self, date):
-		date = getdate(date)
+	def _check_availability(self, date, item_calendar, all_events=None):  # type: ignore
+		date: datetime.date = getdate(date)  # type: ignore
 		day = calendar.day_name[date.weekday()]
-
-		item_calendar = get_item_calendar(self.item, self.uom)
 
 		availability = []
 		schedules = []
-		dt_now = get_datetime(now())
+		dt_now = now_datetime()
 		if item_calendar.get("calendar"):
 			schedule_for_the_day = filter(lambda x: x.day == day, item_calendar.get("calendar"))
 			for line in schedule_for_the_day:
@@ -772,7 +786,11 @@ class ItemBookingAvailabilities:
 				schedules.append({"start": start, "end": day_end})
 
 			if schedules:
-				availability.extend(self._get_availability_from_schedule(schedules))
+				date_start = datetime.datetime.combine(date, datetime.time.min)
+				date_end = datetime.datetime.combine(date, datetime.time.max)
+				date_all_events = all_events or _get_events(date_start, date_end, item=self.item_doc)
+				# All the events are passed down, to reduce SQL queries
+				availability.extend(self._get_availability_from_schedule(schedules, date_all_events))
 
 		return availability
 
@@ -796,38 +814,46 @@ class ItemBookingAvailabilities:
 		new_dt = slot_start + datetime.timedelta(minutes=rounded_offset_in_minutes)
 		return new_dt
 
-	def _get_availability_from_schedule(self, schedules):
+	def _get_availability_from_schedule(self, schedules, all_events=None):
 		available_slots = []
 		for line in schedules:
 			line = frappe._dict(line)
-			booked_items = _get_events(line.get("start"), line.get("end"), item=self.item_doc)
+			line_start: datetime.datetime = line.get("start")  # type: ignore
+			line_end: datetime.datetime = line.get("end")  # type: ignore
+
+			# All the events are passed down, to reduce SQL queries
+			line_events = all_events or _get_events(line_start, line_end, item=self.item_doc)
+
 			scheduled_items = []
-			for event in booked_items:
+			for event in line_events:
 				# Only keep booked events that overlap the schedule slot
-				if get_datetime(event.get("starts_on")) < line.get("end") and get_datetime(
-					event.get("ends_on")
-				) > line.get("start"):
+				starts_on: datetime.datetime = get_datetime(event.get("starts_on"))  # type: ignore
+				ends_on: datetime.datetime = get_datetime(event.get("ends_on"))  # type: ignore
+				if starts_on < line_end and ends_on > line_start:
 					scheduled_items.append(event)
 
 			slots = self._find_available_slot(line, scheduled_items)
-			available_slots_ids = [s.get("id") for s in available_slots]
+			available_slots = slots
 
-			for slot in slots:
-				if slot.get("id") not in available_slots_ids:
-					available_slots.append(slot)
+			# available_slots_ids = [s.get("id") for s in available_slots]
+			# for slot in slots:
+			# 	if slot.get("id") not in available_slots_ids:
+			# 		available_slots.append(slot)
 
 		return available_slots
+
+	@cached_property
+	def simultaneous_booking_allowed(self):
+		return frappe.get_cached_value("Venue Settings", None, "enable_simultaneous_booking")
 
 	def _find_available_slot(self, line, scheduled_items):
 		slots = []
 		output = []
 		user_scheduled_items = [x for x in scheduled_items if x.get("user") == self.user]
 
-		simultaneous_booking_allowed = frappe.get_cached_value(
-			"Venue Settings", None, "enable_simultaneous_booking"
-		)
-		if simultaneous_booking_allowed:
-			scheduled_items = self.check_simultaneaous_bookings(scheduled_items)
+		simultaneous_booking_allowed = self.simultaneous_booking_allowed
+		# if simultaneous_booking_allowed:
+		# 	scheduled_items = self.check_simultaneaous_bookings(scheduled_items)
 
 		slots.extend(
 			self._get_all_slots(
@@ -851,85 +877,174 @@ class ItemBookingAvailabilities:
 					and out.get("end") == scheduled_item.get("ends_on").isoformat()
 				):
 					out.id = scheduled_item.get("name")
-					out.status = "selected"
+					status = "confirmed" if scheduled_item.get("status") == "Confirmed" else "selected"
+					out.status = status
 					out.number += 1
 					added = True
 
 				elif getdate(out.get("start")) == getdate(scheduled_item.get("starts_on")) or getdate(
 					out.get("end")
 				) == getdate(scheduled_item.get("ends_on")):
-					out.color = "var(--primary-color)"
+					out.color = "red"
 
 			if not added:
-				out = self.get_available_dict(scheduled_item, "selected")
-				out.color = "var(--primary-color)"
+				status = "confirmed" if scheduled_item.get("status") == "Confirmed" else "selected"
+				out = self.get_available_dict(scheduled_item, status)
 				out.number += 1
 				output.append(out)
 
 		return output
 
-	def check_simultaneaous_bookings(self, scheduled_items):
-		import itertools
-		from operator import itemgetter
+	# def check_simultaneaous_bookings(self, scheduled_items):
+	# 	import itertools
+	# 	from operator import itemgetter
 
-		simultaneous_bookings = self.item_doc.get("simultaneous_bookings_allowed")
-		if simultaneous_bookings > 1:
-			sorted_schedule = sorted(scheduled_items, key=itemgetter("starts_on"))
-			for dummy, group in itertools.groupby(sorted_schedule, key=lambda x: x["starts_on"]):
-				grouped_sch = [x.get("name") for x in list(group)]
-				if len(grouped_sch) == simultaneous_bookings:
-					scheduled_items = [x for x in scheduled_items if x.get("name") not in grouped_sch[:-1]]
-				elif len(grouped_sch) < simultaneous_bookings:
-					scheduled_items = [x for x in scheduled_items if x.get("name") not in grouped_sch]
+	# 	simultaneous_bookings = self.item_doc.get("simultaneous_bookings_allowed")
+	# 	if simultaneous_bookings > 1:
+	# 		sorted_schedule = sorted(scheduled_items, key=itemgetter("starts_on"))
+	# 		for dummy, group in itertools.groupby(sorted_schedule, key=lambda x: x["starts_on"]):
+	# 			grouped_sch = [x.get("name") for x in list(group)]
+	# 			if len(grouped_sch) == simultaneous_bookings:
+	# 				scheduled_items = [x for x in scheduled_items if x.get("name") not in grouped_sch[:-1]]
+	# 			elif len(grouped_sch) < simultaneous_bookings:
+	# 				scheduled_items = [x for x in scheduled_items if x.get("name") not in grouped_sch]
 
-		return scheduled_items
+	# 	return scheduled_items
+
+	@cached_property
+	def duration_as_interval(self):
+		interval = int(datetime.timedelta(minutes=cint(self.duration)).total_seconds() / 60)
+		interval = datetime.timedelta(minutes=interval)
+		return interval
 
 	def _get_all_slots(self, line, simultaneous_booking_allowed, scheduled_items=None):
 		line_start = get_datetime(line.get("start"))
 		line_end = get_datetime(line.get("end"))
+		interval = self.duration_as_interval
 
-		interval = int(datetime.timedelta(minutes=cint(self.duration)).total_seconds() / 60)
-		slots = sorted([(line_start, line_start)] + [(line_end, line_end)])
-		if not scheduled_items:
-			scheduled_items = []
+		if not line_start or not line_end:
+			return []
 
-		if simultaneous_booking_allowed:
-			vanilla_start_times = []
-			for start, end in ((slots[i][0], slots[i + 1][0]) for i in range(len(slots) - 1)):
-				while start + timedelta(minutes=interval) <= end:
-					vanilla_start_times.append(start)
-					start += timedelta(minutes=interval)
+		exclusions = []
+		if scheduled_items:
+			for scheduled_item in scheduled_items:
+				booking_start = get_datetime(scheduled_item.get("starts_on"))
+				booking_end = get_datetime(scheduled_item.get("ends_on"))
+				qty = scheduled_item.get("qty", 1) or 1
+				exclusions.append((booking_start, booking_end, qty))
 
-		current_schedule = []
-		for scheduled_item in scheduled_items:
-			sch_start = get_datetime(scheduled_item.get("starts_on"))
-			sch_end = get_datetime(scheduled_item.get("ends_on"))
-			try:
-				if sch_start < line_start:
-					# Ok, but the scheduled item begins before the current slot, then trim it.
-					current_schedule.append((line_start, sch_end))
-				elif sch_start < line_end:
-					# Ok, the scheduled item ends before the end of the slot, keep it.
-					current_schedule.append((sch_start, sch_end))
-			except Exception:
-				frappe.log_error(_("Slot availability error"))
+		if exclusions:
+			exclusion_map: dict[datetime.datetime, int] = defaultdict(int)
+			exclusion_map[line_start] = 0
+			exclusion_map[line_end] = 0
+			for exclusion in exclusions:
+				start = max(exclusion[0], line_start)
+				end = min(exclusion[1], line_end)
+				qty = exclusion[2]
+				exclusion_map[start] += qty
+				exclusion_map[end] -= qty
 
-		if current_schedule:
-			sorted_schedule = list(reduced(sorted(current_schedule, key=lambda x: x[0])))
-			slots = sorted([(line_start, line_start)] + sorted_schedule + [(line_end, line_end)])
+			# Convert exclusion map to running sum
+			running_sum = 0
+			for dt in sorted(exclusion_map.keys()):
+				running_sum += exclusion_map[dt]
+				exclusion_map[dt] = running_sum
 
-		free_slots = []
-		for start, end in ((slots[i][1], slots[i + 1][0]) for i in range(len(slots) - 1)):
-			while start + timedelta(minutes=interval) <= end:
-				if simultaneous_booking_allowed:
-					if start not in vanilla_start_times:
-						vanilla_start = [x for x in vanilla_start_times if start + timedelta(minutes=interval) <= x]
-						if vanilla_start:
-							start = vanilla_start[0]
-				free_slots.append({"starts_on": start, "ends_on": start + timedelta(minutes=interval)})
-				start += timedelta(minutes=interval)
+			unavailabilities = sorted(
+				[{"dt": dt, "qty": qty} for dt, qty in exclusion_map.items()], key=lambda x: x["dt"]
+			)
+		else:
+			unavailabilities = []
 
-		return free_slots
+		unav_len = len(unavailabilities)
+		simultaneous_bookings = self.item_doc.get("simultaneous_bookings_allowed")
+		max_unav_allowed = simultaneous_bookings if simultaneous_booking_allowed else 0
+
+		def advance_to_next_slot_with_enough_space(start_idx):
+			"""Returns the index of the next 'unav' with qty < max_unav_allowed, or a value >= unav_len if there is no such 'unav'"""
+			idx = start_idx
+			while idx < unav_len and unavailabilities[idx]["qty"] >= max_unav_allowed:
+				idx += 1
+			return idx
+
+		def get_max_qty_between(start_dt, end_dt, unav_idx=0):
+			max_qty = -1
+			for unav in unavailabilities[unav_idx:]:
+				if unav["dt"] >= end_dt:
+					break
+				if unav["dt"] >= start_dt:
+					max_qty = max(max_qty, unav["qty"])
+			return max_qty
+
+		def generate_slots():
+			unav_idx = 0
+			curr_time = line_start
+			while curr_time < line_end:
+				# print(" - time is:", curr_time, "; and qty is:", unavailabilities[unav_idx]["qty"] if unav_idx < unav_len else "-", "from", unavailabilities[unav_idx]["dt"] if unav_idx < unav_len else "?", "to", unavailabilities[unav_idx + 1]["dt"] if unav_idx + 1 < unav_len else "forever")
+
+				unav_qty = get_max_qty_between(curr_time, curr_time + interval, unav_idx)
+				if unav_qty >= max_unav_allowed:
+					unav_idx = advance_to_next_slot_with_enough_space(unav_idx + 1)
+
+					if curr_time < unavailabilities[unav_idx]["dt"]:
+						# Earliest time when the next slot is available
+						curr_time = unavailabilities[unav_idx]["dt"]
+						# print(" * earliest time is:", curr_time, "with qty:", unavailabilities[unav_idx]["qty"])
+						# print(" * time is:", curr_time, "; and qty will be", unavailabilities[unav_idx - 1]["qty"], "forever")
+						# print(" + time is:", curr_time, "; and qty is:", unavailabilities[unav_idx - 1]["qty"] if unav_idx - 1 >= 0 else "-", "until", unavailabilities[unav_idx]["dt"] if unav_idx < unav_len else "forever"
+						continue
+
+				remaining = 1 + max_unav_allowed - (unav_qty if unav_qty > 0 else 0)
+				# print(curr_time, curr_time + interval, line_end)
+				end = min(curr_time + interval, line_end)
+				yield curr_time, end, remaining
+				curr_time = end
+
+		for start, end, remaining in generate_slots():
+			yield {"starts_on": start, "ends_on": end, "remaining": remaining}
+		return
+
+		# slots = sorted([(line_start, line_start)] + [(line_end, line_end)])
+		# if not scheduled_items:
+		# 	scheduled_items = []
+
+		# if simultaneous_booking_allowed:
+		# 	vanilla_start_times = []
+		# 	for start, end in ((slots[i][0], slots[i + 1][0]) for i in range(len(slots) - 1)):
+		# 		while start + timedelta(minutes=interval) <= end:
+		# 			vanilla_start_times.append(start)
+		# 			start += timedelta(minutes=interval)
+
+		# current_schedule = []
+		# for scheduled_item in scheduled_items:
+		# 	sch_start = get_datetime(scheduled_item.get("starts_on"))
+		# 	sch_end = get_datetime(scheduled_item.get("ends_on"))
+		# 	try:
+		# 		if sch_start < line_start:
+		# 			# Ok, but the scheduled item begins before the current slot, then trim it.
+		# 			current_schedule.append((line_start, sch_end))
+		# 		elif sch_start < line_end:
+		# 			# Ok, the scheduled item ends before the end of the slot, keep it.
+		# 			current_schedule.append((sch_start, sch_end))
+		# 	except Exception:
+		# 		frappe.log_error(_("Slot availability error"))
+
+		# if current_schedule:
+		# 	sorted_schedule = list(reduced(sorted(current_schedule, key=lambda x: x[0])))
+		# 	slots = sorted([(line_start, line_start)] + sorted_schedule + [(line_end, line_end)])
+
+		# free_slots = []
+		# for start, end in ((slots[i][1], slots[i + 1][0]) for i in range(len(slots) - 1)):
+		# 	while start + timedelta(minutes=interval) <= end:
+		# 		if simultaneous_booking_allowed:
+		# 			if start not in vanilla_start_times:
+		# 				vanilla_start = [x for x in vanilla_start_times if start + timedelta(minutes=interval) <= x]
+		# 				if vanilla_start:
+		# 					start = vanilla_start[0]
+		# 		free_slots.append({"starts_on": start, "ends_on": start + timedelta(minutes=interval)})
+		# 		start += timedelta(minutes=interval)
+
+		# return free_slots
 
 	def get_available_dict(self, slot, status=None):
 		"""
@@ -944,10 +1059,11 @@ class ItemBookingAvailabilities:
 				"id": slot.get("name") or frappe.generate_hash(length=8),
 				"status": status or "available",
 				"number": 0,
+				"remaining": slot.get("remaining", 0),
 				"total_available": self.item_doc.get("simultaneous_bookings_allowed"),
 				"display": "background",
 				"color": None,
-				"allDay": 1,
+				"allDay": 0,
 			}
 		)
 
@@ -1078,22 +1194,24 @@ def _get_subscriptions_as_events(start, end, item=None, user=None, fields=None, 
 		)
 
 		events.append(
-			{
-				**sub,
-				"starts_on": sub["start"],
-				"ends_on": sub["end"],
-				"item_name": booked_item,
-				"title": title,
-				"name": sub["name"],
-				"doctype": "Subscription",
-				# "repeat_this_event": 1,
-				# "rrule": "RRULE:FREQ=HOURLY",
-				# "user": sub["_customers"][0] if sub["_customers"] and len(sub["_customers"]) > 0,
-				# "status": "Active",
-				"all_day": 1,
-				"startEditable": False,
-				"durationEditable": False,
-			}
+			frappe._dict(
+				{
+					**sub,
+					"starts_on": get_datetime(sub["start"]),
+					"ends_on": get_datetime(sub["end"]),
+					"item_name": booked_item,
+					"title": title,
+					"name": sub["name"],
+					"doctype": "Subscription",
+					# "repeat_this_event": 1,
+					# "rrule": "RRULE:FREQ=HOURLY",
+					# "user": sub["_customers"][0] if sub["_customers"] and len(sub["_customers"]) > 0,
+					# "status": "Active",
+					"all_day": 1,
+					"startEditable": False,
+					"durationEditable": False,
+				}
+			)
 		)
 	return events
 
@@ -1265,8 +1383,8 @@ def daterange(start_date, end_date):
 
 
 def daterange_including_start(start_date, end_date):
-	if start_date < get_datetime(now()):
-		start_date = datetime.datetime.now()
+	# if start_date < get_datetime(now()):
+	# 	start_date = datetime.datetime.now()
 	start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
 	for n in range(int((end_date - start_date).days)):
 		yield start_date + timedelta(n)

@@ -485,33 +485,79 @@ body.product-page {
 		min-height: 0px;
 	}
 
-	.fc-scrollgrid-section-header th,
-	.fc-theme-standard td,
-	.fc-theme-standard th {
-		border: None;
-	}
-
 	.fc {
+		// --fc-border-color: transparent;
+
 		.fc-daygrid-day {
-			background-color: #fff;
+			background-color: transparent;
 			cursor: pointer;
 		}
 
 		.fc-day-disabled {
-			background-color: #fff;
-			border: none
+			background-color: transparent;
+			font-size: 0px;
 		}
 
-		.fc-daygrid-day-top {
-			min-height: 3em;
+		.fc-daygrid-body-natural .fc-daygrid-day-events {
+			margin-bottom: 4px !important;
+			min-height: 0 !important;
 		}
 
 		.fc-daygrid-day-number {
 			margin: auto;
 		}
 
-		.fc-daygrid-body-natural .fc-daygrid-day-events {
-			min-height: 0;
+		.fc-h-event {
+			font-weight: bold;
+			text-align: center;
+			border-radius: 99px;
+		}
+
+		.fc-dayGridMonth-view .booking-slot-single {
+			display: none !important;
+		}
+		.fc-timeGridWeek-view, .fc-listDay-view {
+			.booking-slot-background, .booking-slot-badge {
+				display: none !important;
+			}
+		}
+
+		.fc-daygrid-event-harness {
+			margin-top: 0px !important;
+			margin-bottom: 0px !important;
+		}
+
+		.booking-slot-icon .icon {
+			background: white;
+			// --icon-stroke: var(--success);
+			--icon-stroke: black;
+			border-radius: 99px;
+			padding: 3px;
+		}
+		.fc-event > .booking-slot-icon {
+			position: absolute;
+			top: 0;
+			right: 0;
+			left: 0;
+			bottom: 0;
+			z-index: 1;
+			display: grid;
+			place-items: center;
+		}
+		.fc-list-event-graphic .booking-slot-icon {
+			margin-left: -5px !important;
+			margin-right: -5px !important;
+		}
+	}
+
+	/*
+	.fc {
+		.fc-daygrid-bg-harness {
+			background-color: transparent;
+		}
+
+		.fc-daygrid-day-top {
+			min-height: 3em;
 		}
 
 		.fc-bg-event {
@@ -524,11 +570,8 @@ body.product-page {
 			border: 1px solid transparent;
 			border-radius: 50%;
 		}
-
-		.fc-daygrid-bg-harness {
-			background-color: #fff;
-		}
 	}
+	*/
 
 	.booking-selector {
 		h2.timeslot-options-title {
@@ -540,10 +583,20 @@ body.product-page {
 			.btn {
 				width: 100%;
 				font-size: 1.2rem;
+
 				&.selected {
+					font-weight: 500;
 					background-color: var(--primary);
-					color: var(--light);
+					color: white;
 					border: none;
+				}
+
+				&.confirmed {
+					background-color: var(--success);
+					color: white;
+					border: none;
+					cursor: not-allowed;
+					pointer-events: none;
 				}
 			}
 		}

@@ -32,6 +32,7 @@
    "label": "Item Booking"
   },
   {
+   "default": "Minute",
    "description": "Used for slots calculation.<br>Please add an UOM conversion factor between each UOM used in booked items and this UOM.",
    "fieldname": "minute_uom",
    "fieldtype": "Link",
