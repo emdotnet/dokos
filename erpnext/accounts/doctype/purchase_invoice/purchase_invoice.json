@@ -1405,6 +1405,7 @@
    "options": "Warehouse",
    "print_hide": 1,
    "print_width": "50px",
+   "ignore_user_permissions": 1,
    "width": "50px"
   },
   {
@@ -1615,7 +1616,7 @@
  "is_sealed": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-04-28 12:57:50.832598",
+ "modified": "2023-04-29 12:57:50.832598",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",
