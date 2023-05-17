@@ -769,6 +769,10 @@ class StockController(AccountsController):
 				"company": self.company,
 			}
 		)
+
+		if self.docstatus == 2:
+			force = True
+
 		if force or future_sle_exists(args) or repost_required_for_queue(self):
 			item_based_reposting = cint(
 				frappe.db.get_single_value("Stock Reposting Settings", "item_based_reposting")
