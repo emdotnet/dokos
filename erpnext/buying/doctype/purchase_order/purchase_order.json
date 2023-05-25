@@ -157,7 +157,7 @@
    "represents_company",
    "inter_company_order_reference",
    "is_old_subcontracting_flow",
-   "dashboard"
+   "connections_tab"
   ],
   "fields": [
    {
@@ -1186,12 +1186,6 @@
    "label": "More Info"
   },
   {
-   "fieldname": "dashboard",
-   "fieldtype": "Tab Break",
-   "label": "Dashboard",
-   "show_dashboard": 1
-  },
-  {
    "fieldname": "column_break_7",
    "fieldtype": "Column Break"
   },
@@ -1266,13 +1260,19 @@
    "fieldname": "named_place",
    "fieldtype": "Data",
    "label": "Named Place"
-  }
+  },
+  {
+    "fieldname": "connections_tab",
+    "fieldtype": "Tab Break",
+    "label": "Connections",
+    "show_dashboard": 1
+   }
  ],
  "icon": "uil uil-file-alt",
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-07 20:18:09.196799",
+ "modified": "2023-05-24 11:16:41.195340",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
