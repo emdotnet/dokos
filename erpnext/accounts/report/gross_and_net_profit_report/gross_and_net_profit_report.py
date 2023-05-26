@@ -19,7 +19,8 @@ def execute(filters=None):
 		filters.period_end_date,
 		filters.filter_based_on,
 		filters.periodicity,
-		company=filters.company,
+		filters.accumulated_values,
+		filters.company,
 	)
 
 	columns, data = [], []
@@ -53,7 +54,6 @@ def execute(filters=None):
 	)
 
 	gross_income = get_revenue(income, period_list)
-
 	gross_expense = get_revenue(expense, period_list)
 
 	if len(gross_income) == 0 and len(gross_expense) == 0:
