@@ -382,25 +382,25 @@
   "index_web_pages_for_search": 1,
   "issingle": 1,
   "links": [],
-  "modified": "2023-04-22 08:48:37.767646",
+  "modified": "2023-05-29 15:09:54.959411",
   "modified_by": "Administrator",
   "module": "Stock",
   "name": "Stock Settings",
   "owner": "Administrator",
   "permissions": [
-   {
-    "create": 1,
-    "email": 1,
-    "print": 1,
-    "read": 1,
-    "role": "Stock Manager",
-    "share": 1,
-    "write": 1
-   }
+    {
+      "create": 1,
+      "email": 1,
+      "print": 1,
+      "read": 1,
+      "role": "Stock Manager",
+      "share": 1,
+      "write": 1
+    }
   ],
   "quick_entry": 1,
   "sort_field": "modified",
   "sort_order": "ASC",
   "states": [],
   "track_changes": 1
- }
+}
