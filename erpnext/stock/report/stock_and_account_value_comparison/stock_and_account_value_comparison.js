@@ -54,6 +54,13 @@ frappe.query_reports["Stock and Account Value Comparison"] = {
 				</div>
 			`;
 
+			let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
+			let selected_rows = indexes.map(i => frappe.query_report.data[i]);
+
+			if (!selected_rows.length) {
+				frappe.throw(__("Please select rows to create Reposting Entries"));
+			}
+
 			frappe.confirm(__(message), () => {
 				let indexes = frappe.query_report.datatable.rowmanager.getCheckedRows();
 				let selected_rows = indexes.map(i => frappe.query_report.data[i]);
