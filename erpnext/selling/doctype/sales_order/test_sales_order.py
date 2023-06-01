@@ -1891,11 +1891,11 @@ class TestSalesOrder(FrappeTestCase):
 		)
 		from erpnext.stock.doctype.stock_reservation_entry.test_stock_reservation_entry import (
 			create_items,
-			create_material_receipts,
+			create_material_receipt,
 		)
 
 		items_details, warehouse = create_items(), "_Test Warehouse - _TC"
-		create_material_receipts(items_details, warehouse, qty=10)
+		create_material_receipt(items_details, warehouse, qty=10)
 
 		item_list = []
 		for item_code, properties in items_details.items():
@@ -1934,7 +1934,7 @@ class TestSalesOrder(FrappeTestCase):
 				self.assertEqual(sre_details[0].status, "Partially Reserved")
 
 			# Test - 3: Stock should be fully Reserved if the Available Qty to Reserve is greater than the Un-reserved Qty.
-			create_material_receipts(items_details, warehouse, qty=100)
+			create_material_receipt(items_details, warehouse, qty=110)
 			so.create_stock_reservation_entries()
 			so.load_from_db()
 
