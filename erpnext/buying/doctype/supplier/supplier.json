@@ -54,6 +54,7 @@
   "primary_address",
   "accounting_tab",
   "payment_terms",
+  "default_accounts_section",
   "accounts",
   "settings_tab",
   "allow_purchase_invoice_creation_without_purchase_order",
@@ -451,24 +452,9 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "details_tab",
-   "fieldtype": "Tab Break",
-   "label": "Details"
-  },
-  {
-   "fieldname": "portal_users_tab",
-   "fieldtype": "Tab Break",
-   "label": "Portal Users"
-  },
-  {
-   "fieldname": "portal_users",
-   "fieldtype": "Table",
-   "label": "Supplier Portal Users",
-   "options": "Portal User"
-  },
-  {
-   "fieldname": "column_break_1mqv",
-   "fieldtype": "Column Break"
+   "fieldname": "default_accounts_section",
+   "fieldtype": "Section Break",
+   "label": "Default Accounts"
   }
  ],
  "icon": "fa fa-user",
@@ -481,7 +467,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-06-26 14:20:00.961554",
+ "modified": "2023-05-29 15:23:11.709415",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Supplier",

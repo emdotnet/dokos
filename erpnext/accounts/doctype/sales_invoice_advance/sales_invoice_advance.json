@@ -15,7 +15,8 @@
   "advance_amount",
   "allocated_amount",
   "exchange_gain_loss",
-  "ref_exchange_rate"
+  "ref_exchange_rate",
+  "account"
  ],
  "fields": [
   {
@@ -116,19 +117,18 @@
    "read_only": 1
   },
   {
-   "default": "0",
-   "depends_on": "eval:doc.is_down_payment",
-   "fieldname": "is_down_payment",
-   "fieldtype": "Check",
-   "label": "Is Down Payment",
-   "read_only": 1
+    "fieldname": "account",
+    "fieldtype": "Link",
+    "label": "Account",
+    "options": "Account",
+    "read_only": 1
   }
  ],
  "idx": 1,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-08-10 10:20:56.048369",
+ "modified": "2023-05-31 11:47:00.191681",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Sales Invoice Advance",

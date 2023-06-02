@@ -338,13 +338,13 @@
   {
    "fieldname": "default_receivable_accounts",
    "fieldtype": "Section Break",
-   "label": "Default Receivable Accounts"
+   "label": "Default Accounts"
   },
   {
    "description": "Mention if a non-standard receivable account",
    "fieldname": "accounts",
    "fieldtype": "Table",
-   "label": "Receivable Accounts",
+   "label": "Accounts",
    "options": "Party Account"
   },
   {
@@ -596,7 +596,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-06-22 13:21:10.678382",
+ "modified": "2023-05-29 14:29:17.789578",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",

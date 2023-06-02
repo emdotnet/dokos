@@ -369,7 +369,7 @@ def set_account_and_due_date(
 
 
 @frappe.whitelist()
-def get_party_account(party_type, party=None, company=None, down_payment=None):
+def get_party_account(party_type, party=None, company=None, is_advance=False):
 	"""Returns the account for the given `party`.
 	Will first search in party (Customer / Supplier) record, if not found,
 	will search in group (Customer Group / Supplier Group),
@@ -384,13 +384,10 @@ def get_party_account(party_type, party=None, company=None, down_payment=None):
 
 		return frappe.get_cached_value("Company", company, default_account_name)
 
-	if cint(down_payment) and party_type in ["Customer", "Supplier"]:
-		query_field = (
-			"default_down_payment_receivable_account"
-			if party_type == "Customer"
-			else "default_down_payment_payable_account"
-		)
-		return frappe.get_cached_value("Company", company, query_field)
+	advance_payments_as_liability = frappe.db.get_value("Company", {"company_name": company}, "book_advance_payments_as_liability")
+
+	if is_advance and advance_payments_as_liability and party_type in ["Customer", "Supplier"]:
+		return get_party_advance_account(party_type, party, company)
 
 	account = frappe.db.get_value(
 		"Party Account", {"parenttype": party_type, "parent": party, "company": company}, "account"
@@ -421,6 +418,26 @@ def get_party_account(party_type, party=None, company=None, down_payment=None):
 	return account
 
 
+def get_party_advance_account(party_type, party, company):
+	account_name = 'advances_received_account' if party_type == 'Customer' else 'advances_paid_account'
+	account = frappe.db.get_value(
+		"Party Account", {"parenttype": party_type, "parent": party, "company": company}, account_name
+	)
+
+	if not account:
+		party_group_doctype = "Customer Group" if party_type == "Customer" else "Supplier Group"
+		group = frappe.get_cached_value(party_type, party, scrub(party_group_doctype))
+		account = frappe.db.get_value(
+			"Party Account",
+			{"parenttype": party_group_doctype, "parent": group, "company": company},
+			account_name,
+		)
+	
+	if not account:
+		account = frappe.get_cached_value("Company", company, "default_" + account_name)
+
+	return account
+	
 @frappe.whitelist()
 def get_party_bank_account(party_type, party):
 	return frappe.db.get_value(
@@ -523,7 +540,10 @@ def validate_party_accounts(doc):
 				)
 
 		# validate if account is mapped for same company
-		validate_account_head(account.idx, account.account, account.company)
+		if account.account:
+			validate_account_head(account.idx, account.account, account.company)
+		if account.advance_account:
+			validate_account_head(account.idx, account.advance_account, account.company)
 
 
 @frappe.whitelist()
