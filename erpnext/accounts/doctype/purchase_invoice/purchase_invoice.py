@@ -102,9 +102,6 @@ class PurchaseInvoice(BuyingController):
 		# validate service stop date to lie in between start and end date
 		validate_service_stop_date(self)
 
-		if self._action == "submit" and self.update_stock:
-			self.make_batches("warehouse")
-
 		self.validate_release_date()
 		self.check_conversion_rate()
 		self.validate_credit_to_acc()
@@ -517,10 +514,6 @@ class PurchaseInvoice(BuyingController):
 
 			if self.is_old_subcontracting_flow:
 				self.set_consumed_qty_in_subcontract_order()
-
-			from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit
-
-			update_serial_nos_after_submit(self, "items")
 
 		self.render_remarks()
 		# this sequence because outstanding may get -negative
@@ -1511,6 +1504,7 @@ class PurchaseInvoice(BuyingController):
 			"Payment Ledger Entry",
 			"Archived Document",
 			"Tax Withheld Vouchers",
+			"Serial and Batch Bundle",
 		)
 		self.update_advance_tax_references(cancel=1)
 

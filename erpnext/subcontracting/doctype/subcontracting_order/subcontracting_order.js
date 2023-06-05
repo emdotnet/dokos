@@ -138,7 +138,6 @@ frappe.ui.form.on('Subcontracting Order', {
 	}
 });
 
-
 frappe.ui.form.on('Landed Cost Taxes and Charges', {
 	amount: function (frm, cdt, cdn) {
 		frm.events.set_base_amount(frm, cdt, cdn);
