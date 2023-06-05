@@ -24,8 +24,6 @@
   "allow_multi_currency_invoices_against_single_party_account",
   "journals_section",
   "merge_similar_account_heads",
-  "report_setting_section",
-  "use_custom_cash_flow",
   "deferred_accounting_settings_section",
   "book_deferred_entries_based_on",
   "column_break_18",
@@ -175,13 +173,6 @@
    "fieldname": "stale_days",
    "fieldtype": "Int",
    "label": "Stale Days"
-  },
-  {
-   "default": "0",
-   "description": "Only select this if you have set up the Cash Flow Mapper documents",
-   "fieldname": "use_custom_cash_flow",
-   "fieldtype": "Check",
-   "label": "Enable Custom Cash Flow Format"
   },
   {
    "default": "0",
@@ -336,11 +327,6 @@
    "label": "POS"
   },
   {
-   "fieldname": "report_setting_section",
-   "fieldtype": "Section Break",
-   "label": "Report Setting"
-  },
-  {
    "default": "0",
    "description": "Can be overwritten by defining default payment terms in parties",
    "fieldname": "default_payment_days",
@@ -369,47 +355,47 @@
    "fieldname": "validate_posting_date_chronology_in_sales_invoices",
    "fieldtype": "Check",
    "label": "Validate posting date chronology in sales invoices"
-},
-{
- "fieldname": "tab_break_dpet",
- "fieldtype": "Tab Break",
- "label": "Chart Of Accounts"
-},
-{
- "default": "1",
- "fieldname": "show_balance_in_coa",
- "fieldtype": "Check",
- "label": "Show Balances in Chart Of Accounts"
-},
-{
- "default": "0",
- "description": "Split Early Payment Discount Loss into Income and Tax Loss",
- "fieldname": "book_tax_discount_loss",
- "fieldtype": "Check",
- "label": "Book Tax Loss on Early Payment Discount"
-},
-{
- "fieldname": "journals_section",
- "fieldtype": "Section Break",
- "label": "Journals"
-},
-{
- "default": "0",
- "description": "Rows with Same Account heads will be merged on Ledger",
- "fieldname": "merge_similar_account_heads",
- "fieldtype": "Check",
- "label": "Merge Similar Account Heads"
-},
-{
- "fieldname": "section_break_jpd0",
- "fieldtype": "Section Break",
- "label": "Payment Reconciliations"
-},
-{
- "default": "0",
- "fieldname": "auto_reconcile_payments",
- "fieldtype": "Check",
- "label": "Auto Reconcile Payments"
+  },
+  {
+   "fieldname": "tab_break_dpet",
+   "fieldtype": "Tab Break",
+   "label": "Chart Of Accounts"
+  },
+  {
+   "default": "1",
+   "fieldname": "show_balance_in_coa",
+   "fieldtype": "Check",
+   "label": "Show Balances in Chart Of Accounts"
+  },
+  {
+   "default": "0",
+   "description": "Split Early Payment Discount Loss into Income and Tax Loss",
+   "fieldname": "book_tax_discount_loss",
+   "fieldtype": "Check",
+   "label": "Book Tax Loss on Early Payment Discount"
+  },
+  {
+   "fieldname": "journals_section",
+   "fieldtype": "Section Break",
+   "label": "Journals"
+  },
+  {
+   "default": "0",
+   "description": "Rows with Same Account heads will be merged on Ledger",
+   "fieldname": "merge_similar_account_heads",
+   "fieldtype": "Check",
+   "label": "Merge Similar Account Heads"
+  },
+  {
+   "fieldname": "section_break_jpd0",
+   "fieldtype": "Section Break",
+   "label": "Payment Reconciliations"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_reconcile_payments",
+   "fieldtype": "Check",
+   "label": "Auto Reconcile Payments"
   }
  ],
  "icon": "uil uil-setting",
@@ -417,7 +403,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-04-21 13:11:37.130743",
+ "modified": "2023-06-01 15:42:44.912316",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",
