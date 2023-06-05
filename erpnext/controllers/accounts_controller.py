@@ -737,6 +737,7 @@ class AccountsController(TransactionBase):
 			}
 		)
 
+		update_gl_dict_with_regional_fields(self, gl_dict)
 		accounting_dimensions = get_accounting_dimensions()
 		dimension_dict = frappe._dict()
 
@@ -2898,4 +2899,9 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 
 @erpnext.allow_regional
 def validate_regional(doc):
+	pass
+
+
+@erpnext.allow_regional
+def update_gl_dict_with_regional_fields(doc, gl_dict):
 	pass
