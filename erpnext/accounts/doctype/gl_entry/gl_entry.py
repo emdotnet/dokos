@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.model.meta import get_field_precision
+from frappe.model.naming import set_name_from_naming_options
 from frappe.utils import cint, flt, fmt_money
 
 import erpnext
@@ -442,3 +443,22 @@ def update_against_account(voucher_type, voucher_no):
 def on_doctype_update():
 	frappe.db.add_index("GL Entry", ["against_voucher_type", "against_voucher"])
 	frappe.db.add_index("GL Entry", ["voucher_type", "voucher_no"])
+
+
+def rename_gle_sle_docs():
+	for doctype in ["Stock Ledger Entry"]:
+		rename_temporarily_named_docs(doctype)
+
+
+def rename_temporarily_named_docs(doctype):
+	"""Rename temporarily named docs using autoname options"""
+	docs_to_rename = frappe.get_all(doctype, {"to_rename": "1"}, order_by="creation", limit=50000)
+	for doc in docs_to_rename:
+		oldname = doc.name
+		set_name_from_naming_options(frappe.get_meta(doctype).autoname, doc)
+		newname = doc.name
+		frappe.db.sql(
+			"UPDATE `tab{}` SET name = %s, to_rename = 0 where name = %s".format(doctype),
+			(newname, oldname),
+			auto_commit=True,
+		)
