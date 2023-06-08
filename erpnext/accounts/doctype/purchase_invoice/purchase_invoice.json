@@ -1115,6 +1115,7 @@
    "fieldtype": "Button",
    "label": "Get Advances Paid",
    "oldfieldtype": "Button",
+   "options": "set_advances",
    "print_hide": 1
   },
   {
@@ -1625,7 +1626,7 @@
  "is_sealed": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-06-03 16:21:54.637245",
+ "modified": "2023-06-05 17:40:35.320635",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

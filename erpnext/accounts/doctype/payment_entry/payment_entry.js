@@ -18,20 +18,14 @@ frappe.ui.form.on('Payment Entry', {
 	},
 
 	setup: function(frm) {
-		advance_payments_as_liability = frappe.db.get_value("Company", {"company_name": frm.doc.company}, "book_advance_payments_as_liability");
-
-		if(advance_payments_as_liability && frm.doc.payment_type == 'Receive'){
-			account_type = "Payable";
-		}
-		else{
-			account_type = "Receivable";
-		}
-
 		frm.set_query("paid_from", function() {
 			frm.events.validate_company(frm);
+
+			var account_types = in_list(["Pay", "Internal Transfer"], frm.doc.payment_type) ?
+				["Bank", "Cash"] : [frappe.boot.party_account_types[frm.doc.party_type]];
 			return {
 				filters: {
-					"account_type": account_type,
+					"account_type": ["in", account_types],
 					"is_group": 0,
 					"company": frm.doc.company
 				}
@@ -76,15 +70,12 @@ frappe.ui.form.on('Payment Entry', {
 		});
 		frm.set_query("paid_to", function() {
 			frm.events.validate_company(frm);
-			if(advance_payments_as_liability && in_list(['Receive', 'Internal Transfer'], cur_frm.doc.payment_type)){
-				account_type = ["Bank", "Cash"];
-			}
-			else{
-				account_type = "Receivable";
-			}
+
+			var account_types = in_list(["Receive", "Internal Transfer"], frm.doc.payment_type) ?
+				["Bank", "Cash"] : [frappe.boot.party_account_types[frm.doc.party_type]];
 			return {
 				filters: {
-					"account_type": ["in", account_type],
+					"account_type": ["in", account_types],
 					"is_group": 0,
 					"company": frm.doc.company
 				}
@@ -298,25 +289,6 @@ frappe.ui.form.on('Payment Entry', {
 	},
 
 	payment_type: function(frm) {
-		advance_payments_as_liability = frappe.db.get_value("Company", {"company_name": frm.doc.company}, "book_advance_payments_as_liability");
-
-		if(advance_payments_as_liability && frm.doc.payment_type == 'Receive'){
-			account_type = ["Payable"];
-		}
-		else{
-			account_type = ["Bank", "Cash"];
-		}
-
-		frm.set_query("paid_from", function() {
-			frm.events.validate_company(frm);
-			return {
-				filters: {
-					"account_type": ["in", account_type],
-					"is_group": 0,
-					"company": frm.doc.company
-				}
-			}
-		});
 		if(frm.doc.payment_type == "Internal Transfer") {
 			$.each(["party", "party_balance", "paid_from", "paid_to",
 				"references", "total_allocated_amount"], function(i, field) {
@@ -383,7 +355,7 @@ frappe.ui.form.on('Payment Entry', {
 			frm.set_party_account_based_on_party = true;
 
 			let company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
-			
+
 			return frappe.call({
 				method: "erpnext.accounts.doctype.payment_entry.payment_entry.get_party_details",
 				args: {
@@ -391,8 +363,7 @@ frappe.ui.form.on('Payment Entry', {
 					party_type: frm.doc.party_type,
 					party: frm.doc.party,
 					date: frm.doc.posting_date,
-					cost_center: frm.doc.cost_center,
-					is_advance: !(frm.doc.references)
+					cost_center: frm.doc.cost_center
 				},
 				callback: function(r, rt) {
 					if(r.message) {
@@ -770,7 +741,7 @@ frappe.ui.form.on('Payment Entry', {
 				if(r.message) {
 					var total_positive_outstanding = 0;
 					var total_negative_outstanding = 0;
-
+					console.log(r.message);
 					$.each(r.message, function(i, d) {
 						var c = frm.add_child("references");
 						c.reference_doctype = d.voucher_type;
@@ -781,6 +752,7 @@ frappe.ui.form.on('Payment Entry', {
 						c.bill_no = d.bill_no;
 						c.payment_term = d.payment_term;
 						c.allocated_amount = d.allocated_amount;
+						c.account = d.account;
 
 						if(!in_list(frm.events.get_order_doctypes(frm), d.voucher_type)) {
 							if(flt(d.outstanding_amount) > 0)
@@ -1498,52 +1470,3 @@ frappe.ui.form.on('Payment Entry', {
 		}
 	},
 })
-
-
-frappe.tour["Payment Entry"] = [
-	{
-		fieldname: "payment_type",
-		title: __("Select a payment type"),
-		description: __("Select the payment type corresponding to your payment: Have your received money, paid money or made an internal transfer ?")
-	},
-	{
-		fieldname: "posting_date",
-		title: __("Posting date"),
-		description: __("Should be the date of the accounting posting.")
-	},
-	{
-		fieldname: "mode_of_payment",
-		title: __("Select a mode of payment"),
-		description: __("Select the mode of payment used to make this payment.")
-	},
-	{
-		fieldname: "party_type",
-		title: __("Party type"),
-		description: __("The type of party this transaction is made with. Mostly customers or suppliers.")
-	},
-	{
-		fieldname: "party",
-		title: __("Party"),
-		description: __("The party this transaction is made with.")
-	},
-	{
-		fieldname: "paid_amount",
-		title: __("Register the paid amount"),
-		description: __("Enter the exact paid amount.")
-	},
-	{
-		fieldname: "references",
-		title: __("Link this payment with one or many transactions"),
-		description: __("Select the transactions linked to this payment and allocate the amount corresponding to each of them. <i>Eg. A payment of 1000€ can be allocated to two invoices of 800€ and 200€.</i>")
-	},
-	{
-		fieldname: "reference_no",
-		title: __("Reference Number"),
-		description: __("The reference number will be used to find this transaction in the bank reconciliation dashboard.")
-	},
-	{
-		fieldname: "reference_date",
-		title: __("Reference Date"),
-		description: __("The reference date will also be used in the bank reconciliation process.")
-	}
-]
