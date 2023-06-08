@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "autoname": "field:company",
+ "beta": 1,
+ "creation": "2023-06-08 18:04:51.693692",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "section_break_2",
+  "accounting_journal_mapping",
+  "sales_invoices_tab",
+  "sales_item",
+  "purchase_invoices_tab",
+  "purchase_item"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Tab Break",
+   "label": "Accounting Journal"
+  },
+  {
+   "fieldname": "accounting_journal_mapping",
+   "fieldtype": "Table",
+   "label": "Accounting Journal Mapping",
+   "options": "FEC Accounting Journal Mapping"
+  },
+  {
+   "fieldname": "sales_invoices_tab",
+   "fieldtype": "Tab Break",
+   "label": "Sales Invoices"
+  },
+  {
+   "fieldname": "sales_item",
+   "fieldtype": "Link",
+   "label": "Sales Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "purchase_invoices_tab",
+   "fieldtype": "Tab Break",
+   "label": "Purchase Invoices"
+  },
+  {
+   "fieldname": "purchase_item",
+   "fieldtype": "Link",
+   "label": "Purchase Item",
+   "options": "Item"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-06-08 21:47:00.988040",
+ "modified_by": "Administrator",
+ "module": "Regional",
+ "name": "FEC Import Settings",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

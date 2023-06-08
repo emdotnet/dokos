@@ -831,6 +831,7 @@ class JournalEntry(AccountsController):
 							"project": d.project,
 							"finance_book": self.finance_book,
 							"accounting_journal": d.accounting_journal,
+							"accounting_entry_number": self.flags.accounting_entry_number,
 						},
 						item=d,
 					)

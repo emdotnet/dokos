@@ -310,7 +310,9 @@ def save_entries(gl_map, adv_adj, update_outstanding, from_repost=False):
 		if not entry.get("accounting_journal"):
 			get_accounting_journal(entry)
 
-		entry["accounting_entry_number"] = accounting_number
+		if not entry.get("accounting_entry_number"):
+			entry["accounting_entry_number"] = accounting_number
+
 		make_entry(entry, adv_adj, update_outstanding, from_repost)
 
 
