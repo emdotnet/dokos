@@ -1905,13 +1905,16 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 			)
 		if reference_doctype in ("Sales Invoice", "Purchase Invoice"):
 			outstanding_amount = ref_doc.get("outstanding_amount")
+			account = (
+				ref_doc.get("debit_to") if reference_doctype == "Sales Invoice" else ref_doc.get("credit_to")
+			)
 		else:
 			outstanding_amount = flt(total_amount) - flt(ref_doc.get("advance_paid"))
 	else:
 		# Get the exchange rate based on the posting date of the ref doc.
 		exchange_rate = get_exchange_rate(party_account_currency, company_currency, ref_doc.posting_date)
 
-	return frappe._dict(
+	res = frappe._dict(
 		{
 			"due_date": ref_doc.get("due_date"),
 			"total_amount": flt(total_amount),
@@ -1920,6 +1923,9 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 			"bill_no": ref_doc.get("bill_no"),
 		}
 	)
+	if account:
+		res.update({"account": account})
+	return res
 
 
 @frappe.whitelist()

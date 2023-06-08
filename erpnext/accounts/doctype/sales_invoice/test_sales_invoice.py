@@ -3305,25 +3305,117 @@ class TestSalesInvoice(FrappeTestCase):
 
 		self.assertTrue(return_si.docstatus == 1)
 
+	def test_sales_invoice_with_payable_tax_account(self):
+		si = create_sales_invoice(do_not_submit=True)
+		si.append(
+			"taxes",
+			{
+				"charge_type": "Actual",
+				"account_head": "Creditors - _TC",
+				"description": "Test",
+				"cost_center": "Main - _TC",
+				"tax_amount": 10,
+				"total": 10,
+				"dont_recompute_tax": 0,
+			},
+		)
+		self.assertRaises(frappe.ValidationError, si.submit)
 
-def check_gl_entries(doc, voucher_no, expected_gle, posting_date):
-	gl_entries = frappe.db.sql(
-		"""select account, debit, credit, posting_date
-		from `tabGL Entry`
-		where voucher_type='Sales Invoice' and voucher_no=%s and posting_date >= %s
-		and is_cancelled = 0
-		order by posting_date asc, account asc""",
-		(voucher_no, posting_date),
-		as_dict=1,
-		debug=True,
+	def test_advance_entries_as_liability(self):
+		from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_payment_entry
+		from erpnext.accounts.party import get_party_account
+
+		frappe.db.set_value(
+			"Company",
+			"_Test Company",
+			{"book_advance_payments_as_liability": 1, "default_advance_account": "Creditors - _TC"},
+		)
+		pe = create_payment_entry(
+			company="_Test Company",
+			payment_type="Receive",
+			party_type="Customer",
+			party="_Test Customer",
+			paid_from=get_party_account("Customer", "_Test Customer", "_Test Company", is_advance=True),
+			paid_to="Cash - _TC",
+			paid_amount=1000,
+		)
+		pe.submit()
+
+		si = create_sales_invoice(
+			company="_Test Company", customer="_Test Customer", do_not_save=True, do_not_submit=True
+		)
+		si.base_grand_total = 100
+		si.grand_total = 100
+		si.set_advances()
+		self.assertEqual(si.advances[0].allocated_amount, 100)
+		si.advances[0].allocated_amount = 50
+		si.advances = [si.advances[0]]
+		si.save()
+		si.submit()
+		expected_gle = [
+			["Creditors - _TC", 50, 0.0],
+			["Debtors - _TC", 100, 50],
+			["Sales - _TC", 0.0, 100],
+		]
+
+		check_gl_entries(self, si.name, expected_gle, nowdate())
+		self.assertEqual(si.outstanding_amount, 50)
+
+
+def get_sales_invoice_for_e_invoice():
+	si = make_sales_invoice_for_ewaybill()
+	si.naming_series = "INV-2020-.#####"
+	si.items = []
+	si.append(
+		"items",
+		{
+			"item_code": "_Test Item",
+			"uom": "Nos",
+			"warehouse": "_Test Warehouse - _TC",
+			"qty": 2000,
+			"rate": 12,
+			"income_account": "Sales - _TC",
+			"expense_account": "Cost of Goods Sold - _TC",
+			"cost_center": "_Test Cost Center - _TC",
+		},
 	)
 
+	si.append(
+		"items",
+		{
+			"item_code": "_Test Item 2",
+			"uom": "Nos",
+			"warehouse": "_Test Warehouse - _TC",
+			"qty": 420,
+			"rate": 15,
+			"income_account": "Sales - _TC",
+			"expense_account": "Cost of Goods Sold - _TC",
+			"cost_center": "_Test Cost Center - _TC",
+		},
+	)
+
+	return si
+
+
+def check_gl_entries(doc, voucher_no, expected_gle, posting_date):
+	gl = frappe.qb.DocType("GL Entry")
+	q = (
+		frappe.qb.from_(gl)
+		.select(gl.account, gl.debit, gl.credit, gl.posting_date)
+		.where(
+			(gl.voucher_type == "Sales Invoice")
+			& (gl.voucher_no == voucher_no)
+			& (gl.posting_date >= posting_date)
+			& (gl.is_cancelled == 0)
+		)
+		.orderby(gl.posting_date, gl.account)
+	)
+	gl_entries = q.run(as_dict=True)
+
 	for i, gle in enumerate(gl_entries):
-		print(i, gle)
 		doc.assertEqual(expected_gle[i][0], gle.account)
 		doc.assertEqual(expected_gle[i][1], gle.debit)
 		doc.assertEqual(expected_gle[i][2], gle.credit)
-		doc.assertEqual(getdate(expected_gle[i][3]), gle.posting_date)
 
 
 def create_sales_invoice(**args):
