@@ -1,7 +1,7 @@
 // Copyright (c) 2023, Dokos SAS and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('FEC Import', {
+frappe.ui.form.on('FEC Import Tool', {
 	refresh(frm) {
 		frm.get_field("fec_file").df.options = {
 			restrictions: {

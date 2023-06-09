@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestFECImport(FrappeTestCase):
+class TestFECImportTool(FrappeTestCase):
 	pass

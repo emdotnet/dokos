@@ -8,13 +8,20 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "company",
   "section_break_2",
+  "company",
   "accounting_journal_mapping",
   "sales_invoices_tab",
+  "create_sales_invoices",
   "sales_item",
+  "customer_group",
+  "territory",
   "purchase_invoices_tab",
-  "purchase_item"
+  "create_purchase_invoices",
+  "purchase_item",
+  "supplier_group",
+  "payment_entries_tab",
+  "create_payment_entries"
  ],
  "fields": [
   {
@@ -43,9 +50,11 @@
    "label": "Sales Invoices"
   },
   {
+   "depends_on": "eval:doc.create_sales_invoices",
    "fieldname": "sales_item",
    "fieldtype": "Link",
    "label": "Sales Item",
+   "mandatory_depends_on": "eval:doc.create_sales_invoices",
    "options": "Item"
   },
   {
@@ -54,15 +63,64 @@
    "label": "Purchase Invoices"
   },
   {
+   "depends_on": "eval:doc.create_purchase_invoices",
    "fieldname": "purchase_item",
    "fieldtype": "Link",
    "label": "Purchase Item",
+   "mandatory_depends_on": "eval:doc.create_purchase_invoices",
    "options": "Item"
+  },
+  {
+   "default": "0",
+   "fieldname": "create_sales_invoices",
+   "fieldtype": "Check",
+   "label": "Create Sales Invoices"
+  },
+  {
+   "default": "0",
+   "fieldname": "create_purchase_invoices",
+   "fieldtype": "Check",
+   "label": "Create Purchase Invoices"
+  },
+  {
+   "depends_on": "eval:doc.create_sales_invoices",
+   "fieldname": "customer_group",
+   "fieldtype": "Link",
+   "label": "Default Customer Group",
+   "mandatory_depends_on": "eval:doc.create_sales_invoices",
+   "options": "Customer Group"
+  },
+  {
+   "depends_on": "eval:doc.create_purchase_invoices",
+   "fieldname": "supplier_group",
+   "fieldtype": "Link",
+   "label": "Default Supplier Group",
+   "mandatory_depends_on": "eval:doc.create_purchase_invoices",
+   "options": "Supplier Group"
+  },
+  {
+   "depends_on": "eval:doc.create_sales_invoices",
+   "fieldname": "territory",
+   "fieldtype": "Link",
+   "label": "Default Territory",
+   "mandatory_depends_on": "eval:doc.create_sales_invoices",
+   "options": "Territory"
+  },
+  {
+   "fieldname": "payment_entries_tab",
+   "fieldtype": "Tab Break",
+   "label": "Payment Entries"
+  },
+  {
+   "default": "0",
+   "fieldname": "create_payment_entries",
+   "fieldtype": "Check",
+   "label": "Create Payment Entries"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-06-08 21:47:00.988040",
+ "modified": "2023-06-09 14:24:27.745902",
  "modified_by": "Administrator",
  "module": "Regional",
  "name": "FEC Import Settings",
