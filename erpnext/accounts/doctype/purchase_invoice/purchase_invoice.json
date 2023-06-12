@@ -453,6 +453,7 @@
    "fieldname": "contact_mobile",
    "fieldtype": "Small Text",
    "label": "Mobile No",
+   "options": "Phone",
    "read_only": 1
   },
   {
@@ -1624,7 +1625,7 @@
  "is_sealed": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-06-02 11:54:02.732648",
+ "modified": "2023-06-03 16:21:54.637245",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Purchase Invoice",

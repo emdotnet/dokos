@@ -206,6 +206,7 @@
    "fieldname": "contact_mobile",
    "fieldtype": "Small Text",
    "label": "Contact Mobile No",
+   "options": "Phone",
    "read_only": 1
   },
   {
@@ -453,7 +454,7 @@
  "icon": "fa fa-file-text",
  "is_submittable": 1,
  "links": [],
- "modified": "2022-08-15 14:08:49.204218",
+ "modified": "2023-06-03 16:18:17.782538",
  "modified_by": "Administrator",
  "module": "Subcontracting",
  "name": "Subcontracting Order",
