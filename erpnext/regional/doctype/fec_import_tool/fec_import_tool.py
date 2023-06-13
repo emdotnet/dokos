@@ -78,14 +78,14 @@ class FECImport:
 		self.get_journals_mapping()
 		self.parse_credit_debit()
 		self.group_data()
-		# self.get_accounts_data()
-		# self.create_document()
-		# self.insert_transactionnal_documents()
+		self.get_accounts_data()
+		self.create_document()
+		# self.insert_transactional_documents()
 
 	def group_data(self):
 		initial_group = defaultdict(list)
 		self.grouped_data = defaultdict(lambda: defaultdict(list))
-		self.payment_data = defaultdict(list)
+		self.payment_data = defaultdict(tuple)
 
 		for d in self.data:
 			# if not frappe.db.exists("GL Entry", dict(accounting_entry_number=d.EcritureNum)):
@@ -113,14 +113,9 @@ class FECImport:
 			else:
 				self.grouped_data["Journal Entry"][ecriturenum] = initial_group[ecriturenum]
 
-			if ecriturelet := [line.EcritureLet for line in initial_group[ecriturenum] if line.EcritureLet]:
-				self.payment_data[ecriturelet[0]].extend(initial_group[ecriturenum])
-
 		# for a in self.grouped_data:
 		# 	print("GROUPS")
 		# 	print(a, len(self.grouped_data[a]))
-
-		print(self.payment_data)
 
 	def parse_credit_debit(self):
 		for d in self.data:
@@ -184,10 +179,13 @@ class FECImport:
 			self.create_journal_entry(ecriturenum, self.grouped_data["Journal Entry"][ecriturenum])
 
 		for ecriturenum in self.grouped_data["Payment Entry"]:
-			self.create_payment_entry(ecriturenum, self.grouped_data["Journal Entry"][ecriturenum])
+			self.create_journal_entry(ecriturenum, self.grouped_data["Journal Entry"][ecriturenum])
+
+		print("payment_data", self.payment_data)
 
 	def create_journal_entry(self, ecriturenum, rows):
 		posting_date = datetime.datetime.strptime(rows[0].EcritureDate, "%Y%m%d").strftime("%Y-%m-%d")
+		add_to_payment_data = None
 		journal_entry = frappe.get_doc(
 			{
 				"doctype": "Journal Entry",
@@ -203,6 +201,8 @@ class FECImport:
 			if self.settings.import_journal and self.settings.import_journal != journal_code:
 				continue
 
+			reference_type, reference_name = None, None
+
 			compte_aux = line.CompAuxNum
 			compte_aux_type = None
 			if compte_aux:
@@ -211,12 +211,20 @@ class FECImport:
 					"Account", self.accounts.get(line["CompteNum"]), "account_type"
 				)
 
-				if journal_type == "Sales" or account_type == "Receivable":
+				if journal_type in ("Sales", "Bank") or account_type == "Receivable":
 					compte_aux = frappe.db.exists("Customer", compte_aux)
 					compte_aux_type = "Customer"
-				elif journal_type == "Purchase" or account_type == "Payable":
+				elif journal_type in ("Purchase", "Bank") or account_type == "Payable":
 					compte_aux = frappe.db.exists("Supplier", compte_aux)
 					compte_aux_type = "Supplier"
+
+				if account_type in ["Receivable", "Payable"] and not (compte_aux and compte_aux_type):
+					if line.EcritureLet and (reference := self.payment_data.get(line.EcritureLet)):
+						reference_type = reference[0]
+						reference_name = reference[1]
+
+					elif line.EcritureLet:
+						add_to_payment_data = line.EcritureLet
 
 				if account_type in ["Receivable", "Payable"] and not (compte_aux and compte_aux_type):
 					if account_type == "Receivable":
@@ -233,8 +241,9 @@ class FECImport:
 					"account": self.accounts.get(line["CompteNum"]),
 					"debit_in_account_currency": line["Debit"],
 					"credit_in_account_currency": line["Credit"],
-					"user_remark": line.EcritureLib,
-					# "reference_name": line.PieceRef,
+					"user_remark": f"{line.EcritureLib}<br>{line.PieceRef}",
+					"reference_type": reference_type,
+					"reference_name": reference_name,
 					"party_type": compte_aux_type if compte_aux_type and compte_aux else None,
 					"party": compte_aux if compte_aux_type and compte_aux else None,
 				},
@@ -243,7 +252,11 @@ class FECImport:
 		journal_entry.flags.ecriturenum = ecriturenum
 
 		if journal_entry.accounts:
-			self.journal_entries.append(journal_entry)
+			journal_entry.insert()
+			journal_entry.submit()
+
+			if add_to_payment_data:
+				self.payment_data[add_to_payment_data] = (journal_entry.doctype, journal_entry.name)
 
 	def create_sales_invoice(self, ecriturenum, rows):
 		invoicing_details = self.get_invoicing_details(rows, "Sales Invoice")
@@ -269,8 +282,13 @@ class FECImport:
 		self.add_taxes(sales_invoice, invoicing_details.get("taxes"))
 		sales_invoice.set_missing_values()
 
-		if sales_invoice.items:
-			self.sales_invoices.append(sales_invoice)
+		if sales_invoice.customer and sales_invoice.items:
+			# self.sales_invoices.append(sales_invoice)
+			sales_invoice.insert()
+			sales_invoice.submit()
+
+			for ref in list(invoicing_details.get("references")):
+				self.payment_data[ref] = (sales_invoice.doctype, sales_invoice.name)
 
 		else:
 			self.create_journal_entry(ecriturenum, rows)
@@ -300,39 +318,16 @@ class FECImport:
 		self.add_taxes(purchase_invoice, invoicing_details.get("taxes"))
 		purchase_invoice.set_missing_values()
 
-		if purchase_invoice.items:
-			self.purchase_invoices.append(purchase_invoice)
+		if purchase_invoice.supplier and purchase_invoice.items:
+			# self.purchase_invoices.append(purchase_invoice)
+			purchase_invoice.insert()
+			purchase_invoice.submit()
+
+			for ref in list(invoicing_details.get("references")):
+				self.payment_data[ref] = (purchase_invoice.doctype, purchase_invoice.name)
 
 		else:
 			self.create_journal_entry(ecriturenum, rows)
-
-	def create_payment_entry(self, ecriturenum, rows):
-		# posting_date = datetime.datetime.strptime(rows[0].EcritureDate, "%Y%m%d").strftime("%Y-%m-%d")
-		# invoicing_details = self.get_invoicing_details(rows, "Payment Entry")
-
-		# payment_entry = frappe.new_doc("Purchase Invoice")
-		# payment_entry.flags.ignore_permissions = True
-		# payment_entry.update({
-		# 		"company": self.settings.company,
-		# 		"posting_date": posting_date,
-		# 		"set_posting_time": 1,
-		# 		"supplier": invoicing_details.get("party_name"),
-		# 		"credit_to": invoicing_details.get("party_account"),
-		# 		"accounting_journal": self.journals.get(rows[0]["JournalCode"]),
-		# 		"remarks": invoicing_details.get("party_line", {}).get("EcritureLib")
-		# 	}
-		# )
-
-		# self.add_items(payment_entry, invoicing_details.get("items"), self.company_settings.sales_item)
-		# self.add_taxes(payment_entry, invoicing_details.get("taxes"))
-		# payment_entry.set_missing_values()
-
-		# if payment_entry.items:
-		# 	self.payment_entries.append(payment_entry)
-
-		# else:
-		# 	self.create_journal_entry(ecriturenum, rows)
-		pass
 
 	def get_invoicing_details(self, lines, invoice_type):
 		invoicing_details = {
@@ -341,6 +336,7 @@ class FECImport:
 			"party_line": {},
 			"taxes": [],
 			"items": [],
+			"references": set(),
 		}
 
 		party_type = "Supplier" if invoice_type == "Purchase Invoice" else "Customer"
@@ -371,6 +367,9 @@ class FECImport:
 
 			else:
 				invoicing_details["taxes"].append(line)
+
+			if line.EcritureLet:
+				invoicing_details["references"].add(line.EcritureLet)
 
 		return invoicing_details
 
@@ -441,23 +440,23 @@ class FECImport:
 
 		return supplier.name
 
-	def insert_transactionnal_documents(self):
-		print("journal_entries", len(self.journal_entries))
-		print("sales_invoices", len(self.sales_invoices))
-		print("purchase_invoices", len(self.purchase_invoices))
+	# def insert_transactional_documents(self):
+	# 	print("journal_entries", len(self.journal_entries))
+	# 	print("sales_invoices", len(self.sales_invoices))
+	# 	print("purchase_invoices", len(self.purchase_invoices))
 
-		self.ecriturenum_map = {}
+	# 	self.ecriturenum_map = {}
 
-		for journal_entry in self.journal_entries[:2]:
-			journal_entry.insert()
-			self.ecriturenum_map[journal_entry.flags.ecriturenum] = journal_entry.name
+	# 	for journal_entry in self.journal_entries[:2]:
+	# 		journal_entry.insert()
+	# 		self.ecriturenum_map[journal_entry.flags.ecriturenum] = journal_entry.name
 
-		for sales_invoice in self.sales_invoices[:2]:
-			sales_invoice.insert()
-			self.ecriturenum_map[sales_invoice.flags.ecriturenum] = sales_invoice.name
+	# 	for sales_invoice in self.sales_invoices[:2]:
+	# 		sales_invoice.insert()
+	# 		self.ecriturenum_map[sales_invoice.flags.ecriturenum] = sales_invoice.name
 
-		for purchase_invoice in self.purchase_invoices[:2]:
-			purchase_invoice.insert()
-			self.ecriturenum_map[purchase_invoice.flags.ecriturenum] = purchase_invoice.name
+	# 	for purchase_invoice in self.purchase_invoices[:2]:
+	# 		purchase_invoice.insert()
+	# 		self.ecriturenum_map[purchase_invoice.flags.ecriturenum] = purchase_invoice.name
 
-		print(self.ecriturenum_map)
+	# 	print(self.ecriturenum_map)
