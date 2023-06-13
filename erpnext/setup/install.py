@@ -1,12 +1,14 @@
 # Copyright (c) 2019, Dokos SAS and Contributors
 # License: See license.txt
 
+import click
 import frappe
 from frappe import _
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.desk.page.setup_wizard.setup_wizard import add_all_roles_to
 from frappe.utils import cint
 
+import erpnext
 from erpnext.setup.default_energy_point_rules import get_default_energy_point_rules
 from erpnext.setup.doctype.incoterm.incoterm import create_incoterms
 
@@ -36,6 +38,25 @@ def check_setup_wizard_not_completed():
 	if cint(frappe.db.get_single_value("System Settings", "setup_complete") or 0):
 		message = """Dokos can only be installed on a fresh site where the setup wizard is not completed. You can reinstall this site (after saving your data) using: bench --site [sitename] reinstall"""
 		frappe.throw(message)  # nosemgrep
+
+
+def check_frappe_version():
+	def major_version(v: str) -> str:
+		return v.split(".")[0]
+
+	frappe_version = major_version(frappe.__version__)
+	erpnext_version = major_version(erpnext.__version__)
+
+	if frappe_version == erpnext_version:
+		return
+
+	click.secho(
+		f"You're attempting to install Dokos version {erpnext_version} with Dodock version {frappe_version}. "
+		"This is not supported and will result in broken install. Switch to correct branch before installing.",
+		fg="red",
+	)
+
+	raise SystemExit(1)
 
 
 def set_single_defaults():
