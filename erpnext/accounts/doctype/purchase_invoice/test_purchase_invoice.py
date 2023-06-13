@@ -41,7 +41,7 @@ class TestPurchaseInvoice(unittest.TestCase, StockTestMixin):
 	@classmethod
 	def setUpClass(self):
 		unlink_payment_on_cancel_of_invoice()
-		frappe.db.set_value("Buying Settings", None, "allow_multiple_items", 1)
+		frappe.db.set_single_value("Buying Settings", "allow_multiple_items", 1)
 
 	@classmethod
 	def tearDownClass(self):
@@ -1236,9 +1236,7 @@ class TestPurchaseInvoice(unittest.TestCase, StockTestMixin):
 			"Accounts Settings", "Accounts Settings", "unlink_payment_on_cancel_of_invoice"
 		)
 
-		frappe.db.set_value(
-			"Accounts Settings", "Accounts Settings", "unlink_payment_on_cancel_of_invoice", 1
-		)
+		frappe.db.set_single_value("Accounts Settings", "unlink_payment_on_cancel_of_invoice", 1)
 
 		original_account = frappe.db.get_value("Company", "_Test Company", "exchange_gain_loss_account")
 		frappe.db.set_value(
@@ -1373,8 +1371,8 @@ class TestPurchaseInvoice(unittest.TestCase, StockTestMixin):
 		pay.reload()
 		pay.cancel()
 
-		frappe.db.set_value(
-			"Accounts Settings", "Accounts Settings", "unlink_payment_on_cancel_of_invoice", unlink_enabled
+		frappe.db.set_single_value(
+			"Accounts Settings", "unlink_payment_on_cancel_of_invoice", unlink_enabled
 		)
 		frappe.db.set_value("Company", "_Test Company", "exchange_gain_loss_account", original_account)
 
