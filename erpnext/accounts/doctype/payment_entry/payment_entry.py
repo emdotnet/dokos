@@ -83,6 +83,7 @@ class PaymentEntry(AccountsController):
 		self.validate_duplicate_entry()
 		self.validate_payment_type_with_outstanding()
 		self.validate_allocated_amount()
+		self.validate_paid_invoices()
 		self.ensure_supplier_is_not_blocked()
 		self.update_unreconciled_amount()
 		self.set_status()
@@ -155,19 +156,56 @@ class PaymentEntry(AccountsController):
 			)
 
 	def validate_allocated_amount(self):
-		for d in self.get("references"):
+		if self.payment_type == "Internal Transfer":
+			return
+
+		latest_references = get_outstanding_reference_documents(
+			{
+				"posting_date": self.posting_date,
+				"company": self.company,
+				"party_type": self.party_type,
+				"payment_type": self.payment_type,
+				"party": self.party,
+				"party_account": self.paid_from if self.payment_type == "Receive" else self.paid_to,
+			}
+		)
+
+		# Group latest_references by (voucher_type, voucher_no)
+		latest_lookup = {}
+		for d in latest_references:
+			d = frappe._dict(d)
+			latest_lookup.update({(d.voucher_type, d.voucher_no): d})
+
+		for d in self.get("references").copy():
+			latest = latest_lookup.get((d.reference_doctype, d.reference_name))
+
+			# The reference has already been fully paid
+			if not latest:
+				frappe.throw(
+					_("{0} {1} has already been fully paid.").format(d.reference_doctype, d.reference_name)
+				)
+			# The reference has already been partly paid
+			elif (
+				latest.outstanding_amount < latest.invoice_amount
+				and d.outstanding_amount != latest.outstanding_amount
+			):
+				frappe.throw(
+					_(
+						"{0} {1} has already been partly paid. Please use the 'Get Outstanding Invoice' button to get the latest outstanding amount."
+					).format(d.reference_doctype, d.reference_name)
+				)
+
+			d.outstanding_amount = latest.outstanding_amount
+
+			fail_message = _("Row #{0}: Allocated Amount cannot be greater than outstanding amount.")
 			if (flt(d.allocated_amount)) > 0:
 				if flt(d.allocated_amount) > flt(d.outstanding_amount):
-					frappe.throw(
-						_("Row #{0}: Allocated Amount cannot be greater than outstanding amount.").format(d.idx)
-					)
+					frappe.throw(fail_message.format(d.idx))
 
 			# Check for negative outstanding invoices as well
 			if flt(d.allocated_amount) < 0:
 				if flt(d.allocated_amount) < flt(d.outstanding_amount):
-					frappe.throw(
-						_("Row #{0}: Allocated Amount cannot be greater than outstanding amount.").format(d.idx)
-					)
+					frappe.throw(fail_message.format(d.idx))
 
 	def delink_advance_entry_references(self):
 		for reference in self.references:
@@ -366,6 +404,35 @@ class PaymentEntry(AccountsController):
 
 					if ref_doc.doctype != "Subscription" and ref_doc.docstatus != 1:
 						frappe.throw(_("{0} {1} must be submitted").format(d.reference_doctype, d.reference_name))
+
+	def validate_paid_invoices(self):
+		no_oustanding_refs = {}
+
+		for d in self.get("references"):
+			if not d.allocated_amount:
+				continue
+
+			if d.reference_doctype in ("Sales Invoice", "Purchase Invoice"):
+				outstanding_amount, is_return = frappe.get_cached_value(
+					d.reference_doctype, d.reference_name, ["outstanding_amount", "is_return"]
+				)
+				if outstanding_amount <= 0 and not is_return:
+					no_oustanding_refs.setdefault(d.reference_doctype, []).append(d)
+
+		for k, v in no_oustanding_refs.items():
+			frappe.msgprint(
+				_(
+					"{} - {} now has {} as it had no outstanding amount left before submitting the Payment Entry."
+				).format(
+					_(k),
+					frappe.bold(", ".join(d.reference_name for d in v)),
+					frappe.bold(_("negative outstanding amount")),
+				)
+				+ "<br><br>"
+				+ _("If this is undesirable please cancel the corresponding Payment Entry."),
+				title=_("Warning"),
+				indicator="orange",
+			)
 
 	def validate_journal_entry(self):
 		for d in self.get("references"):
@@ -1535,7 +1602,7 @@ def get_orders_to_be_billed(
 	if voucher_type:
 		doc = frappe.get_doc({"doctype": voucher_type})
 		condition = ""
-		if doc and hasattr(doc, "cost_center"):
+		if doc and hasattr(doc, "cost_center") and doc.cost_center:
 			condition = " and cost_center='%s'" % cost_center
 
 	orders = []
@@ -1581,9 +1648,15 @@ def get_orders_to_be_billed(
 
 	order_list = []
 	for d in orders:
-		if not (
-			flt(d.outstanding_amount) >= flt(filters.get("outstanding_amt_greater_than"))
-			and flt(d.outstanding_amount) <= flt(filters.get("outstanding_amt_less_than"))
+		if (
+			filters
+			and filters.get("outstanding_amt_greater_than")
+			and filters.get("outstanding_amt_less_than")
+			and not (
+				flt(filters.get("outstanding_amt_greater_than"))
+				<= flt(d.outstanding_amount)
+				<= flt(filters.get("outstanding_amt_less_than"))
+			)
 		):
 			continue
 
