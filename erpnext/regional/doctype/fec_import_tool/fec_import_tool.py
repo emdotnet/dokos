@@ -1,6 +1,7 @@
 # Copyright (c) 2023, Dokos SAS and contributors
 # For license information, please see license.txt
 
+import codecs
 import datetime
 import hashlib
 from collections import defaultdict
@@ -62,6 +63,9 @@ class FECImportTool(Document):
 			row = frappe._dict()
 			for count, head in enumerate(header):
 				if head:
+					if head.__contains__(codecs.BOM_UTF8.decode("utf-8")):
+						# A Byte Order Mark is present
+						head = head.strip(codecs.BOM_UTF8.decode("utf-8"))
 					row[head] = d[count] or ""
 
 			output.append(row)
