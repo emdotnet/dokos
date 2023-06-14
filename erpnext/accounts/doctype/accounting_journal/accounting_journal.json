@@ -23,8 +23,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Journal Name",
-   "reqd": 1,
-   "unique": 1
+   "reqd": 1
   },
   {
    "fieldname": "type",
@@ -79,10 +78,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-03-15 09:29:59.117824",
+ "modified": "2023-06-14 12:35:23.944466",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounting Journal",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -119,6 +119,7 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "journal_name",
  "track_changes": 1
 }

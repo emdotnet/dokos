@@ -1,0 +1,240 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-06-14 09:55:52.985432",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "fec_data_section",
+  "journalcode",
+  "journallib",
+  "ecriturenum",
+  "ecrituredate",
+  "ecriturelib",
+  "column_break_7",
+  "comptenum",
+  "comptelib",
+  "compauxnum",
+  "compauxlib",
+  "pieceref",
+  "piecedate",
+  "column_break_14",
+  "debit",
+  "credit",
+  "ecriturelet",
+  "datelet",
+  "validdate",
+  "montantdevise",
+  "idevise",
+  "dokos_data_section",
+  "accounting_journal",
+  "account",
+  "column_break_25",
+  "party_type",
+  "party",
+  "dokos_dates_section",
+  "posting_date",
+  "transaction_date",
+  "column_break_31",
+  "validation_date",
+  "reconciliation_date",
+  "section_break_22",
+  "hashed_data"
+ ],
+ "fields": [
+  {
+   "fieldname": "journalcode",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "JournalCode"
+  },
+  {
+   "fieldname": "journallib",
+   "fieldtype": "Small Text",
+   "label": "JournalLib"
+  },
+  {
+   "fieldname": "ecriturenum",
+   "fieldtype": "Data",
+   "label": "EcritureNum"
+  },
+  {
+   "fieldname": "ecrituredate",
+   "fieldtype": "Data",
+   "label": "EcritureDate"
+  },
+  {
+   "fieldname": "comptenum",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "CompteNum"
+  },
+  {
+   "fieldname": "comptelib",
+   "fieldtype": "Small Text",
+   "label": "CompteLib"
+  },
+  {
+   "fieldname": "compauxnum",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "CompAuxNum"
+  },
+  {
+   "fieldname": "compauxlib",
+   "fieldtype": "Small Text",
+   "label": "CompAuxLib"
+  },
+  {
+   "fieldname": "pieceref",
+   "fieldtype": "Data",
+   "label": "PieceRef"
+  },
+  {
+   "fieldname": "piecedate",
+   "fieldtype": "Data",
+   "label": "PieceDate"
+  },
+  {
+   "fieldname": "ecriturelib",
+   "fieldtype": "Small Text",
+   "label": "EcritureLib"
+  },
+  {
+   "fieldname": "debit",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Debit"
+  },
+  {
+   "fieldname": "credit",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Credit"
+  },
+  {
+   "fieldname": "ecriturelet",
+   "fieldtype": "Data",
+   "label": "EcritureLet"
+  },
+  {
+   "fieldname": "datelet",
+   "fieldtype": "Data",
+   "label": "DateLet"
+  },
+  {
+   "fieldname": "validdate",
+   "fieldtype": "Data",
+   "label": "ValidDate"
+  },
+  {
+   "fieldname": "montantdevise",
+   "fieldtype": "Float",
+   "label": "Montantdevise"
+  },
+  {
+   "fieldname": "idevise",
+   "fieldtype": "Data",
+   "label": "Idevise"
+  },
+  {
+   "fieldname": "fec_data_section",
+   "fieldtype": "Section Break",
+   "label": "FEC Data"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_22",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "dokos_data_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Dokos Data"
+  },
+  {
+   "fieldname": "accounting_journal",
+   "fieldtype": "Link",
+   "label": "Accounting Journal",
+   "options": "Accounting Journal"
+  },
+  {
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "label": "Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_25",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Link",
+   "label": "Party Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Party",
+   "options": "party_type"
+  },
+  {
+   "fieldname": "dokos_dates_section",
+   "fieldtype": "Section Break",
+   "label": "Dokos Dates"
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
+  },
+  {
+   "fieldname": "transaction_date",
+   "fieldtype": "Date",
+   "label": "Transaction Date"
+  },
+  {
+   "fieldname": "column_break_31",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "validation_date",
+   "fieldtype": "Data",
+   "label": "Validation Date"
+  },
+  {
+   "fieldname": "reconciliation_date",
+   "fieldtype": "Data",
+   "label": "Reconciliation Date"
+  },
+  {
+   "fieldname": "hashed_data",
+   "fieldtype": "Data",
+   "label": "Hashed Data",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-06-14 10:54:03.274088",
+ "modified_by": "Administrator",
+ "module": "Regional",
+ "name": "FEC Import Line",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

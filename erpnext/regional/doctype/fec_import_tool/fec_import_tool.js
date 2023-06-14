@@ -21,6 +21,30 @@ frappe.ui.form.on('FEC Import Tool', {
 					})
 				})
 			});
+
+			frm.add_custom_button(__("Create Journals"), function() {
+				frappe.call({
+					method: "create_journals",
+					doc: frm.doc,
+				}).then(r => {
+					frappe.show_alert({
+						message: __("Accounting journals created.<br>Please setup a correct journal type for each."),
+						indicator: "green"
+					})
+				})
+			}, __("Actions"));
+
+			frm.add_custom_button(__("Create Accounts"), function() {
+				frappe.call({
+					method: "create_accounts",
+					doc: frm.doc,
+				}).then(r => {
+					frappe.show_alert({
+						message: __("Accounts created.<br>Please setup a correct account type for each."),
+						indicator: "green"
+					})
+				})
+			}, __("Actions"));
 		}
 
 	},

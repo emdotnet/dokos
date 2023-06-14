@@ -1,0 +1,156 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-06-14 09:33:57.672790",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "fec_import",
+  "status",
+  "error",
+  "column_break_4",
+  "settings",
+  "company",
+  "data_section",
+  "gl_entries_date",
+  "column_break_8",
+  "gl_entry_reference",
+  "section_break_10",
+  "gl_entries",
+  "section_break_13",
+  "linked_document_type",
+  "column_break_15",
+  "linked_document"
+ ],
+ "fields": [
+  {
+   "fieldname": "fec_import",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "FEC Import",
+   "options": "FEC Import Tool",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Pending\nCompleted\nError",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.status==\"Error\"",
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "data_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "FEC Data"
+  },
+  {
+   "fieldname": "gl_entries",
+   "fieldtype": "Table",
+   "label": "GL Entries",
+   "options": "FEC Import Line"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "settings",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Settings",
+   "options": "FEC Import Settings",
+   "reqd": 1
+  },
+  {
+   "fieldname": "gl_entries_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "GL Entries Date"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gl_entry_reference",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "GL Entry Reference"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "settings.company",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_13",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "linked_document_type",
+   "fieldtype": "Link",
+   "label": "Linked Document Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "linked_document",
+   "fieldtype": "Dynamic Link",
+   "label": "Linked Document",
+   "options": "linked_document_type"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-06-14 12:03:06.586896",
+ "modified_by": "Administrator",
+ "module": "Regional",
+ "name": "FEC Import Document",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "gl_entry_reference"
+}
