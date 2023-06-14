@@ -13,7 +13,7 @@ from frappe.utils import flt, getdate
 from frappe.utils.csvutils import read_csv_content
 
 
-class FECImportTool(Document):
+class FECImport(Document):
 	@frappe.whitelist()
 	def get_company(self):
 		company = None

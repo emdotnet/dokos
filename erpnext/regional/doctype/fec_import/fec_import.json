@@ -94,7 +94,7 @@
  "modified": "2023-06-14 16:48:28.995377",
  "modified_by": "Administrator",
  "module": "Regional",
- "name": "FEC Import Tool",
+ "name": "FEC Import",
  "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [

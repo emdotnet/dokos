@@ -32,7 +32,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "FEC Import",
-   "options": "FEC Import Tool",
+   "options": "FEC Import",
    "reqd": 1
   },
   {
@@ -139,7 +139,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-06-14 17:30:17.701398",
+ "modified": "2023-06-14 21:33:17.387750",
  "modified_by": "Administrator",
  "module": "Regional",
  "name": "FEC Import Document",
