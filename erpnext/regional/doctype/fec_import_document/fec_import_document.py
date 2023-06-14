@@ -255,7 +255,9 @@ class FECImportDocument(Document):
 				journal_entry.name = self.gl_entry_reference
 				journal_entry.flags.draft_name_set = True
 			journal_entry.insert()
-			journal_entry.submit()
+
+			if frappe.db.get_value("FEC Import Settings", self.settings, "submit_journal_entries"):
+				journal_entry.submit()
 
 			self.db_set("linked_document_type", "Journal Entry")
 			self.db_set("linked_document", journal_entry.name)
@@ -321,11 +323,12 @@ class FECImportDocument(Document):
 					sales_invoice.flags.draft_name_set = True
 				sales_invoice.insert()
 
-				if self.gl_entry_reference:
-					sales_invoice.flags.name_set = True
+				if frappe.db.get_value("FEC Import Settings", self.settings, "submit_sales_invoices"):
+					if self.gl_entry_reference:
+						sales_invoice.flags.name_set = True
 
-				sales_invoice.flags.ignore_version = True
-				sales_invoice.submit()
+					sales_invoice.flags.ignore_version = True
+					sales_invoice.submit()
 
 				self.db_set("linked_document_type", "Sales Invoice")
 				self.db_set("linked_document", sales_invoice.name)
@@ -368,11 +371,12 @@ class FECImportDocument(Document):
 					purchase_invoice.flags.draft_name_set = True
 				purchase_invoice.insert()
 
-				if self.gl_entry_reference:
-					purchase_invoice.flags.name_set = True
+				if frappe.db.get_value("FEC Import Settings", self.settings, "submit_sales_invoices"):
+					if self.gl_entry_reference:
+						purchase_invoice.flags.name_set = True
 
-				purchase_invoice.flags.ignore_version = True
-				purchase_invoice.submit()
+					purchase_invoice.flags.ignore_version = True
+					purchase_invoice.submit()
 
 				self.db_set("linked_document_type", "Purchase Invoice")
 				self.db_set("linked_document", purchase_invoice.name)

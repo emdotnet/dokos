@@ -12,13 +12,17 @@
   "section_break_2",
   "company",
   "accounting_journal_mapping",
+  "journal_entries_tab",
+  "submit_journal_entries",
   "sales_invoices_tab",
   "create_sales_invoices",
+  "submit_sales_invoices",
   "sales_item",
   "customer_group",
   "territory",
   "purchase_invoices_tab",
   "create_purchase_invoices",
+  "submit_purchase_invoices",
   "purchase_item",
   "supplier_group"
  ],
@@ -110,6 +114,31 @@
    "fieldtype": "Tab Break",
    "label": "Links",
    "show_dashboard": 1
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.create_sales_invoices",
+   "fieldname": "submit_sales_invoices",
+   "fieldtype": "Check",
+   "label": "Automatically Submit Sales Invoices"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.create_purchase_invoices",
+   "fieldname": "submit_purchase_invoices",
+   "fieldtype": "Check",
+   "label": "Automatically Submit Purchase Invoices"
+  },
+  {
+   "fieldname": "journal_entries_tab",
+   "fieldtype": "Tab Break",
+   "label": "Journal Entries"
+  },
+  {
+   "default": "1",
+   "fieldname": "submit_journal_entries",
+   "fieldtype": "Check",
+   "label": "Automatically Submit Journal Entries"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -120,7 +149,7 @@
    "link_fieldname": "settings"
   }
  ],
- "modified": "2023-06-14 16:53:32.807483",
+ "modified": "2023-06-14 21:20:02.438054",
  "modified_by": "Administrator",
  "module": "Regional",
  "name": "FEC Import Settings",
