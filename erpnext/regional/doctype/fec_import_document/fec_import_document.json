@@ -9,6 +9,7 @@
  "field_order": [
   "fec_import",
   "status",
+  "import_type",
   "error",
   "column_break_4",
   "settings",
@@ -125,11 +126,20 @@
    "fieldtype": "Dynamic Link",
    "label": "Linked Document",
    "options": "linked_document_type"
+  },
+  {
+   "default": "Miscellaneous",
+   "fieldname": "import_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Import Type",
+   "options": "Miscellaneous\nTransaction\nPayment",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-06-14 12:03:06.586896",
+ "modified": "2023-06-14 17:30:17.701398",
  "modified_by": "Administrator",
  "module": "Regional",
  "name": "FEC Import Document",

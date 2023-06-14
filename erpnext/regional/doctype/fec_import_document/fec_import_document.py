@@ -7,8 +7,13 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, get_year_ending, get_year_start, getdate
+from tenacity import retry, retry_if_result, stop_after_attempt
 
 from erpnext.accounts.utils import FiscalYearError, get_fiscal_years
+
+
+def value_is_true(value):
+	return value is True
 
 
 class FECImportDocument(Document):
@@ -19,6 +24,17 @@ class FECImportDocument(Document):
 				self.get_gl_account(row)
 				self.get_party(row)
 				self.parse_dates(row)
+
+	def before_insert(self):
+		self.set_import_type()
+
+	def set_import_type(self):
+		if self.is_payment_entry():
+			self.import_type = "Payment"
+		elif [l.party for l in self.gl_entries if l.party]:
+			self.import_type = "Transaction"
+		else:
+			self.import_type = "Miscellaneous"
 
 	def check_fiscal_year(self):
 		try:
@@ -167,38 +183,41 @@ class FECImportDocument(Document):
 
 		return self.create_references()
 
-	def process_document_in_background(self):
-		frappe.enqueue_doc(self.doctype, self.name, "create_references", timeout=1000)
+	def process_document_in_background(self, defer_payments=False):
+		frappe.enqueue_doc(
+			self.doctype, self.name, "create_references", defer_payments=defer_payments, timeout=1000
+		)
 
-	def create_references(self):
+	@retry(stop=stop_after_attempt(5), retry=retry_if_result(value_is_true))
+	def create_references(self, defer_payments=False):
 		self.db_set("status", "Pending")
 		self.db_set("error", None)
 		try:
 			self.check_fiscal_year()
+			company_settings = frappe.get_doc("FEC Import Settings", self.settings)
 
 			party = [l.party for l in self.gl_entries if l.party]
 			party_type = [l.party_type for l in self.gl_entries if l.party_type]
 			if len(party) == 1 and len(party_type) == 1:
-				if not [
-					l.account
-					for l in self.gl_entries
-					if frappe.get_cached_value("Account", l.account, "account_type") in ["Bank", "Cash"]
-				]:
-					if party_type[0] == "Customer":
+				if not self.is_payment_entry():
+					if company_settings.create_sales_invoices and party_type[0] == "Customer":
 						self.create_sales_invoice()
-					elif party_type[0] == "Supplier":
+					elif company_settings.create_sales_invoices and party_type[0] == "Supplier":
 						self.create_purchase_invoice()
 					else:
 						self.create_journal_entry()
 				else:
-					self.create_journal_entry()
+					self.create_journal_entry(True if defer_payments else False)
 			else:
 				self.create_journal_entry()
 		except Exception:
 			self.db_set("status", "Error")
 			self.db_set("error", frappe.get_traceback())
 
-	def create_journal_entry(self):
+			if defer_payments:
+				return True
+
+	def create_journal_entry(self, payment_entry=False):
 		journal_entry = frappe.get_doc(
 			{
 				"doctype": "Journal Entry",
@@ -210,6 +229,7 @@ class FECImportDocument(Document):
 		)
 		for line in self.gl_entries:
 			self.check_account_is_not_a_group(line.account)
+			reference_type, reference_name = self.get_payment_references(line)
 			journal_entry.append(
 				"accounts",
 				{
@@ -220,20 +240,56 @@ class FECImportDocument(Document):
 					"credit_in_account_currency": line.credit,
 					"credit": line.credit,
 					"user_remark": f"{line.ecriturelib}<br>{line.pieceref}",
-					# "reference_type": reference_type,
-					# "reference_name": reference_name,
+					"reference_type": reference_type,
+					"reference_name": reference_name,
 					"party_type": line.party_type,
 					"party": line.party,
 				},
 			)
 
+		if payment_entry and not reference_type and not reference_name:
+			frappe.throw(_("Payment references could not be found"))
+
 		if journal_entry.accounts:
+			if self.gl_entry_reference:
+				journal_entry.name = self.gl_entry_reference
+				journal_entry.flags.draft_name_set = True
 			journal_entry.insert()
 			journal_entry.submit()
 
 			self.db_set("linked_document_type", "Journal Entry")
 			self.db_set("linked_document", journal_entry.name)
 			self.db_set("status", "Completed")
+
+	def is_payment_entry(self):
+		return [line.ecriturelet for line in self.gl_entries if line.ecriturelet] and [
+			l.account
+			for l in self.gl_entries
+			if frappe.get_cached_value("Account", l.account, "account_type") in ["Bank", "Cash"]
+		]
+
+	def get_payment_references(self, line):
+		reference_type, reference_name = None, None
+		if line.ecriturelet:
+			filters = dict(
+				name=("!=", line.name),
+				ecriturelet=line.ecriturelet,
+				comptenum=line.comptenum,
+				compauxnum=line.compauxnum,
+				datelet=line.datelet,
+			)
+
+			if flt(line.credit) > 0.0:
+				filters["debit"] = (">", 0.0)
+			else:
+				filters["credit"] = (">", 0.0)
+
+			for doc in frappe.get_all("FEC Import Line", filters=filters, pluck="parent"):
+				reference_type, reference_name = frappe.db.get_value(
+					"FEC Import Document", doc, ["linked_document_type", "linked_document"]
+				)
+
+		return reference_type, reference_name
 
 	def create_sales_invoice(self):
 		customer, debit_to, remark = self.get_party_and_party_account()

@@ -20,9 +20,7 @@
   "purchase_invoices_tab",
   "create_purchase_invoices",
   "purchase_item",
-  "supplier_group",
-  "payment_entries_tab",
-  "create_payment_entries"
+  "supplier_group"
  ],
  "fields": [
   {
@@ -108,17 +106,6 @@
    "options": "Territory"
   },
   {
-   "fieldname": "payment_entries_tab",
-   "fieldtype": "Tab Break",
-   "label": "Payment Entries"
-  },
-  {
-   "default": "0",
-   "fieldname": "create_payment_entries",
-   "fieldtype": "Check",
-   "label": "Create Payment Entries"
-  },
-  {
    "fieldname": "links_tab",
    "fieldtype": "Tab Break",
    "label": "Links",
@@ -133,7 +120,7 @@
    "link_fieldname": "settings"
   }
  ],
- "modified": "2023-06-14 13:45:32.232701",
+ "modified": "2023-06-14 16:53:32.807483",
  "modified_by": "Administrator",
  "module": "Regional",
  "name": "FEC Import Settings",

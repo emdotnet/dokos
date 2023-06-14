@@ -161,6 +161,7 @@ class FECImportDocumentCreator:
 	def import_data(self):
 		self.group_data()
 		self.create_fec_import_documents()
+		self.process_fec_import_documents()
 
 	def group_data(self):
 		self.grouped_data = defaultdict(lambda: defaultdict(list))
@@ -187,6 +188,7 @@ class FECImportDocumentCreator:
 	def create_fec_import_documents(self):
 		for date in self.grouped_data:
 			for piece in self.grouped_data[date]:
+				iter_next = False
 				doc = frappe.new_doc("FEC Import Document")
 				doc.fec_import = self.settings.name
 				doc.settings = self.company_settings
@@ -198,10 +200,32 @@ class FECImportDocumentCreator:
 					self.parse_credit_debit(line)
 					row = {frappe.scrub(key): value for key, value in line.items()}
 					row["hashed_data"] = hash_line(concatenated_data)
+
+					if frappe.db.exists("FEC Import Line", dict(hashed_data=row["hashed_data"])):
+						iter_next = True
+						break
+
 					doc.append("gl_entries", row)
 
+				if iter_next:
+					continue
+
 				doc.insert()
-				doc.run_method("process_document_in_background")
+
+	def process_fec_import_documents(self):
+		groups = {"Transaction": [], "Payment": [], "Miscellaneous": []}
+
+		for doc in frappe.get_all(
+			"FEC Import Document",
+			filters={"status": "Pending"},
+			fields=["name", "import_type"],
+			order_by="gl_entries_date",
+		):
+			groups[doc.import_type].append(doc.name)
+
+		for group in ["Transaction", "Miscellaneous", "Payment"]:
+			for d in groups[group]:
+				frappe.get_doc("FEC Import Document", d).run_method("process_document_in_background")
 
 	def is_within_date_range(self, line):
 		posting_date = datetime.datetime.strptime(line.EcritureDate, "%Y%m%d").strftime("%Y-%m-%d")

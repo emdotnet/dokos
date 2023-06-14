@@ -84,8 +84,14 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
- "modified": "2023-06-09 09:44:56.202663",
+ "links": [
+  {
+   "group": "Import Details",
+   "link_doctype": "FEC Import Document",
+   "link_fieldname": "fec_import"
+  }
+ ],
+ "modified": "2023-06-14 16:48:28.995377",
  "modified_by": "Administrator",
  "module": "Regional",
  "name": "FEC Import Tool",
