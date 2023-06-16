@@ -227,6 +227,7 @@ def check_if_in_list(gle, gl_map, dimensions=None):
 		"party_type",
 		"project",
 		"finance_book",
+		"voucher_no",
 	]
 
 	if dimensions:
