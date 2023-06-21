@@ -5,7 +5,7 @@ frappe.ui.form.on('FEC Import', {
 	refresh(frm) {
 		frm.get_field("fec_file").df.options = {
 			restrictions: {
-				allowed_file_types: [".txt"],
+				allowed_file_types: [".txt", ".csv"],
 			},
 		};
 
@@ -45,6 +45,14 @@ frappe.ui.form.on('FEC Import', {
 					})
 				})
 			}, __("Actions"));
+
+			frm.add_custom_button(__("View Journals"), function() {
+				frappe.set_route("List", "Accounting Journal")
+			}, __("View"));
+
+			frm.add_custom_button(__("View Accounts"), function() {
+				frappe.set_route("Tree", "Account")
+			}, __("View"));
 		}
 
 	},

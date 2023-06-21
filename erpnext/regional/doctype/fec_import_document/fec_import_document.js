@@ -4,7 +4,7 @@
 frappe.ui.form.on('FEC Import Document', {
 	refresh: function(frm) {
 		if (frm.doc.status != "Completed") {
-			frm.add_custom_button(`${__("Retry an integration")}`, () =>
+			frm.add_custom_button(`${__("Retry an integration")}`, () => {
 				frappe.call({
 					method: "create_linked_document",
 					doc: frm.doc
@@ -16,7 +16,7 @@ frappe.ui.form.on('FEC Import Document', {
 
 					frm.refresh()
 				})
-			);
+			});
 		}
 	}
 });

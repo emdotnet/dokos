@@ -171,6 +171,8 @@ class FECImportDocument(Document):
 
 	@frappe.whitelist()
 	def create_linked_document(self):
+		self.run_method("validate")
+
 		fields = ["accounting_journal", "account"]
 		for line in self.gl_entries:
 			for field in fields:

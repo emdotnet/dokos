@@ -47,96 +47,114 @@
    "fieldname": "journalcode",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "JournalCode"
+   "label": "JournalCode",
+   "read_only": 1
   },
   {
    "fieldname": "journallib",
    "fieldtype": "Small Text",
-   "label": "JournalLib"
+   "label": "JournalLib",
+   "read_only": 1
   },
   {
    "fieldname": "ecriturenum",
    "fieldtype": "Data",
-   "label": "EcritureNum"
+   "label": "EcritureNum",
+   "read_only": 1
   },
   {
    "fieldname": "ecrituredate",
    "fieldtype": "Data",
-   "label": "EcritureDate"
+   "label": "EcritureDate",
+   "read_only": 1
   },
   {
    "fieldname": "comptenum",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "CompteNum"
+   "label": "CompteNum",
+   "read_only": 1
   },
   {
    "fieldname": "comptelib",
    "fieldtype": "Small Text",
-   "label": "CompteLib"
+   "label": "CompteLib",
+   "read_only": 1
   },
   {
    "fieldname": "compauxnum",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "CompAuxNum"
+   "label": "CompAuxNum",
+   "read_only": 1
   },
   {
    "fieldname": "compauxlib",
    "fieldtype": "Small Text",
-   "label": "CompAuxLib"
+   "label": "CompAuxLib",
+   "read_only": 1
   },
   {
    "fieldname": "pieceref",
    "fieldtype": "Data",
-   "label": "PieceRef"
+   "label": "PieceRef",
+   "read_only": 1
   },
   {
    "fieldname": "piecedate",
    "fieldtype": "Data",
-   "label": "PieceDate"
+   "label": "PieceDate",
+   "read_only": 1
   },
   {
    "fieldname": "ecriturelib",
    "fieldtype": "Small Text",
-   "label": "EcritureLib"
+   "label": "EcritureLib",
+   "read_only": 1
   },
   {
    "fieldname": "debit",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Debit"
+   "label": "Debit",
+   "read_only": 1
   },
   {
    "fieldname": "credit",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Credit"
+   "label": "Credit",
+   "read_only": 1
   },
   {
    "fieldname": "ecriturelet",
    "fieldtype": "Data",
-   "label": "EcritureLet"
+   "label": "EcritureLet",
+   "read_only": 1
   },
   {
    "fieldname": "datelet",
    "fieldtype": "Data",
-   "label": "DateLet"
+   "label": "DateLet",
+   "read_only": 1
   },
   {
    "fieldname": "validdate",
    "fieldtype": "Data",
-   "label": "ValidDate"
+   "label": "ValidDate",
+   "read_only": 1
   },
   {
    "fieldname": "montantdevise",
    "fieldtype": "Float",
-   "label": "Montantdevise"
+   "label": "Montantdevise",
+   "read_only": 1
   },
   {
    "fieldname": "idevise",
    "fieldtype": "Data",
-   "label": "Idevise"
+   "label": "Idevise",
+   "read_only": 1
   },
   {
    "fieldname": "fec_data_section",
@@ -210,12 +228,12 @@
   },
   {
    "fieldname": "validation_date",
-   "fieldtype": "Data",
+   "fieldtype": "Date",
    "label": "Validation Date"
   },
   {
    "fieldname": "reconciliation_date",
-   "fieldtype": "Data",
+   "fieldtype": "Date",
    "label": "Reconciliation Date"
   },
   {
@@ -228,7 +246,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-06-14 10:54:03.274088",
+ "modified": "2023-06-21 16:32:37.859603",
  "modified_by": "Administrator",
  "module": "Regional",
  "name": "FEC Import Line",
