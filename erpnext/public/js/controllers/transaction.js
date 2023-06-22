@@ -2426,7 +2426,9 @@ erpnext.set_accounting_journal = (frm) => {
 				doc: frm.doc
 			}
 		}).then((r) => {
-			frm.set_value("accounting_journal", r.message)
+			if (r.message != frm.doc.accounting_journal) {
+				frm.set_value("accounting_journal", r.message)
+			}
 		})
 	}
 }
