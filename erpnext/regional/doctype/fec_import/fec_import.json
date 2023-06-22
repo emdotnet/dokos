@@ -10,6 +10,7 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
+  "description",
   "fec_file",
   "section_break_3",
   "company",
@@ -81,6 +82,11 @@
    "fieldtype": "Link",
    "label": "Import From Journal",
    "options": "Accounting Journal"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "HTML",
+   "label": "Description"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -91,7 +97,7 @@
    "link_fieldname": "fec_import"
   }
  ],
- "modified": "2023-06-14 16:48:28.995377",
+ "modified": "2023-06-21 16:48:13.545416",
  "modified_by": "Administrator",
  "module": "Regional",
  "name": "FEC Import",

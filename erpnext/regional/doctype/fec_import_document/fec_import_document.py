@@ -225,7 +225,7 @@ class FECImportDocument(Document):
 				"doctype": "Journal Entry",
 				"company": self.company,
 				"posting_date": self.gl_entries_date,
-				"cheque_no": self.gl_entry_reference,
+				"cheque_no": self.gl_entry_reference or "N/A",
 				"cheque_date": self.gl_entries_date,
 			}
 		)
@@ -275,6 +275,12 @@ class FECImportDocument(Document):
 	def get_payment_references(self, line):
 		reference_type, reference_name = None, None
 		if line.ecriturelet:
+			account_root_type = frappe.get_cached_value("Account", line.account, "root_type")
+			if account_root_type == "Asset" and flt(line.debit) > 0:
+				return None, None
+			elif account_root_type == "Liability" and flt(line.credit) > 0:
+				return None, None
+
 			filters = dict(
 				name=("!=", line.name),
 				ecriturelet=line.ecriturelet,
@@ -292,6 +298,8 @@ class FECImportDocument(Document):
 				reference_type, reference_name = frappe.db.get_value(
 					"FEC Import Document", doc, ["linked_document_type", "linked_document"]
 				)
+
+			# TODO: Handle manual reconciliation
 
 		return reference_type, reference_name
 

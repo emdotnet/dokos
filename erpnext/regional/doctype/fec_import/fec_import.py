@@ -9,7 +9,7 @@ from collections import defaultdict
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate
+from frappe.utils import cint, flt, getdate
 from frappe.utils.csvutils import read_csv_content
 
 
@@ -75,11 +75,53 @@ class FECImport(Document):
 	@frappe.whitelist()
 	def create_journals(self):
 		journals = {l["JournalCode"]: l["JournalLib"] for l in self.get_data()}
+		bank_journals = list(
+			{l["JournalCode"] for l in self.get_data() if l["CompteNum"].startswith("512")}
+		)
+		cash_journals = list(
+			{l["JournalCode"] for l in self.get_data() if l["CompteNum"].startswith("53")}
+		)
+		sales_journals = list(
+			{l["JournalCode"] for l in self.get_data() if l["CompteNum"].startswith("7")}
+		)
+		purchase_journals = list(
+			{l["JournalCode"] for l in self.get_data() if l["CompteNum"].startswith("6")}
+		)
 
 		for journal in journals:
+			journal_type = "Miscellaneous"
+			account = None
+
+			if journal in bank_journals:
+				journal_type = "Bank"
+				account_number = list(
+					{
+						l["CompteNum"]
+						for l in self.get_data()
+						if l["JournalCode"] == journal and l["CompteNum"].startswith("512")
+					}
+				)[0]
+				account = frappe.get_value("Account", dict(account_number=account_number))
+			elif journal in cash_journals:
+				journal_type = "Cash"
+				account_number = list(
+					{
+						l["CompteNum"]
+						for l in self.get_data()
+						if l["JournalCode"] == journal and l["CompteNum"].startswith("53")
+					}
+				)[0]
+				account = frappe.get_value("Account", dict(account_number=account_number))
+			elif journal in sales_journals:
+				journal_type = "Sales"
+			elif journal in purchase_journals:
+				journal_type = "Purchase"
+
 			doc = frappe.new_doc("Accounting Journal")
 			doc.journal_code = journal
 			doc.journal_name = journals[journal]
+			doc.type = journal_type
+			doc.account = account
 			doc.insert(ignore_if_duplicate=True)
 
 	@frappe.whitelist()
@@ -110,6 +152,7 @@ class FECImport(Document):
 				doc.account_name = accounts[account]
 				doc.account_number = account
 				doc.parent_account = self.get_parent_account(account_groups_with_numbers, account)
+				doc.account_type = self.get_account_type(account)
 				doc.insert(ignore_if_duplicate=True)
 
 	def get_parent_account(self, account_groups, account):
@@ -145,6 +188,22 @@ class FECImport(Document):
 				parent_account=("is", "not set"),
 			),
 		)
+
+	def get_account_type(self, account_number):
+		if cint(account_number[:3]) in range(400, 409):
+			return "Payable"
+
+		elif cint(account_number[:3]) in range(410, 419):
+			return "Receivable"
+
+		elif cint(account_number[:3]) == 512:
+			return "Bank"
+
+		elif cint(account_number[:2]) == 53:
+			return "Cash"
+
+		elif cint(account_number[:2]) == 10:
+			return "Equity"
 
 
 class FECImportDocumentCreator:

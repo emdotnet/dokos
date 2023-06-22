@@ -395,13 +395,13 @@ class JournalEntry(AccountsController):
 				if account_root_type == "Asset" and flt(d.debit) > 0:
 					frappe.throw(
 						_(
-							"Row #{0}: For {1}, you can select reference document only if account gets credited"
+							"Row #{0}: For {1}, you can select a reference document only if account gets credited"
 						).format(d.idx, d.account)
 					)
 				elif account_root_type == "Liability" and flt(d.credit) > 0:
 					frappe.throw(
 						_(
-							"Row #{0}: For {1}, you can select reference document only if account gets debited"
+							"Row #{0}: For {1}, you can select a reference document only if account gets debited"
 						).format(d.idx, d.account)
 					)
 
