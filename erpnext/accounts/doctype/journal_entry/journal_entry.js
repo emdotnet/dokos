@@ -8,7 +8,7 @@ frappe.provide("erpnext.journal_entry");
 frappe.ui.form.on("Journal Entry", {
 	setup: function(frm) {
 		frm.add_fetch("bank_account", "account", "account");
-		frm.ignore_doctypes_on_cancel_all = ['Sales Invoice', 'Purchase Invoice', 'Journal Entry', "Repost Payment Ledger", 'Asset Depreciation Schedule'];
+		frm.ignore_doctypes_on_cancel_all = ['Sales Invoice', 'Purchase Invoice', 'Journal Entry', "Repost Payment Ledger", 'Asset Movement', 'Asset Depreciation Schedule'];
 
 		if (frm.doc.company && !frm.doc.journal_entry) {
 			erpnext.set_accounting_journal(frm);
