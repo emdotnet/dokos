@@ -68,7 +68,7 @@ unittests:
     - dpkg -i wkhtmltox_0.12.6-1.buster_amd64.deb && rm wkhtmltox_0.12.6-1.buster_amd64.deb
     - rm -rf /var/lib/apt/lists/*
     - rm -rf /etc/apt/sources.list.d/*
-    - curl -sL https://deb.nodesource.com/setup_16.x | bash
+    - curl -sL https://deb.nodesource.com/setup_18.x | bash
     - apt-get install -y nodejs
     - npm install --global yarn
     - export PATH=$PATH:/home/dokotest/.local/bin
@@ -161,7 +161,7 @@ build_docker:
         --build-arg=FRAPPE_PATH=https://gitlab.com/dokos/dodock \
         --build-arg=FRAPPE_BRANCH=$DODOCK_BRANCH \
         --build-arg=PYTHON_VERSION=3.10.6 \
-        --build-arg=NODE_VERSION=16.19.0 \
+        --build-arg=NODE_VERSION=18.16.1 \
         --build-arg=APPS_JSON_BASE64="$APPS_JSON_BASE64" \
         --tag=$IMAGE_NAME \
         --file=images/custom/Containerfile .
