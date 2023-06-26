@@ -401,28 +401,54 @@ class calculate_taxes_and_totals(object):
 						self.doc.get("taxes")[i - 1].grand_total_for_current_item + current_tax_amount
 					)
 
-				# set precision in the last item iteration
-				if n == len(self._items) - 1:
-					self.round_off_totals(tax)
-					self._set_in_company_currency(tax, ["tax_amount", "tax_amount_after_discount_amount"])
+		for tax in self.doc.get("taxes"):
+			tax.tax_amount_for_current_item = None
+			tax.grand_total_for_current_item = None
 
-					self.round_off_base_values(tax)
-					self.set_cumulative_total(i, tax)
+			if tax.charge_type in ("On Previous Row Amount", "On Previous Row Total"):
+				if not isinstance(tax.row_id, (int, str)):
+					raise frappe.MandatoryError(
+						"Row ID is mandatory for tax charge type {0}".format(tax.charge_type)
+					)
 
-					self._set_in_company_currency(tax, ["total"])
+				reference_row = self.doc.get("taxes")[cint(tax.row_id) - 1]
+				if _is_row_an_item_tax(reference_row):
+					continue
 
-					# adjust Discount Amount loss in last tax iteration
-					if (
-						i == (len(self.doc.get("taxes")) - 1)
-						and self.discount_amount_applied
-						and self.doc.discount_amount
-						and self.doc.apply_discount_on == "Grand Total"
-						and not rounding_adjustment_computed
-					):
-						self.doc.rounding_adjustment = flt(
-							self.doc.grand_total - flt(self.doc.discount_amount) - tax.total,
-							self.doc.precision("rounding_adjustment"),
-						)
+				tax_rate = tax.rate
+				amount = 0.0
+
+				if tax.charge_type == "On Previous Row Amount":
+					amount = (tax_rate / 100.0) * reference_row.tax_amount
+
+				if tax.charge_type == "On Previous Row Total":
+					amount = (tax_rate / 100.0) * reference_row.total
+
+				tax.tax_amount += amount
+				tax.tax_amount_after_discount_amount += amount
+
+		# set precision after all calculations
+		for i, tax in enumerate(self.doc.get("taxes")):
+			self.round_off_totals(tax)
+			self._set_in_company_currency(tax, ["tax_amount", "tax_amount_after_discount_amount"])
+
+			self.round_off_base_values(tax)
+			self.set_cumulative_total(i, tax)
+
+			self._set_in_company_currency(tax, ["total"])
+
+			# adjust Discount Amount loss in last tax iteration
+			if (
+				i == (len(self.doc.get("taxes")) - 1)
+				and self.discount_amount_applied
+				and self.doc.discount_amount
+				and self.doc.apply_discount_on == "Grand Total"
+				and not rounding_adjustment_computed
+			):
+				self.doc.rounding_adjustment = flt(
+					self.doc.grand_total - flt(self.doc.discount_amount) - tax.total,
+					self.doc.precision("rounding_adjustment"),
+				)
 
 	def get_tax_amount_if_for_valuation_or_deduction(self, tax_amount, tax):
 		# if just for valuation, do not add the tax amount in total
@@ -451,23 +477,26 @@ class calculate_taxes_and_totals(object):
 		tax_rate = self._get_tax_rate(tax, item_tax_map)
 		current_tax_amount = 0.0
 
+		reference_row = None
+		if isinstance(tax.row_id, (int, str)):
+			reference_row = self.doc.get("taxes")[cint(tax.row_id) - 1]
+
 		if tax.charge_type == "Actual":
 			# distribute the tax amount proportionally to each item row
 			actual = flt(tax.tax_amount, tax.precision("tax_amount"))
 			current_tax_amount = (
 				item.net_amount * actual / self.doc.net_total if self.doc.net_total else 0.0
 			)
-
 		elif tax.charge_type == "On Net Total":
 			current_tax_amount = (tax_rate / 100.0) * item.net_amount
 		elif tax.charge_type == "On Previous Row Amount":
-			current_tax_amount = (tax_rate / 100.0) * self.doc.get("taxes")[
-				cint(tax.row_id) - 1
-			].tax_amount_for_current_item
+			if not _is_row_an_item_tax(reference_row):
+				tax_rate = 0.0
+			current_tax_amount = (tax_rate / 100.0) * reference_row.tax_amount_for_current_item
 		elif tax.charge_type == "On Previous Row Total":
-			current_tax_amount = (tax_rate / 100.0) * self.doc.get("taxes")[
-				cint(tax.row_id) - 1
-			].grand_total_for_current_item
+			if not _is_row_an_item_tax(reference_row):
+				tax_rate = 0.0
+			current_tax_amount = (tax_rate / 100.0) * reference_row.grand_total_for_current_item
 		elif tax.charge_type == "On Item Quantity":
 			current_tax_amount = tax_rate * item.qty
 
@@ -1097,3 +1126,8 @@ class init_landed_taxes_and_totals(object):
 		for d in self.doc.get(self.tax_field):
 			d.amount = flt(d.amount, d.precision("amount"))
 			d.base_amount = flt(d.amount * flt(d.exchange_rate), d.precision("base_amount"))
+
+
+def _is_row_an_item_tax(row):
+	# tax_rate == 0.0 means it is an item tax for a Sales document
+	return row.charge_type == "On Net Total" and getattr(row, "tax_rate", None) == 0.0
