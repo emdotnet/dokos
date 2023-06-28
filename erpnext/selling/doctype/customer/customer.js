@@ -65,6 +65,14 @@ frappe.ui.form.on("Customer", {
 		});
 
 		frm.get_balance = false;
+
+		frm.set_query("user", "portal_users", function() {
+			return {
+				filters: {
+					"ignore_user_type": true,
+				}
+			};
+		});
 	},
 	customer_primary_address: function(frm){
 		if(frm.doc.customer_primary_address){
