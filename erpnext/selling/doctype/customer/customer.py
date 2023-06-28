@@ -22,6 +22,7 @@ from erpnext.accounts.party import (  # noqa
 	get_timeline_data,
 	validate_party_accounts,
 )
+from erpnext.controllers.website_list_for_contact import add_role_for_portal_user
 from erpnext.utilities.transaction_base import TransactionBase
 
 
@@ -81,6 +82,7 @@ class Customer(TransactionBase):
 		self.check_customer_group_change()
 		self.validate_default_bank_account()
 		self.validate_internal_customer()
+		self.add_role_for_user()
 		self.set_status()
 
 		# set loyalty program tier
@@ -168,6 +170,10 @@ class Customer(TransactionBase):
 
 		self.update_customer_groups()
 		self.update_user_role()
+
+	def add_role_for_user(self):
+		for portal_user in self.portal_users:
+			add_role_for_portal_user(portal_user, "Customer")
 
 	def update_customer_groups(self):
 		ignore_doctypes = ["Lead", "Opportunity", "POS Profile", "Tax Rule", "Pricing Rule"]

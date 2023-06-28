@@ -83,7 +83,9 @@
   "column_break_53",
   "is_frozen",
   "disabled",
-  "status"
+  "status",
+  "portal_users_tab",
+  "portal_users"
  ],
  "fields": [
   {
@@ -570,6 +572,17 @@
    "fieldname": "details_tab",
    "fieldtype": "Tab Break",
    "label": "Details"
+  },
+  {
+   "fieldname": "portal_users_tab",
+   "fieldtype": "Tab Break",
+   "label": "Portal Users"
+  },
+  {
+   "fieldname": "portal_users",
+   "fieldtype": "Table",
+   "label": "Customer Portal Users",
+   "options": "Portal User"
   }
  ],
  "icon": "fa fa-user",
@@ -583,7 +596,7 @@
    "link_fieldname": "party"
   }
  ],
- "modified": "2023-04-20 22:37:32.225433",
+ "modified": "2023-06-22 13:21:10.678382",
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Customer",
@@ -622,7 +635,6 @@
    "read": 1,
    "report": 1,
    "role": "Sales Master Manager",
-   "set_user_permissions": 1,
    "share": 1,
    "write": 1
   },
