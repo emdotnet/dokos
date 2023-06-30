@@ -15,7 +15,6 @@ Regional
 ERPNext Integrations
 Quality Management
 Communication
-Loan Management
 Venue
 Telephony
 Bulk Transaction

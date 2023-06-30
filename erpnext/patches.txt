@@ -100,7 +100,6 @@ execute:frappe.reload_doc('desk', 'doctype', 'dashboard_chart_source')
 execute:frappe.reload_doc('desk', 'doctype', 'dashboard_chart')
 execute:frappe.reload_doc('desk', 'doctype', 'dashboard_chart_field')
 erpnext.patches.v12_0.remove_bank_remittance_custom_fields
-execute:frappe.delete_doc_if_exists("Report", "Loan Repayment")
 erpnext.patches.v12_0.move_credit_limit_to_customer_credit_limit
 erpnext.patches.v12_0.add_variant_of_in_item_attribute_table
 erpnext.patches.v12_0.rename_bank_account_field_in_journal_entry_account
@@ -131,10 +130,8 @@ erpnext.patches.v12_0.update_end_date_and_status_in_email_campaign
 erpnext.patches.v12_0.rename_pos_closing_doctype
 erpnext.patches.v13_0.replace_pos_payment_mode_table #2020-12-29
 execute:frappe.delete_doc_if_exists("Page", "appointment-analytic")
-execute:frappe.rename_doc("Desk Page", "Getting Started", "Home", force=True)
 erpnext.patches.v12_0.unset_customer_supplier_based_on_type_of_item_price
 erpnext.patches.v12_0.set_valid_till_date_in_supplier_quotation
-erpnext.patches.v13_0.update_old_loans
 erpnext.patches.v12_0.set_serial_no_status #2020-05-21
 erpnext.patches.v12_0.update_price_list_currency_in_bom
 execute:frappe.reload_doc("desk", "doctype", "Dashboard", force=True)
@@ -167,7 +164,6 @@ execute:frappe.delete_doc("Report", "Quoted Item Comparison")
 erpnext.patches.v13_0.update_pos_closing_entry_in_merge_log
 erpnext.patches.v13_0.add_po_to_global_search
 erpnext.patches.v13_0.update_returned_qty_in_pr_dn
-execute:frappe.rename_doc("Workspace", "Loan", "Loan Management", ignore_if_exists=True, force=True)
 erpnext.patches.v13_0.update_project_template_tasks
 erpnext.patches.v13_0.convert_qi_parameter_to_link_field
 erpnext.patches.v13_0.add_naming_series_to_old_projects #2021-02-01
@@ -291,13 +287,11 @@ erpnext.patches.v13_0.update_sane_transfer_against
 erpnext.patches.v14_0.migrate_cost_center_allocations
 erpnext.patches.v13_0.convert_to_website_item_in_item_card_group_template
 erpnext.patches.v13_0.shopping_cart_to_ecommerce
-erpnext.patches.v13_0.update_disbursement_account
 erpnext.patches.v13_0.update_reserved_qty_closed_wo
 erpnext.patches.v14_0.delete_amazon_mws_doctype
 erpnext.patches.v13_0.set_work_order_qty_in_so_from_mr
 erpnext.patches.v13_0.item_reposting_for_incorrect_sl_and_gl
 erpnext.patches.v14_0.update_batch_valuation_flag
-erpnext.patches.v13_0.add_cost_center_in_loans
 erpnext.patches.v13_0.set_return_against_in_pos_invoice_references
 erpnext.patches.v13_0.remove_unknown_links_to_prod_plan_items
 erpnext.patches.v13_0.copy_custom_field_filters_to_website_item
@@ -317,7 +311,6 @@ erpnext.patches.v14_0.remove_hr_and_payroll_modules
 erpnext.patches.v13_0.update_exchange_rate_settings
 erpnext.patches.v14_0.create_accounting_dimensions_in_subcontracting_doctypes
 erpnext.patches.v14_0.fix_subcontracting_receipt_gl_entries
-erpnext.patches.v13_0.update_schedule_type_in_loans
 erpnext.patches.v13_0.drop_unused_sle_index_parts
 erpnext.patches.v14_0.update_partial_tds_fields
 erpnext.patches.v14_0.create_incoterms_and_migrate_shipment
@@ -356,5 +349,6 @@ execute:frappe.delete_doc('DocType', 'Cash Flow Mapping', ignore_missing=True)
 execute:frappe.delete_doc('DocType', 'Cash Flow Mapper', ignore_missing=True)
 execute:frappe.delete_doc('DocType', 'Cash Flow Mapping Template', ignore_missing=True)
 execute:frappe.delete_doc('DocType', 'Cash Flow Mapping Accounts', ignore_missing=True)
+erpnext.patches.v15_0.remove_loan_management_module
 erpnext.patches.v14_0.set_report_in_process_SOA
 erpnext.buying.doctype.supplier.patches.migrate_supplier_portal_users

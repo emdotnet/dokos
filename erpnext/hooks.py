@@ -493,14 +493,11 @@ scheduler_events = {
 		"erpnext.setup.doctype.email_digest.email_digest.send",
 		"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.auto_update_latest_price_in_all_boms",
 		"erpnext.projects.doctype.project.project.update_project_sales_billing",
-		"erpnext.loan_management.doctype.process_loan_security_shortfall.process_loan_security_shortfall.create_process_loan_security_shortfall",
-		"erpnext.loan_management.doctype.process_loan_interest_accrual.process_loan_interest_accrual.process_loan_interest_accrual_for_term_loans",
 		"erpnext.venue.doctype.booking_credit.booking_credit.process_expired_booking_credits",
 		"erpnext.crm.utils.open_leads_opportunities_based_on_todays_event",
 	],
 	"monthly_long": [
 		"erpnext.accounts.deferred_revenue.process_deferred_accounting",
-		"erpnext.loan_management.doctype.process_loan_interest_accrual.process_loan_interest_accrual.process_loan_interest_accrual_for_demand_loans",
 	],
 }
 
@@ -680,7 +677,6 @@ global_search_doctypes = {
 		{"doctype": "Branch", "index": 34},
 		{"doctype": "Department", "index": 35},
 		{"doctype": "Designation", "index": 37},
-		{"doctype": "Loan", "index": 43},
 		{"doctype": "Maintenance Schedule", "index": 44},
 		{"doctype": "Maintenance Visit", "index": 45},
 		{"doctype": "Warranty Claim", "index": 46},
