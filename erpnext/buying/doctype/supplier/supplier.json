@@ -455,6 +455,21 @@
    "fieldname": "default_accounts_section",
    "fieldtype": "Section Break",
    "label": "Default Accounts"
+  },
+  {
+   "fieldname": "portal_users_tab",
+   "fieldtype": "Tab Break",
+   "label": "Portal Users"
+  },
+  {
+   "fieldname": "portal_users",
+   "fieldtype": "Table",
+   "label": "Supplier Portal Users",
+   "options": "Portal User"
+  },
+  {
+   "fieldname": "column_break_1mqv",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-user",
