@@ -338,13 +338,13 @@
   {
    "fieldname": "default_receivable_accounts",
    "fieldtype": "Section Break",
-   "label": "Default Receivable Accounts"
+   "label": "Default Accounts"
   },
   {
-   "description": "Mention if a non-standard receivable account",
+   "description": "Mention if non-standard Receivable account",
    "fieldname": "accounts",
    "fieldtype": "Table",
-   "label": "Receivable Accounts",
+   "label": "Accounts",
    "options": "Party Account"
   },
   {

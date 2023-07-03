@@ -20,8 +20,8 @@ frappe.ui.form.on("Customer", {
 		frm.set_query('customer_group', {'is_group': 0});
 		frm.set_query('default_price_list', { 'selling': 1});
 		frm.set_query('account', 'accounts', function(doc, cdt, cdn) {
-			var d  = locals[cdt][cdn];
-			var filters = {
+			let d  = locals[cdt][cdn];
+			let filters = {
 				'account_type': 'Receivable',
 				'company': d.company,
 				"is_group": 0
@@ -32,6 +32,18 @@ frappe.ui.form.on("Customer", {
 			}
 			return {
 				filters: filters
+			}
+		});
+
+		frm.set_query('advance_account', 'accounts', function (doc, cdt, cdn) {
+			let d = locals[cdt][cdn];
+			return {
+				filters: {
+					"account_type": 'Receivable',
+					"root_type": "Liability",
+					"company": d.company,
+					"is_group": 0
+				}
 			}
 		});
 

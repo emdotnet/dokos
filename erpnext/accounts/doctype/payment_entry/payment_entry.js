@@ -339,6 +339,10 @@ frappe.ui.form.on('Payment Entry', {
 		}
 	},
 
+	company: function(frm){
+		frm.trigger('party');
+	},
+
 	party: function(frm) {
 		if (frm.doc.contact_email || frm.doc.contact_person) {
 			frm.set_value("contact_email", "");
@@ -750,6 +754,7 @@ frappe.ui.form.on('Payment Entry', {
 						c.bill_no = d.bill_no;
 						c.payment_term = d.payment_term;
 						c.allocated_amount = d.allocated_amount;
+						c.account = d.account;
 
 						if(!in_list(frm.events.get_order_doctypes(frm), d.voucher_type)) {
 							if(flt(d.outstanding_amount) > 0)
