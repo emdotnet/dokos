@@ -388,7 +388,7 @@ class SalesInvoiceInfo:
 		for charge in self.charges:
 			charge_price = PriceCalcRounded.Basic(
 				gross_amount=charge.amount,
-				tax_rate=((charge.vat and charge.vat.percent) or 0.0) / 100.0,
+				tax_rate=(charge.vat and charge.vat.percent) or 0.0,
 				precision=self.precision,
 				currency=self.currency,
 			)
