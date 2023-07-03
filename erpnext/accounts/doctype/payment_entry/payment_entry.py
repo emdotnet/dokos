@@ -218,6 +218,8 @@ class PaymentEntry(AccountsController):
 				"payment_type": self.payment_type,
 				"party": self.party,
 				"party_account": self.paid_from if self.payment_type == "Receive" else self.paid_to,
+				"get_outstanding_invoices": True,
+				"get_orders_to_be_billed": True,
 			},
 			validate=True,
 		)
@@ -243,7 +245,7 @@ class PaymentEntry(AccountsController):
 			):
 				frappe.throw(
 					_(
-						"{0} {1} has already been partly paid. Please use the 'Get Outstanding Invoice' button to get the latest outstanding amount."
+						"{0} {1} has already been partly paid. Please use the 'Get Outstanding Invoice' or the 'Get Outstanding Orders' button to get the latest outstanding amounts."
 					).format(d.reference_doctype, d.reference_name)
 				)
 
