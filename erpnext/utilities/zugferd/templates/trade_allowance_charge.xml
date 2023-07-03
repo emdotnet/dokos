@@ -1,0 +1,27 @@
+<ram:SpecifiedTradeAllowanceCharge>
+	<ram:ChargeIndicator>
+		<udt:Indicator>{{ "true" if is_charge else "false" }}</udt:Indicator>
+	</ram:ChargeIndicator>
+
+	{%- if percent is not none %}
+	<ram:CalculationPercent>{{ percent }}</ram:CalculationPercent>
+	{% endif -%}
+
+	{%- if basis is not none %}
+	<ram:BasisAmount>{{ basis }}</ram:BasisAmount>
+	{% endif -%}
+
+	<ram:ActualAmount>{{ amount }}</ram:ActualAmount>
+
+	{%- if reason_code is not none %}
+	<ram:ReasonCode>{{ reason_code }}</ram:ReasonCode>
+	{% endif -%}
+
+	{%- if reason is not none %}
+	<ram:Reason>{{ reason |e }}</ram:Reason>
+	{% endif -%}
+
+	{%- if vat %}
+	{{ vat.as_xml(fmt, el="ram:CategoryTradeTax") }}
+	{% endif -%}
+</ram:SpecifiedTradeAllowanceCharge>

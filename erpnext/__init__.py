@@ -150,3 +150,8 @@ def allow_regional(fn):
 		return frappe.get_attr(overrides[function_path][-1])(*args, **kwargs)
 
 	return caller
+
+
+@allow_regional
+def postprocess_pdf(pdf, doc, **kwargs):
+	pass

@@ -1,0 +1,22 @@
+{%- set el = el or "ram:ApplicableTradeTax" -%}
+<{{ el }}>
+	{% if tax.amount is not none %}
+	<ram:CalculatedAmount>{{ fmt.currency(tax.amount) }}</ram:CalculatedAmount>
+	{% endif %}
+
+	<ram:TypeCode>{{ tax.tax_type }}</ram:TypeCode>
+
+	{# <ram:ExemptionReason>{{ tax.exemption_reason_text |e }}</ram:ExemptionReason> #}
+
+	{% if tax.basis is not none %}
+	<ram:BasisAmount>{{ fmt.currency(tax.basis) }}</ram:BasisAmount>
+	{% endif %}
+
+	<ram:CategoryCode>{{ tax.category }}</ram:CategoryCode>
+
+	{# <ram:ExemptionReasonCode>{{ tax.exemption_reason_code }}</ram:ExemptionReasonCode> #}
+	{# <ram:TaxPointDate type="udt:DateType"></ram:TaxPointDate> #}
+	{# <ram:DueDateTypeCode type="qdt:TimeReferenceCodeType"></ram:DueDateTypeCode> #}
+
+	<ram:RateApplicablePercent>{{ 100 * tax.percent }}</ram:RateApplicablePercent>
+</{{ el }}>

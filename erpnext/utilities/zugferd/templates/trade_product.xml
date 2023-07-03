@@ -1,0 +1,13 @@
+<ram:SpecifiedTradeProduct>
+	{{ product.id_global or "" }}
+	{{ product.id_seller or "" }}
+	{{ product.id_buyer or "" }}
+	<ram:Name>{{ fmt.E(product.name) }}</ram:Name>
+	{% if product.description %}
+		<ram:Description>{{ product.description | striptags |e }}</ram:Description>
+	{% endif %}
+
+	{% if product.country_of_origin %}
+		<ram:OriginTradeCountry><ram:ID>{{ fmt.country(product.country_of_origin) }}</ram:ID></ram:OriginTradeCountry>
+	{% endif %}
+</ram:SpecifiedTradeProduct>

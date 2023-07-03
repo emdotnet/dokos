@@ -1,0 +1,30 @@
+<ram:IncludedSupplyChainTradeLineItem>
+	<ram:AssociatedDocumentLineDocument>
+		<ram:LineID>{{ item.line_id }}</ram:LineID>
+	</ram:AssociatedDocumentLineDocument>
+
+	{{ item.product.as_xml(fmt) }}
+
+	<ram:SpecifiedLineTradeAgreement>
+		<ram:GrossPriceProductTradePrice>
+			<ram:ChargeAmount>{{ fmt.currency(item.price.gross_rate) }}</ram:ChargeAmount>
+		</ram:GrossPriceProductTradePrice>
+		<ram:NetPriceProductTradePrice>
+			<ram:ChargeAmount>{{ fmt.currency(item.price.net_rate) }}</ram:ChargeAmount>
+		</ram:NetPriceProductTradePrice>
+	</ram:SpecifiedLineTradeAgreement>
+
+	<ram:SpecifiedLineTradeDelivery>
+		<ram:BilledQuantity unitCode="{{ fmt.uom(item.price.uom) }}">{{ item.price.quantity }}</ram:BilledQuantity>
+	</ram:SpecifiedLineTradeDelivery>
+
+	<ram:SpecifiedLineTradeSettlement>
+		{%- if item.price.tax_rate is not none -%}
+			{{ item.price.to_vat().as_xml(fmt) }}
+		{%- endif -%}
+
+		<ram:SpecifiedTradeSettlementLineMonetarySummation>
+			<ram:LineTotalAmount>{{ fmt.currency(item.price.net_total) }}</ram:LineTotalAmount>
+		</ram:SpecifiedTradeSettlementLineMonetarySummation>
+	</ram:SpecifiedLineTradeSettlement>
+</ram:IncludedSupplyChainTradeLineItem>

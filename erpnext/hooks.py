@@ -605,6 +605,7 @@ regional_overrides = {
 		"erpnext.assets.doctype.asset.asset.get_depreciation_amount": "erpnext.regional.france.assets.get_depreciation_amount",
 		"erpnext.assets.doctype.asset.asset.get_total_days": "erpnext.regional.france.assets.get_total_days",
 		"erpnext.assets.doctype.asset.asset.date_difference": "erpnext.regional.france.assets.date_difference",
+		"erpnext.postprocess_pdf": "erpnext.regional.france.pdf.postprocess_pdf",
 	},
 	"United Arab Emirates": {
 		"erpnext.controllers.taxes_and_totals.update_itemised_tax_data": "erpnext.regional.united_arab_emirates.utils.update_itemised_tax_data",
@@ -700,3 +701,5 @@ jinja = {
 		"frappe.contacts.doctype.address.address.get_condensed_address",
 	],
 }
+
+postprocess_pdf = ["erpnext.postprocess_pdf"]

@@ -1,0 +1,107 @@
+[
+ {
+  "doctype": "Territory",
+  "territory_name": "EN16931 Germany"
+ },
+ {
+  "__newname": "EN16931 Address 1",
+  "doctype": "Address",
+  "address_title": "EN16931 Address 1",
+  "address_type": "Billing",
+  "address_line1": "123 Teststraße",
+  "address_line2": "Testhaus 1",
+  "city": "Berlin",
+  "country": "Germany",
+  "phone": "+49 123 0000001",
+  "email_id": "address1@example.com",
+  "pincode": "10115"
+ },
+ {
+  "doctype": "Contact",
+  "__newname": "EN16931 Contact 1",
+  "first_name": "Andrea",
+  "last_name": "Test",
+  "email_id": "contact1@example.com",
+  "phone": "+49 123 0000002",
+  "mobile_no": "+49 123 0000003",
+  "email_ids": [
+   {
+    "email_id": "contact1@example.com",
+    "is_primary": 1
+   }
+  ],
+  "phone_nos": [
+   {
+    "phone": "+49 123 0000002",
+    "is_primary_phone": 1
+   },
+   {
+    "phone": "+49 123 0000003",
+    "is_primary_mobile_no": 1
+   }
+  ]
+ },
+ {
+  "doctype": "Customer",
+  "customer_name": "EN16931 Customer Individual 1 (Andrea Test)",
+  "customer_type": "Individual",
+  "customer_group": "Individual",
+  "territory": "EN16931 Germany",
+  "tax_id": "DE000000002",
+  "default_currency": "EUR",
+  "customer_primary_address": "EN16931 Address 1",
+  "customer_primary_contact": "EN16931 Contact 1"
+ },
+ {
+  "doctype": "Dynamic Link",
+  "link_doctype": "Customer",
+  "link_name": "EN16931 Customer Individual 1 (Andrea Test)",
+  "parent": "EN16931 Contact 1",
+  "parenttype": "Contact",
+  "parentfield": "links"
+ },
+ {
+  "doctype": "Company",
+  "abbr": "ZGF",
+  "chart_of_accounts": "Standard",
+  "company_name": "EN16931 Company 1",
+  "country": "Germany",
+  "default_currency": "EUR",
+  "tax_id": "DE000000001"
+ },
+ {
+  "doctype": "Dynamic Link",
+  "link_doctype": "Company",
+  "link_name": "EN16931 Company 1",
+  "parent": "EN16931 Address 1",
+  "parenttype": "Address",
+  "parentfield": "links"
+ },
+ "make_accounts",
+ {
+  "doctype": "Item",
+  "item_code": "EN16931 Item 1",
+  "item_name": "EN16931 Item 1",
+  "item_group": "Products",
+  "stock_uom": "Unit"
+ },
+ {
+  "doctype": "Sales Invoice",
+  "company": "EN16931 Company 1",
+  "customer": "EN16931 Customer Individual 1 (Andrea Test)",
+  "customer_address": "EN16931 Address 1",
+  "currency": "EUR",
+  "selling_price_list": "Standard Selling",
+  "debit_to": "Debtors - ZGF",
+  "credit_to": "Creditors - ZGF",
+  "items": [
+   {
+    "item_code": "EN16931 Item 1",
+    "qty": 2,
+    "rate": 100,
+    "uom": "Unit",
+    "cost_center": "Main - ZGF"
+   }
+  ]
+ }
+]

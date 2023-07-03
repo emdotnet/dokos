@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rsm:CrossIndustryInvoice xmlns:a="urn:un:unece:uncefact:data:standard:QualifiedDataType:100"
+	xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"
+	xmlns:qdt="urn:un:unece:uncefact:data:standard:QualifiedDataType:10"
+	xmlns:ram="urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
+
+	<rsm:ExchangedDocumentContext>
+		{# https://www.impots.gouv.fr/sites/default/files/media/1_metier/2_professionnel/EV/2_gestion/290_facturation_electronique/annexe_2_-_format_semantique_b2b_cdv.xlsx #}
+		{# https://www.impots.gouv.fr/sites/default/files/media/1_metier/2_professionnel/EV/2_gestion/290_facturation_electronique/annexe_7_-_regles_de_gestion.xlsx #}
+		{# {% if doc.docstatus == 0 -%}<ram:TestIndicator><udt:Indicator>true</udt:Indicator></ram:TestIndicator>{%- endif %} #}
+		<ram:GuidelineSpecifiedDocumentContextParameter>
+			<ram:ID>urn:cen.eu:en16931:2017#compliant#urn:zugferd.de:2p0:extended</ram:ID>
+		</ram:GuidelineSpecifiedDocumentContextParameter>
+	</rsm:ExchangedDocumentContext>
+
+	<rsm:ExchangedDocument>
+		<ram:ID>{{ name }}</ram:ID>{# Identifiant du document #}
+
+		<ram:TypeCode>{{ document_type_code or "380" }}</ram:TypeCode>{# 380 = Facture commerciale #}
+
+		<ram:IssueDateTime>
+			{{ fmt.date(posting_date) }}
+		</ram:IssueDateTime>
+
+		{# <ram:LanguageID>FR</ram:LanguageID> #}
+
+		{% for note in notes %}
+		<ram:IncludedNote>
+			<ram:Content>{{ fmt.E(note.text) }}</ram:Content>
+		</ram:IncludedNote>
+		{% endfor %}
+
+		<ram:EffectiveSpecifiedPeriod>
+			<ram:StartDateTime>
+				{{ fmt.date(posting_date) }}
+			</ram:StartDateTime>
+			<ram:EndDateTime>
+				{{ fmt.date(due_date) }}
+			</ram:EndDateTime>
+		</ram:EffectiveSpecifiedPeriod>
+	</rsm:ExchangedDocument>
+
+	<rsm:SupplyChainTradeTransaction>
+		{% for item in info.items %}
+			{{ item.as_xml(fmt) }}
+		{% endfor %}
+
+		<ram:ApplicableHeaderTradeAgreement>
+			{% if po_no %}
+			<ram:BuyerReference>{{ po_no }}</ram:BuyerReference>
+			{% endif %}
+			{{ seller.as_xml(fmt) }}
+			{{ buyer.as_xml(fmt) }}
+		</ram:ApplicableHeaderTradeAgreement>
+
+		<ram:ApplicableHeaderTradeDelivery>
+		</ram:ApplicableHeaderTradeDelivery>
+
+		<ram:ApplicableHeaderTradeSettlement>
+			<ram:TaxCurrencyCode>{{ currency }}</ram:TaxCurrencyCode>
+			<ram:InvoiceCurrencyCode>{{ currency }}</ram:InvoiceCurrencyCode>
+
+			{% if info.vat_repartition %}
+			{% for tax in info.vat_repartition %}
+				{{ tax.as_xml(fmt) }}
+			{% endfor %}
+			{% else %}
+			<ram:ApplicableTradeTax>
+				<ram:CalculatedAmount>0</ram:CalculatedAmount>
+				<ram:TypeCode>VAT</ram:TypeCode>
+				<ram:BasisAmount>0</ram:BasisAmount>
+				<ram:CategoryCode>S</ram:CategoryCode>
+				<ram:RateApplicablePercent>0</ram:RateApplicablePercent>
+			</ram:ApplicableTradeTax>
+			{% endif %}
+
+			{%- for charge_info in info.charges -%}
+				{{ charge_info.as_xml(fmt) }}
+			{%- endfor %}
+
+			{%- for allowance_info in info.allowances -%}
+				{{ allowance_info.as_xml(fmt) }}
+			{%- endfor %}
+
+			<ram:SpecifiedTradePaymentTerms>
+				<ram:Description>{{ terms | striptags |e }}</ram:Description>
+				<ram:DueDateDateTime>
+					{{ fmt.date(due_date) }}
+				</ram:DueDateDateTime>
+			</ram:SpecifiedTradePaymentTerms>
+
+			<ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+				<ram:LineTotalAmount>{{ fmt.currency(total) }}</ram:LineTotalAmount>
+				<ram:ChargeTotalAmount>{{ fmt.currency(info.subtotal_charges) }}</ram:ChargeTotalAmount>
+				<ram:AllowanceTotalAmount>{{ fmt.currency(info.subtotal_allowances) }}</ram:AllowanceTotalAmount>
+				<ram:TaxBasisTotalAmount>{{ fmt.currency(net_total) }}</ram:TaxBasisTotalAmount>
+				<ram:TaxTotalAmount>{{ fmt.currency(info.subtotal_vat) }}</ram:TaxTotalAmount>
+				<ram:RoundingAmount>{{ fmt.currency(rounding_adjustment) }}</ram:RoundingAmount>
+				<ram:GrandTotalAmount>{{ fmt.currency(grand_total) }}</ram:GrandTotalAmount>
+				<ram:TotalPrepaidAmount>{{ fmt.currency(total_advance) }}</ram:TotalPrepaidAmount>
+				<ram:DuePayableAmount currencyID="{{ currency }}">{{ fmt.currency(outstanding_amount) }}</ram:DuePayableAmount>
+			</ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+
+		</ram:ApplicableHeaderTradeSettlement>
+	</rsm:SupplyChainTradeTransaction>
+</rsm:CrossIndustryInvoice>
