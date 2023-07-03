@@ -1309,7 +1309,6 @@ def get_auto_batch_nos(kwargs):
 		update_available_batches(available_batches, stock_ledgers_batches, pos_invoice_batches)
 
 	available_batches = list(filter(lambda x: x.qty > 0, available_batches))
-
 	if not qty:
 		return available_batches
 
