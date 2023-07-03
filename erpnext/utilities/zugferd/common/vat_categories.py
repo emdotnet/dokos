@@ -1,6 +1,3 @@
-# https://github.com/OpenPEPPOL/peppol-bis-invoice-3/blob/master/guide/transaction-spec/codes/vat-category.adoc
-
-
 class TaxCategoryCode:
 	_codes = {
 		"AE": "Vat Reverse Charge",

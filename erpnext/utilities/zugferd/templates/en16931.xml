@@ -6,8 +6,6 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:udt="urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100">
 
 	<rsm:ExchangedDocumentContext>
-		{# https://www.impots.gouv.fr/sites/default/files/media/1_metier/2_professionnel/EV/2_gestion/290_facturation_electronique/annexe_2_-_format_semantique_b2b_cdv.xlsx #}
-		{# https://www.impots.gouv.fr/sites/default/files/media/1_metier/2_professionnel/EV/2_gestion/290_facturation_electronique/annexe_7_-_regles_de_gestion.xlsx #}
 		{# {% if doc.docstatus == 0 -%}<ram:TestIndicator><udt:Indicator>true</udt:Indicator></ram:TestIndicator>{%- endif %} #}
 		<ram:GuidelineSpecifiedDocumentContextParameter>
 			<ram:ID>urn:cen.eu:en16931:2017#compliant#urn:zugferd.de:2p0:extended</ram:ID>
