@@ -58,15 +58,20 @@ def get_columns():
 	return columns
 
 
-def get_all_transfers(date, shareholder=None):
-
-	share_transfer = frappe.qb.DocType("Share Transfer")
-
-	query = (
-		frappe.qb.from_(share_transfer)
-		.select("*")
-		.where(share_transfer.date <= date)
-		.where(share_transfer.docstatus == 1)
+def get_all_transfers(date, shareholder):
+	condition = " "
+	# if company:
+	# 	condition = 'AND company = %(company)s '
+	return frappe.db.sql(
+		"""SELECT * FROM `tabShare Transfer`
+		WHERE ((DATE(date) <= %(date)s AND from_shareholder = %(shareholder)s {condition})
+		OR (DATE(date) <= %(date)s AND to_shareholder = %(shareholder)s {condition}))
+		AND docstatus = 1
+		ORDER BY date""".format(
+			condition=condition
+		),
+		{"date": date, "shareholder": shareholder},
+		as_dict=1,
 	)
 
 	if shareholder:
