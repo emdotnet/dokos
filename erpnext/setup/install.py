@@ -167,7 +167,7 @@ def add_standard_navbar_items():
 		{
 			"item_label": "Documentation",
 			"item_type": "Route",
-			"route": "https://doc.dokos.io",
+			"route": "https://docs.erpnext.com/",
 			"is_standard": 1,
 		},
 		{
@@ -177,7 +177,13 @@ def add_standard_navbar_items():
 			"is_standard": 1,
 		},
 		{
-			"item_label": "Report an issue",
+			"item_label": "Frappe School",
+			"item_type": "Route",
+			"route": "https://frappe.school?utm_source=in_app",
+			"is_standard": 1,
+		},
+		{
+			"item_label": "Report an Issue",
 			"item_type": "Route",
 			"route": "https://gitlab.com/dokos/dokos/issues",
 			"is_standard": 1,
