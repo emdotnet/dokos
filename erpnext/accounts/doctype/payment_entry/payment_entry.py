@@ -7,7 +7,8 @@ from functools import reduce
 
 import frappe
 from frappe import ValidationError, _, qb, scrub, throw
-from frappe.utils import cint, comma_and, comma_or, flt, fmt_money, getdate, nowdate
+from frappe.utils import cint, comma_or, flt, getdate, nowdate
+from frappe.utils.data import comma_and, fmt_money
 
 import erpnext
 from erpnext.accounts.doctype.bank_account.bank_account import (
@@ -99,6 +100,42 @@ class PaymentEntry(AccountsController):
 		self.update_advance_paid()
 		self.update_payment_schedule()
 		self.set_status()
+
+	def set_liability_account(self):
+		if not self.book_advance_payments_in_separate_party_account:
+			return
+
+		account_type = frappe.get_value(
+			"Account", {"name": self.party_account, "company": self.company}, "account_type"
+		)
+
+		if (account_type == "Payable" and self.party_type == "Customer") or (
+			account_type == "Receivable" and self.party_type == "Supplier"
+		):
+			return
+
+		if self.unallocated_amount == 0:
+			for d in self.references:
+				if d.reference_doctype in ["Sales Order", "Purchase Order"]:
+					break
+			else:
+				return
+
+		liability_account = get_party_account(
+			self.party_type, self.party, self.company, include_advance=True
+		)[1]
+
+		self.set(self.party_account_field, liability_account)
+
+		frappe.msgprint(
+			_(
+				"Book Advance Payments as Liability option is chosen. Paid From account changed from {0} to {1}."
+			).format(
+				frappe.bold(self.party_account),
+				frappe.bold(liability_account),
+			),
+			alert=True,
+		)
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = (
@@ -199,7 +236,7 @@ class PaymentEntry(AccountsController):
 			# The reference has already been fully paid
 			if not latest:
 				frappe.throw(
-					_("{0} {1} has already been fully paid.").format(d.reference_doctype, d.reference_name)
+					_("{0} {1} has already been fully paid.").format(_(d.reference_doctype), d.reference_name)
 				)
 			# The reference has already been partly paid
 			elif (
@@ -209,7 +246,7 @@ class PaymentEntry(AccountsController):
 				frappe.throw(
 					_(
 						"{0} {1} has already been partly paid. Please use the 'Get Outstanding Invoice' or the 'Get Outstanding Orders' button to get the latest outstanding amounts."
-					).format(d.reference_doctype, d.reference_name)
+					).format(_(d.reference_doctype), d.reference_name)
 				)
 
 			fail_message = _("Row #{0}: Allocated Amount cannot be greater than outstanding amount.")
@@ -373,7 +410,7 @@ class PaymentEntry(AccountsController):
 			if d.reference_doctype not in valid_reference_doctypes:
 				frappe.throw(
 					_("Reference Doctype must be one of {0}").format(
-						comma_or([_(d) for d in valid_reference_doctypes])
+						comma_or((_(d) for d in valid_reference_doctypes))
 					)
 				)
 
@@ -387,7 +424,7 @@ class PaymentEntry(AccountsController):
 						if self.party != ref_doc.get(scrub(self.party_type)):
 							frappe.throw(
 								_("{0} {1} is not associated with {2} {3}").format(
-									_(d.reference_doctype), d.reference_name, self.party_type, self.party
+									_(d.reference_doctype), d.reference_name, _(self.party_type), self.party
 								)
 							)
 					else:
@@ -416,11 +453,11 @@ class PaymentEntry(AccountsController):
 						if ref_doc.doctype == "Purchase Invoice" and ref_doc.get("on_hold"):
 							frappe.throw(
 								_("{0} {1} is on hold").format(_(d.reference_doctype), d.reference_name),
-								title=_("Invalid Invoice"),
+								title=_("Invalid Purchase Invoice"),
 							)
 
-					if ref_doc.doctype != "Subscription" and ref_doc.docstatus != 1:
-						frappe.throw(_("{0} {1} must be submitted").format(d.reference_doctype, d.reference_name))
+					if ref_doc.docstatus != 1:
+						frappe.throw(_("{0} {1} must be submitted").format(_(d.reference_doctype), d.reference_name))
 
 	def validate_paid_invoices(self):
 		no_oustanding_refs = {}
