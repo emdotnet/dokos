@@ -1426,6 +1426,9 @@ def get_outstanding_reference_documents(args, validate=False):
 	if not args.get("get_outstanding_invoices") and not args.get("get_orders_to_be_billed"):
 		args["get_outstanding_invoices"] = True
 
+	if not args.get("get_outstanding_invoices") and not args.get("get_orders_to_be_billed"):
+		args["get_outstanding_invoices"] = True
+
 	ple = qb.DocType("Payment Ledger Entry")
 	common_filter = []
 	accounting_dimensions_filter = []
@@ -1707,7 +1710,6 @@ def get_negative_outstanding_invoices(
 ):
 	if party_type not in ["Customer", "Supplier"]:
 		return []
-
 	voucher_type = "Sales Invoice" if party_type == "Customer" else "Purchase Invoice"
 	account = "debit_to" if voucher_type == "Sales Invoice" else "credit_to"
 	supplier_condition = ""
