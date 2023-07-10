@@ -1679,7 +1679,7 @@ class TestPurchaseInvoice(unittest.TestCase, StockTestMixin):
 			account_type="Receivable",
 		)
 
-		set_advance_flag(company="_Test Company", flag=1, default_account=account)
+		set_advance_flag(company="_Test Company", default_account=account)
 
 		pe = create_payment_entry(
 			company="_Test Company",
@@ -1724,9 +1724,11 @@ class TestPurchaseInvoice(unittest.TestCase, StockTestMixin):
 		pi.load_from_db()
 		self.assertEqual(pi.outstanding_amount, 500)
 
-		set_advance_flag(company="_Test Company", flag=0, default_account="")
+		set_advance_flag(company="_Test Company", default_account="")
 
 	def test_gl_entries_for_standalone_debit_note(self):
+		from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_payment_entry
+
 		make_purchase_invoice(qty=5, rate=500, update_stock=True)
 
 		account = create_account(
@@ -1781,12 +1783,12 @@ class TestPurchaseInvoice(unittest.TestCase, StockTestMixin):
 		pi.load_from_db()
 		self.assertEqual(pi.outstanding_amount, 500)
 
-def set_advance_flag(company, flag, default_account):
+
+def set_advance_flag(company, default_account):
 	frappe.db.set_value(
 		"Company",
 		company,
 		{
-			"book_advance_payments_in_separate_party_account": flag,
 			"default_advance_paid_account": default_account,
 		},
 	)

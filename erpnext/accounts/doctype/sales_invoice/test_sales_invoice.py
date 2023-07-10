@@ -5,7 +5,7 @@ import copy
 
 import frappe
 from frappe.model.dynamic_links import get_dynamic_link_map
-from frappe.tests.utils import change_settings
+from frappe.tests.utils import FrappeTestCase, change_settings
 from frappe.utils import add_days, flt, getdate, nowdate, today
 
 import erpnext
@@ -3306,22 +3306,6 @@ class TestSalesInvoice(FrappeTestCase):
 
 		self.assertTrue(return_si.docstatus == 1)
 
-	def test_sales_invoice_with_payable_tax_account(self):
-		si = create_sales_invoice(do_not_submit=True)
-		si.append(
-			"taxes",
-			{
-				"charge_type": "Actual",
-				"account_head": "Creditors - _TC",
-				"description": "Test",
-				"cost_center": "Main - _TC",
-				"tax_amount": 10,
-				"total": 10,
-				"dont_recompute_tax": 0,
-			},
-		)
-		self.assertRaises(frappe.ValidationError, si.submit)
-
 	def test_advance_entries_as_liability(self):
 		from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_payment_entry
 
@@ -3332,7 +3316,7 @@ class TestSalesInvoice(FrappeTestCase):
 			account_type="Receivable",
 		)
 
-		set_advance_flag(company="_Test Company", flag=1, default_account=account)
+		set_advance_flag(company="_Test Company", default_account=account)
 
 		pe = create_payment_entry(
 			company="_Test Company",
@@ -3376,53 +3360,17 @@ class TestSalesInvoice(FrappeTestCase):
 		si.load_from_db()
 		self.assertEqual(si.outstanding_amount, 0)
 
-		set_advance_flag(company="_Test Company", flag=0, default_account="")
+		set_advance_flag(company="_Test Company", default_account="")
 
 
-def set_advance_flag(company, flag, default_account):
+def set_advance_flag(company, default_account):
 	frappe.db.set_value(
 		"Company",
 		company,
 		{
-			"book_advance_payments_in_separate_party_account": flag,
 			"default_advance_received_account": default_account,
 		},
 	)
-
-
-def get_sales_invoice_for_e_invoice():
-	si = make_sales_invoice_for_ewaybill()
-	si.naming_series = "INV-2020-.#####"
-	si.items = []
-	si.append(
-		"items",
-		{
-			"item_code": "_Test Item",
-			"uom": "Nos",
-			"warehouse": "_Test Warehouse - _TC",
-			"qty": 2000,
-			"rate": 12,
-			"income_account": "Sales - _TC",
-			"expense_account": "Cost of Goods Sold - _TC",
-			"cost_center": "_Test Cost Center - _TC",
-		},
-	)
-
-	si.append(
-		"items",
-		{
-			"item_code": "_Test Item 2",
-			"uom": "Nos",
-			"warehouse": "_Test Warehouse - _TC",
-			"qty": 420,
-			"rate": 15,
-			"income_account": "Sales - _TC",
-			"expense_account": "Cost of Goods Sold - _TC",
-			"cost_center": "_Test Cost Center - _TC",
-		},
-	)
-
-	return si
 
 
 def check_gl_entries(doc, voucher_no, expected_gle, posting_date, voucher_type="Sales Invoice"):

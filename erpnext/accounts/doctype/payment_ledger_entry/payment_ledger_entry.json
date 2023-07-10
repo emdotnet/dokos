@@ -141,6 +141,12 @@
    "options": "Finance Book"
   },
   {
+   "default": "0",
+   "fieldname": "is_advance",
+   "fieldtype": "Check",
+   "label": "Is Advance"
+  },
+  {
    "fieldname": "remarks",
    "fieldtype": "Text",
    "label": "Remarks"

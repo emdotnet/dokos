@@ -857,6 +857,11 @@ class AccountsController(TransactionBase):
 			if d.get("paid_to"):
 				advance_row["account"] = d.paid_to
 
+			if d.get("paid_from"):
+				advance_row["account"] = d.paid_from
+			if d.get("paid_to"):
+				advance_row["account"] = d.paid_to
+
 			self.append("advances", advance_row)
 
 	def get_advance_entries(self, include_unallocated=True):
@@ -2257,7 +2262,6 @@ def get_advance_payment_entries(
 	limit=None,
 	condition=None,
 ):
-
 	payment_entries = []
 	payment_entry = frappe.qb.DocType("Payment Entry")
 
@@ -2284,6 +2288,7 @@ def get_advance_payment_entries(
 
 		allocated = list(q.run(as_dict=True))
 		payment_entries += allocated
+
 	if include_unallocated:
 		q = get_common_query(
 			party_type,

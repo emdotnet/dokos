@@ -470,6 +470,11 @@
   {
    "fieldname": "column_break_1mqv",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_accounts_section",
+   "fieldtype": "Section Break",
+   "label": "Default Accounts"
   }
  ],
  "icon": "fa fa-user",

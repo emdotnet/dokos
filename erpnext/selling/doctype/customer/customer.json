@@ -341,12 +341,12 @@
    "label": "Default Accounts"
   },
   {
-    "description": "Mention if non-standard Receivable account",
-    "fieldname": "accounts",
-    "fieldtype": "Table",
-    "label": "Accounts",
-    "options": "Party Account"
-   },
+   "description": "Mention if non-standard Receivable account",
+   "fieldname": "accounts",
+   "fieldtype": "Table",
+   "label": "Accounts",
+   "options": "Party Account"
+  },
   {
    "fieldname": "credit_limit_section",
    "fieldtype": "Section Break",

@@ -47,7 +47,6 @@ frappe.ui.form.on("Customer", {
 			}
 		});
 
-
 		if (frm.doc.__islocal == 1) {
 			frm.set_value("represents_company", "");
 		}
