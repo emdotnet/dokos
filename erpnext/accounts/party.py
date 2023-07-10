@@ -386,6 +386,14 @@ def get_party_account(
 
 		return frappe.get_cached_value("Company", company, default_account_name)
 
+	if cint(down_payment) and party_type in ["Customer", "Supplier"]:
+		query_field = (
+			"default_down_payment_receivable_account"
+			if party_type == "Customer"
+			else "default_down_payment_payable_account"
+		)
+		return frappe.get_cached_value("Company", company, query_field)
+
 	account = frappe.db.get_value(
 		"Party Account", {"parenttype": party_type, "parent": party, "company": company}, "account"
 	)
