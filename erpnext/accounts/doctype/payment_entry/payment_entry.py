@@ -439,8 +439,11 @@ class PaymentEntry(AccountsController):
 							ref_party_account = ref_doc.credit_to
 						elif self.party_type == "Employee":
 							ref_party_account = ref_doc.payable_account
+						else:
+							# Unknown party type, skip validation
+							ref_party_account = None
 
-						if ref_party_account != self.party_account:
+						if ref_party_account and ref_party_account != self.party_account:
 							frappe.throw(
 								_("{0} {1} is associated with {2}, but Party Account is {3}").format(
 									_(d.reference_doctype), d.reference_name, ref_party_account, self.party_account
