@@ -1737,12 +1737,14 @@ def get_orders_to_be_billed(
 		voucher_type = "Purchase Order"
 	elif party_type == "Employee":
 		voucher_type = None
+	else:
+		voucher_type = None
 
 	# Add cost center condition
 	if voucher_type:
-		doc = frappe.get_doc({"doctype": voucher_type})
+		meta = frappe.get_meta(voucher_type)
 		condition = ""
-		if cost_center and doc and hasattr(doc, "cost_center"):
+		if cost_center and meta.has_field("cost_center"):
 			condition = " and cost_center='%s'" % cost_center
 
 	orders = []
