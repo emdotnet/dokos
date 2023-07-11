@@ -241,6 +241,8 @@ class TestDownPaymentMultiplePayments(FrappeTestCase):
 						"delivery_date": "2020-01-01",
 					}
 				],
+				"transaction_date": "2020-01-01",
+				"delivery_date": "2020-01-01",
 				"taxes_and_charges": "",
 			}
 		)
