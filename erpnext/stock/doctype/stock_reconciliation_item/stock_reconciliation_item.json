@@ -172,7 +172,8 @@
    "fieldname": "batch_no",
    "fieldtype": "Link",
    "label": "Batch No",
-   "options": "Batch"
+   "options": "Batch",
+   "read_only": 1
   },
   {
    "default": "0",
