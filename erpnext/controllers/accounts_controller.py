@@ -852,10 +852,6 @@ class AccountsController(TransactionBase):
 				"ref_exchange_rate": flt(d.exchange_rate),  # exchange_rate of advance entry
 				"is_down_payment": d.get("down_payment"),
 			}
-			if d.get("paid_from"):
-				advance_row["account"] = d.paid_from
-			if d.get("paid_to"):
-				advance_row["account"] = d.paid_to
 
 			if d.get("paid_from"):
 				advance_row["account"] = d.paid_from
@@ -2979,11 +2975,6 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 
 @erpnext.allow_regional
 def validate_regional(doc):
-	pass
-
-
-@erpnext.allow_regional
-def validate_einvoice_fields(doc):
 	pass
 
 

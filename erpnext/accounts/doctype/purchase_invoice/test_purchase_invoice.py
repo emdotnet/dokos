@@ -1738,7 +1738,7 @@ class TestPurchaseInvoice(unittest.TestCase, StockTestMixin):
 			account_type="Receivable",
 		)
 
-		set_advance_flag(company="_Test Company", flag=1, default_account=account)
+		set_advance_flag(company="_Test Company", default_account=account)
 
 		pe = create_payment_entry(
 			company="_Test Company",

@@ -431,21 +431,21 @@ class PaymentEntry(AccountsController):
 						self.validate_journal_entry()
 
 					if d.reference_doctype in frappe.get_hooks("invoice_doctypes"):
-						# if self.party_type == "Customer":
-						# 	ref_party_account = (
-						# 		get_party_account_based_on_invoice_discounting(d.reference_name) or ref_doc.debit_to
-						# 	)
-						# elif self.party_type == "Supplier":
-						# 	ref_party_account = ref_doc.credit_to
-						# elif self.party_type == "Employee":
-						# 	ref_party_account = ref_doc.payable_account
+						if self.party_type == "Customer":
+							ref_party_account = (
+								get_party_account_based_on_invoice_discounting(d.reference_name) or ref_doc.debit_to
+							)
+						elif self.party_type == "Supplier":
+							ref_party_account = ref_doc.credit_to
+						elif self.party_type == "Employee":
+							ref_party_account = ref_doc.payable_account
 
-						# if ref_party_account != self.party_account:
-						# 	frappe.throw(
-						# 		_("{0} {1} is associated with {2}, but Party Account is {3}").format(
-						# 			_(d.reference_doctype), d.reference_name, ref_party_account, self.party_account
-						# 		)
-						# 	)
+						if ref_party_account != self.party_account:
+							frappe.throw(
+								_("{0} {1} is associated with {2}, but Party Account is {3}").format(
+									_(d.reference_doctype), d.reference_name, ref_party_account, self.party_account
+								)
+							)
 
 						if ref_doc.doctype == "Purchase Invoice" and ref_doc.get("on_hold"):
 							frappe.throw(
