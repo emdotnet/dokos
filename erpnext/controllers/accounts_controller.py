@@ -894,7 +894,9 @@ class AccountsController(TransactionBase):
 		if self.doctype == "Sales Invoice" and order_list:
 			party_type = "Customer"
 			party = self.customer
-			party_account = get_party_account(party_type, party, self.company)
+			party_account = [
+				get_party_account(party_type, party, self.company)
+			]  # TODO: Fix data consistency
 			amount_field = "credit_in_account_currency"
 			order_doctype = "Sales Invoice"
 
