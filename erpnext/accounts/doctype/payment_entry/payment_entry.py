@@ -123,9 +123,10 @@ class PaymentEntry(AccountsController):
 			else:
 				return
 
+		# Last element is advance account, or default account if no advance account
 		liability_account = get_party_account(
 			self.party_type, self.party, self.company, include_advance=True
-		)[1]
+		)[-1]
 
 		self.set(self.party_account_field, liability_account)
 
