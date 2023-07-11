@@ -152,6 +152,7 @@ frappe.ui.form.on("Stock Reconciliation", {
 					if (r.exc || !r.message || !r.message.length) return;
 
 					frm.clear_table("items");
+
 					r.message.forEach((row) => {
 						let item = frm.add_child("items");
 						$.extend(item, row);
@@ -211,6 +212,7 @@ frappe.ui.form.on("Stock Reconciliation", {
 			});
 		}
 	},
+
 	set_amount_quantity: function(doc, cdt, cdn) {
 		var d = frappe.model.get_doc(cdt, cdn);
 		if (d.qty & d.valuation_rate) {
@@ -248,6 +250,7 @@ frappe.ui.form.on("Stock Reconciliation", {
 });
 
 frappe.ui.form.on("Stock Reconciliation Item", {
+
 	warehouse: function(frm, cdt, cdn) {
 		var child = locals[cdt][cdn];
 		if (child.batch_no && !frm.doc.scan_mode) {
