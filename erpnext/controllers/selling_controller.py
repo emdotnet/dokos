@@ -170,7 +170,7 @@ class SellingController(StockController):
 			self.round_floats_in(sales_person)
 
 			sales_person.allocated_amount = flt(
-				self.amount_eligible_for_commission * sales_person.allocated_percentage / 100.0,
+				flt(self.amount_eligible_for_commission) * sales_person.allocated_percentage / 100.0,
 				self.precision("allocated_amount", sales_person),
 			)
 
@@ -518,11 +518,6 @@ class SellingController(StockController):
 		if item_row.target_warehouse and not cint(self.is_return):
 			sle.dependant_sle_voucher_detail_no = item_row.name
 
-		if item_row.serial_and_batch_bundle:
-			sle["serial_and_batch_bundle"] = self.make_package_for_transfer(
-				item_row.serial_and_batch_bundle, item_row.target_warehouse
-			)
-
 		return sle
 
 	def get_sle_for_target_warehouse(self, item_row):
@@ -537,6 +532,11 @@ class SellingController(StockController):
 				sle.update({"outgoing_rate": item_row.incoming_rate})
 				if item_row.warehouse:
 					sle.dependant_sle_voucher_detail_no = item_row.name
+
+			if item_row.serial_and_batch_bundle:
+				sle["serial_and_batch_bundle"] = self.make_package_for_transfer(
+					item_row.serial_and_batch_bundle, item_row.target_warehouse
+				)
 
 		return sle
 
