@@ -438,6 +438,18 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 
 def cancel_invoices():
+	payment_entries = frappe.get_all(
+		"Payment Entry",
+		{
+			"party": [
+				"in",
+				["Test TDS Supplier", "Test TDS Supplier1", "Test TDS Supplier2", "Test TCS Customer"],
+			],
+			"docstatus": 1,
+		},
+		pluck="name",
+	)
+
 	purchase_invoices = frappe.get_all(
 		"Purchase Invoice",
 		{
@@ -450,6 +462,9 @@ def cancel_invoices():
 	sales_invoices = frappe.get_all(
 		"Sales Invoice", {"customer": "Test TCS Customer", "docstatus": 1}, pluck="name"
 	)
+
+	for d in payment_entries:
+		frappe.get_doc("Payment Entry", d).cancel()
 
 	for d in purchase_invoices:
 		frappe.get_doc("Purchase Invoice", d).cancel()
