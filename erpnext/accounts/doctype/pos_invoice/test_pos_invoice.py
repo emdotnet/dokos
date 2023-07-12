@@ -26,16 +26,16 @@ class TestPOSInvoice(unittest.TestCase):
 		frappe.db.sql("delete from `tabTax Rule`")
 
 	def setUp(self):
-		frappe.db.savepoint("before_test")
+		frappe.db.commit()
 
 	def tearDown(self):
+		frappe.db.rollback()
+
 		if frappe.session.user != "Administrator":
 			frappe.set_user("Administrator")
 
 		if frappe.db.get_single_value("Selling Settings", "validate_selling_price"):
 			frappe.db.set_single_value("Selling Settings", "validate_selling_price", 0)
-
-		frappe.db.rollback(save_point="before_test")
 
 	def test_timestamp_change(self):
 		w = create_pos_invoice(do_not_save=1)
