@@ -4,7 +4,6 @@ data = {
 		"Assets",
 		"Payroll",
 		"Projects",
-		"Loan Management",
 		"Quality Management",
 		"HR",
 		"Stock",
