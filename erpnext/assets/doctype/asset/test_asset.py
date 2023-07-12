@@ -157,6 +157,7 @@ class TestAsset(AssetSetup):
 		)
 		self.assertSequenceEqual(gle, expected_gle)
 
+		pi.reload()
 		pi.cancel()
 		asset.cancel()
 		asset.load_from_db()
@@ -353,6 +354,7 @@ class TestAsset(AssetSetup):
 
 		self.assertSequenceEqual(gle, expected_gle)
 
+		si.reload()
 		si.cancel()
 		self.assertEqual(frappe.db.get_value("Asset", asset.name, "status"), "Partially Depreciated")
 
