@@ -107,6 +107,9 @@ class PaymentEntry(AccountsController):
 		self.set_status()
 
 	def set_liability_account(self):
+		if not self.party_type and not self.party:
+			return
+
 		account_type = frappe.get_value(
 			"Account", {"name": self.party_account, "company": self.company}, "account_type"
 		)
