@@ -142,7 +142,7 @@ def default_accounts_mapping(accounts, company):
 		"disposal_account": 675,
 		"capital_work_in_progress_account": 231,
 		"asset_received_but_not_billed": 722,
-		"default_down_payment_receivable_account": 4191,
+		"default_advance_received_account": 4191,
 		"default_down_payment_payable_account": 4091,
 	}
 

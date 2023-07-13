@@ -16,7 +16,7 @@ class TestDownPayment(FrappeTestCase):
 		frappe.db.set_value(
 			"Company",
 			"_Test Company",
-			"default_down_payment_receivable_account",
+			"default_advance_received_account",
 			"_Test Down Payment - _TC",
 		)
 
@@ -210,7 +210,7 @@ class TestDownPaymentMultiplePayments(FrappeTestCase):
 		frappe.db.set_value(
 			"Company",
 			"_Test Company",
-			"default_down_payment_receivable_account",
+			"default_advance_received_account",
 			"_Test Down Payment USD - _TC",
 		)
 
