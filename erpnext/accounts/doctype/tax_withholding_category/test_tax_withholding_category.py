@@ -216,11 +216,6 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 		tcs_charged += sum([d.base_tax_amount for d in si3.taxes if d.account_head == "TCS - _TC"])
 		self.assertEqual(tcs_charged, 1500)
 
-		# cancel invoice and payments to avoid clashing
-		for d in reversed(vouchers):
-			d.reload()
-			d.cancel()
-
 	def test_tds_calculation_on_net_total(self):
 		frappe.db.set_value(
 			"Supplier", "Test TDS Supplier4", "tax_withholding_category", "Cumulative Threshold TDS"
