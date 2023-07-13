@@ -46,7 +46,7 @@ class TestDownPayment(FrappeTestCase):
 			filters={"voucher_type": "Sales Invoice", "voucher_no": dp_invoice.name},
 			pluck="account",
 		)
-		self.assertListEqual(gl_entries, ["_Test Down Payment - _TC", "_Test Receivable - _TC"])
+		self.assertListEqual(gl_entries, ["_Test Down Payment - _TC", "Debtors - _TC"])
 
 	def test_outstanding_amount_for_advances(self):
 		dp_invoice_1 = self.make()
@@ -101,7 +101,7 @@ class TestDownPayment(FrappeTestCase):
 		pe.insert()
 		pe.submit()
 
-		self.assertTrue(pe.paid_from == "_Test Receivable - _TC")
+		self.assertTrue(pe.paid_from == "Debtors - _TC")
 
 		dp_invoice.reload()
 		self.assertTrue(flt(dp_invoice.outstanding_amount) == 0)
@@ -170,7 +170,7 @@ class TestDownPayment(FrappeTestCase):
 		final_invoice.items[0].item_code = "_Test Item"
 		final_invoice.items[0].income_account = "Sales - _TC"
 		final_invoice.items[0].rate = 1000
-		final_invoice.debit_to = "_Test Receivable - _TC"
+		final_invoice.debit_to = "Debtors - _TC"
 		final_invoice.allocate_advances_automatically = 0
 		final_invoice.insert()
 
@@ -200,9 +200,7 @@ class TestDownPayment(FrappeTestCase):
 		self.assertTrue(
 			not any(x.get("account") == "_Test Down Payment - _TC" for x in gl if x.is_cancelled == 0)
 		)
-		self.assertTrue(
-			any(x.get("account") == "_Test Receivable - _TC" for x in gl if x.is_cancelled == 0)
-		)
+		self.assertTrue(any(x.get("account") == "Debtors - _TC" for x in gl if x.is_cancelled == 0))
 
 
 class TestDownPaymentMultiplePayments(FrappeTestCase):
