@@ -1027,6 +1027,7 @@ class PaymentEntry(AccountsController):
 						"against_voucher_type": against_voucher_type,
 						"against_voucher": against_voucher,
 						"cost_center": cost_center,
+						"is_advance": "No",
 					}
 				)
 				gl_entries.append(gle)
@@ -1040,6 +1041,7 @@ class PaymentEntry(AccountsController):
 					{
 						dr_or_cr + "_in_account_currency": self.unallocated_amount,
 						dr_or_cr: base_unallocated_amount,
+						"is_advance": "Yes",
 					}
 				)
 

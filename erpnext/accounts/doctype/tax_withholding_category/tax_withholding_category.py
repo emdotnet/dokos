@@ -361,6 +361,7 @@ def get_advance_vouchers(
 	conditions.append(ple.party_type == party_type)
 	conditions.append(ple.party.isin(parties))
 	conditions.append(ple.voucher_no == ple.against_voucher_no)
+	conditions.append(ple.is_advance == 1)
 
 	if company:
 		conditions.append(ple.company == company)
@@ -533,10 +534,8 @@ def get_tcs_amount(parties, inv, tax_details, vouchers, adv_vouchers):
 	conditions.append(ple.party.isin(parties))
 	conditions.append(ple.voucher_no == ple.against_voucher_no)
 	conditions.append(ple.company == inv.company)
-
-	advances = (
-		qb.from_(ple).select(Abs(Sum(ple.amount))).where(Criterion.all(conditions)).run(as_list=1)
-	)
+	conditions.append(ple.against_voucher_no.isin(adv_vouchers))
+	conditions.append(ple.is_advance == 1)
 
 	advance_amt = (
 		qb.from_(ple).select(Abs(Sum(ple.amount))).where(Criterion.all(conditions)).run()[0][0] or 0.0

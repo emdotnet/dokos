@@ -376,6 +376,9 @@ def get_party_account(
 	Will first search in party (Customer / Supplier) record, if not found,
 	will search in group (Customer Group / Supplier Group),
 	finally will return default."""
+	if down_payment:
+		include_advance = True
+
 	if not company:
 		frappe.throw(_("Please select a Company"))
 
@@ -385,14 +388,6 @@ def get_party_account(
 		)
 
 		return frappe.get_cached_value("Company", company, default_account_name)
-
-	if cint(down_payment) and party_type in ["Customer", "Supplier"]:
-		query_field = (
-			"default_down_payment_receivable_account"
-			if party_type == "Customer"
-			else "default_down_payment_payable_account"
-		)
-		return frappe.get_cached_value("Company", company, query_field)
 
 	account = frappe.db.get_value(
 		"Party Account", {"parenttype": party_type, "parent": party, "company": company}, "account"
@@ -451,6 +446,13 @@ def get_party_advance_account(party_type, party, company):
 			"default_advance_received_account"
 			if party_type == "Customer"
 			else "default_advance_paid_account"
+		)
+		account = frappe.get_cached_value("Company", company, account_name)
+
+	# Fallback in case specific accounts are not defined
+	if not account:
+		account_name = (
+			"default_receivable_account" if party_type == "Customer" else "default_payable_account"
 		)
 		account = frappe.get_cached_value("Company", company, account_name)
 
