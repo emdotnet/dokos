@@ -119,6 +119,11 @@ class PaymentEntry(AccountsController):
 		):
 			return
 
+		# There is no specific configuration yet for different accounts per currency
+		# TODO: Handle multi-currency cases
+		if erpnext.get_company_currency(self.company) != self.get(self.party_account_currency):
+			return
+
 		if self.unallocated_amount == 0:
 			for d in self.references:
 				if d.reference_doctype in ["Sales Order", "Purchase Order"]:
@@ -134,7 +139,7 @@ class PaymentEntry(AccountsController):
 		self.set(self.party_account_field, liability_account)
 
 		msg = _(
-			"Book Advance Payments as Liability option is chosen. Paid From account changed from {0} to {1}."
+			"This payment is an advance, the Paid From account has been changed from {0} to {1}."
 		).format(
 			frappe.bold(self.party_account),
 			frappe.bold(liability_account),
