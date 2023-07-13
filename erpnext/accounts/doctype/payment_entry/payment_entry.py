@@ -1022,8 +1022,8 @@ class PaymentEntry(AccountsController):
 
 				allocated_amount_in_company_currency = self.calculate_base_allocated_amount_for_reference(d)
 
-				against_voucher_type = "Payment Entry"
-				against_voucher = self.name
+				against_voucher_type = d.reference_doctype
+				against_voucher = d.reference_name
 
 				gle.update(
 					{
