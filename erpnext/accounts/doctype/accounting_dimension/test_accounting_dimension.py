@@ -95,7 +95,7 @@ def create_dimension():
 		).insert()
 	else:
 		dimension = frappe.get_doc("Accounting Dimension", "Department")
-		dimension.disabled = 1
+		dimension.disabled = 0
 		dimension.save()
 
 	if not frappe.db.exists("Accounting Dimension", {"document_type": "Location"}):
@@ -120,7 +120,7 @@ def create_dimension():
 		dimension1.save()
 	else:
 		dimension1 = frappe.get_doc("Accounting Dimension", "Location")
-		dimension1.disabled = 1
+		dimension1.disabled = 0
 		dimension1.save()
 
 

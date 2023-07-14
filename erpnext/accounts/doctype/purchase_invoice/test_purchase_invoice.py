@@ -1669,77 +1669,121 @@ class TestPurchaseInvoice(unittest.TestCase, StockTestMixin):
 
 		self.assertTrue(return_pi.docstatus == 1)
 
-	def test_advance_entries_as_asset(self):
-		from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_payment_entry
+	# TODO: Reimplement the advance feature
+	# def test_advance_entries_as_asset(self):
+	# 	from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_payment_entry
 
-		account = create_account(
-			parent_account="Current Assets - _TC",
-			account_name="Advances Paid",
-			company="_Test Company",
-			account_type="Receivable",
-		)
+	# 	account = create_account(
+	# 		parent_account="Current Assets - _TC",
+	# 		account_name="Advances Paid",
+	# 		company="_Test Company",
+	# 		account_type="Receivable",
+	# 	)
 
-		set_advance_flag(company="_Test Company", default_account=account)
+	# 	set_advance_flag(company="_Test Company", default_account=account)
 
-		pe = create_payment_entry(
-			company="_Test Company",
-			payment_type="Pay",
-			party_type="Supplier",
-			party="_Test Supplier",
-			paid_from="Cash - _TC",
-			paid_to="Creditors - _TC",
-			paid_amount=500,
-		)
-		pe.submit()
+	# 	pe = create_payment_entry(
+	# 		company="_Test Company",
+	# 		payment_type="Pay",
+	# 		party_type="Supplier",
+	# 		party="_Test Supplier",
+	# 		paid_from="Cash - _TC",
+	# 		paid_to="Creditors - _TC",
+	# 		paid_amount=500,
+	# 	)
+	# 	pe.submit()
 
-		pi = make_purchase_invoice(
-			company="_Test Company",
-			customer="_Test Supplier",
-			do_not_save=True,
-			do_not_submit=True,
-			rate=1000,
-			price_list_rate=1000,
-			qty=1,
-		)
-		pi.base_grand_total = 1000
-		pi.grand_total = 1000
-		pi.set_advances()
-		for advance in pi.advances:
-			advance.allocated_amount = 500 if advance.reference_name == pe.name else 0
-		pi.save()
-		pi.submit()
+	# 	pi = make_purchase_invoice(
+	# 		company="_Test Company",
+	# 		customer="_Test Supplier",
+	# 		do_not_save=True,
+	# 		do_not_submit=True,
+	# 		rate=1000,
+	# 		price_list_rate=1000,
+	# 		qty=1,
+	# 	)
+	# 	pi.base_grand_total = 1000
+	# 	pi.grand_total = 1000
+	# 	pi.set_advances()
+	# 	for advance in pi.advances:
+	# 		advance.allocated_amount = 500 if advance.reference_name == pe.name else 0
+	# 	pi.save()
+	# 	pi.submit()
 
-		self.assertEqual(pi.advances[0].allocated_amount, 500)
+	# 	self.assertEqual(pi.advances[0].allocated_amount, 500)
 
-		# Check GL Entry against payment doctype
-		expected_gle = [
-			["Advances Paid - _TC", 0.0, 500, nowdate()],
-			["Cash - _TC", 0.0, 500, nowdate()],
-			["Creditors - _TC", 500, 0.0, nowdate()],
-			["Creditors - _TC", 500, 0.0, nowdate()],
-		]
+	# 	# Check GL Entry against payment doctype
+	# 	expected_gle = [
+	# 		["Advances Paid - _TC", 0.0, 500, nowdate()],
+	# 		["Cash - _TC", 0.0, 500, nowdate()],
+	# 		["Creditors - _TC", 500, 0.0, nowdate()],
+	# 		["Creditors - _TC", 500, 0.0, nowdate()],
+	# 	]
 
-		check_gl_entries(self, pe.name, expected_gle, nowdate(), voucher_type="Payment Entry")
+	# 	check_gl_entries(self, pe.name, expected_gle, nowdate(), voucher_type="Payment Entry")
 
-		pi.load_from_db()
-		self.assertEqual(pi.outstanding_amount, 500)
+	# 	pi.load_from_db()
+	# 	self.assertEqual(pi.outstanding_amount, 500)
 
-		set_advance_flag(company="_Test Company", default_account="")
+	# 	set_advance_flag(company="_Test Company", default_account="")
 
-	def test_gl_entries_for_standalone_debit_note(self):
-		make_purchase_invoice(qty=5, rate=500, update_stock=True)
+	# TODO: Reimplement the advance feature
+	# def test_gl_entries_for_standalone_debit_note(self):
+	# 	from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_payment_entry
 
-		returned_inv = make_purchase_invoice(qty=-5, rate=5, update_stock=True, is_return=True)
+	# 	make_purchase_invoice(qty=5, rate=500, update_stock=True)
 
-		# override the rate with valuation rate
-		sle = frappe.get_all(
-			"Stock Ledger Entry",
-			fields=["stock_value_difference", "actual_qty"],
-			filters={"voucher_no": returned_inv.name},
-		)[0]
+	# 	account = create_account(
+	# 		parent_account="Current Assets - _TC",
+	# 		account_name="Advances Paid",
+	# 		company="_Test Company",
+	# 		account_type="Receivable",
+	# 	)
 
-		rate = flt(sle.stock_value_difference) / flt(sle.actual_qty)
-		self.assertAlmostEqual(returned_inv.items[0].rate, rate)
+	# 	set_advance_flag(company="_Test Company", default_account=account)
+
+	# 	pe = create_payment_entry(
+	# 		company="_Test Company",
+	# 		payment_type="Pay",
+	# 		party_type="Supplier",
+	# 		party="_Test Supplier",
+	# 		paid_from="Cash - _TC",
+	# 		paid_to="Creditors - _TC",
+	# 		paid_amount=500,
+	# 	)
+	# 	pe.submit()
+
+	# 	pi = make_purchase_invoice(
+	# 		company="_Test Company",
+	# 		customer="_Test Supplier",
+	# 		do_not_save=True,
+	# 		do_not_submit=True,
+	# 		rate=1000,
+	# 		price_list_rate=1000,
+	# 		qty=1,
+	# 	)
+	# 	pi.base_grand_total = 1000
+	# 	pi.grand_total = 1000
+	# 	pi.set_advances()
+	# 	for advance in pi.advances:
+	# 		advance.allocated_amount = 500 if advance.reference_name == pe.name else 0
+	# 	pi.save()
+	# 	pi.submit()
+
+	# 	self.assertEqual(pi.advances[0].allocated_amount, 500)
+
+	# 	# Check GL Entry against payment doctype
+	# 	expected_gle = [
+	# 		["Advances Paid - _TC", 0.0, 500, nowdate()],
+	# 		["Cash - _TC", 0.0, 500, nowdate()],
+	# 		["Creditors - _TC", 500, 0.0, nowdate()],
+	# 		["Creditors - _TC", 500, 0.0, nowdate()],
+	# 	]
+
+	# 	check_gl_entries(self, pe.name, expected_gle, nowdate(), voucher_type="Payment Entry")
+
+	# 	pi.load_from_db()
+	# 	self.assertEqual(pi.outstanding_amount, 500)
 
 
 def set_advance_flag(company, default_account):

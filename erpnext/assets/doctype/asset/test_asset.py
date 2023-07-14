@@ -157,6 +157,7 @@ class TestAsset(AssetSetup):
 		)
 		self.assertSequenceEqual(gle, expected_gle)
 
+		pi.reload()
 		pi.cancel()
 		asset.cancel()
 		asset.load_from_db()
@@ -353,8 +354,86 @@ class TestAsset(AssetSetup):
 
 		self.assertSequenceEqual(gle, expected_gle)
 
+		si.reload()
 		si.cancel()
 		self.assertEqual(frappe.db.get_value("Asset", asset.name, "status"), "Partially Depreciated")
+
+	def test_gle_made_by_asset_sale_for_existing_asset(self):
+		from erpnext.accounts.doctype.sales_invoice.test_sales_invoice import create_sales_invoice
+
+		asset = create_asset(
+			calculate_depreciation=1,
+			available_for_use_date="2020-04-01",
+			purchase_date="2020-04-01",
+			expected_value_after_useful_life=0,
+			total_number_of_depreciations=5,
+			number_of_depreciations_booked=2,
+			frequency_of_depreciation=12,
+			depreciation_start_date="2023-03-31",
+			opening_accumulated_depreciation=24000,
+			gross_purchase_amount=60000,
+			submit=1,
+		)
+
+		expected_depr_values = [
+			["2023-03-31", 12000, 36000],
+			["2024-03-31", 12000, 48000],
+			["2025-03-31", 12000, 60000],
+		]
+
+		first_asset_depr_schedule = get_depr_schedule(asset.name, "Active")
+
+		for i, schedule in enumerate(first_asset_depr_schedule):
+			self.assertEqual(getdate(expected_depr_values[i][0]), schedule.schedule_date)
+			self.assertEqual(expected_depr_values[i][1], schedule.depreciation_amount)
+			self.assertEqual(expected_depr_values[i][2], schedule.accumulated_depreciation_amount)
+
+		post_depreciation_entries(date="2023-03-31")
+
+		si = create_sales_invoice(
+			item_code="Macbook Pro", asset=asset.name, qty=1, rate=40000, posting_date=getdate("2023-05-23")
+		)
+		asset.load_from_db()
+
+		self.assertEqual(frappe.db.get_value("Asset", asset.name, "status"), "Sold")
+
+		expected_values = [["2023-03-31", 12000, 36000], ["2023-05-23", 1742.47, 37742.47]]
+
+		second_asset_depr_schedule = get_depr_schedule(asset.name, "Active")
+
+		for i, schedule in enumerate(second_asset_depr_schedule):
+			self.assertEqual(getdate(expected_values[i][0]), schedule.schedule_date)
+			self.assertEqual(expected_values[i][1], schedule.depreciation_amount)
+			self.assertEqual(expected_values[i][2], schedule.accumulated_depreciation_amount)
+			self.assertTrue(schedule.journal_entry)
+
+		expected_gle = (
+			(
+				"_Test Accumulated Depreciations - _TC",
+				37742.47,
+				0.0,
+			),
+			(
+				"_Test Fixed Asset - _TC",
+				0.0,
+				60000.0,
+			),
+			(
+				"_Test Gain/Loss on Asset Disposal - _TC",
+				0.0,
+				17742.47,
+			),
+			("Debtors - _TC", 40000.0, 0.0),
+		)
+
+		gle = frappe.db.sql(
+			"""select account, debit, credit from `tabGL Entry`
+			where voucher_type='Sales Invoice' and voucher_no = %s
+			order by account""",
+			si.name,
+		)
+
+		self.assertSequenceEqual(gle, expected_gle)
 
 	def test_asset_with_maintenance_required_status_after_sale(self):
 		asset = create_asset(
@@ -714,9 +793,9 @@ class TestDepreciationMethods(AssetSetup):
 		self.assertEqual(asset.status, "Draft")
 
 		expected_schedules = [
-			["2030-12-31", 66667.00, 66667.00],
-			["2031-12-31", 22222.11, 88889.11],
-			["2032-12-31", 1110.89, 90000.0],
+			["2030-12-31", 66666.70, 66666.70],
+			["2031-12-31", 22222.21, 88888.91],
+			["2032-12-31", 1111.09, 90000.0],
 		]
 
 		schedules = [
@@ -742,7 +821,7 @@ class TestDepreciationMethods(AssetSetup):
 
 		self.assertEqual(asset.status, "Draft")
 
-		expected_schedules = [["2031-12-31", 33333.50, 83333.50], ["2032-12-31", 6666.50, 90000.0]]
+		expected_schedules = [["2031-12-31", 33333.35, 83333.35], ["2032-12-31", 6666.65, 90000.0]]
 
 		schedules = [
 			[cstr(d.schedule_date), d.depreciation_amount, d.accumulated_depreciation_amount]
@@ -860,12 +939,12 @@ class TestDepreciationMethods(AssetSetup):
 		)
 
 		expected_schedules = [
-			["2022-02-28", 310.89, 310.89],
-			["2022-03-31", 654.45, 965.34],
-			["2022-04-30", 654.45, 1619.79],
-			["2022-05-31", 654.45, 2274.24],
-			["2022-06-30", 654.45, 2928.69],
-			["2022-07-15", 2071.31, 5000.0],
+			["2022-02-28", 310.88, 310.88],
+			["2022-03-31", 654.42, 965.30],
+			["2022-04-30", 654.42, 1619.72],
+			["2022-05-31", 654.42, 2274.14],
+			["2022-06-30", 654.42, 2928.56],
+			["2022-07-15", 2071.44, 5000.0],
 		]
 
 		schedules = [

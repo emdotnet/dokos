@@ -476,9 +476,6 @@ def reconcile_against_document(args, skip_ref_details_update_for_pe=False):  # n
 		gl_map = doc.build_gl_map()
 		create_payment_ledger_entry(gl_map, update_outstanding="No", cancel=0, adv_adj=1)
 
-		if voucher_type == "Payment Entry":
-			doc.make_advance_gl_entries()
-
 		# Only update outstanding for newly linked vouchers
 		for entry in entries:
 			update_voucher_outstanding(
@@ -520,6 +517,7 @@ def check_if_advance_entry_modified(args):
 				& ((journal_entry.docstatus == 1))
 			)
 		)
+
 	else:
 		payment_entry = frappe.qb.DocType("Payment Entry")
 		payment_ref = frappe.qb.DocType("Payment Entry Reference")
@@ -747,7 +745,6 @@ def remove_ref_doc_link_from_pe(ref_type, ref_no):
 			try:
 				pe_doc = frappe.get_doc("Payment Entry", pe)
 				pe_doc.set_amounts()
-				pe_doc.make_advance_gl_entries(against_voucher_type=ref_type, against_voucher=ref_no, cancel=1)
 				pe_doc.clear_unallocated_reference_document_rows()
 				pe_doc.validate_payment_type_with_outstanding()
 			except Exception:
@@ -866,7 +863,7 @@ def get_held_invoices(party_type, party):
 
 	if party_type == "Supplier":
 		held_invoices = frappe.db.sql(
-			"select name from `tabPurchase Invoice` where release_date IS NOT NULL and release_date > CURDATE()",
+			"select name from `tabPurchase Invoice` where on_hold = 1 and release_date IS NOT NULL and release_date > CURDATE()",
 			as_dict=1,
 		)
 		held_invoices = set(d["name"] for d in held_invoices)
@@ -1074,7 +1071,7 @@ def create_payment_gateway_account(gateway):
 				"payment_account": bank_account.name,
 				"currency": bank_account.account_currency,
 			}
-		).insert(ignore_permissions=True)
+		).insert(ignore_permissions=True, ignore_if_duplicate=True)
 
 	except frappe.DuplicateEntryError:
 		# already exists, due to a reinstall?
@@ -1493,7 +1490,9 @@ def get_payment_ledger_entries(gl_entries, cancel=0):
 					amount=dr_or_cr,
 					amount_in_account_currency=dr_or_cr_account_currency,
 					delinked=True if cancel else False,
-					is_advance=bool([gl for gl in gl_entries if gl.against == gle.account]),
+					is_advance=bool(
+						[gl for gl in gl_entries if gl.against == gle.account] or gle.is_advance == "Yes"
+					),
 					remarks=gle.remarks,
 				)
 
@@ -1507,7 +1506,7 @@ def get_payment_ledger_entries(gl_entries, cancel=0):
 
 
 def create_payment_ledger_entry(
-	gl_entries, cancel=0, adv_adj=0, update_outstanding="Yes", from_repost=0, partial_cancel=False
+	gl_entries, cancel=0, adv_adj=0, update_outstanding="Yes", from_repost=0
 ):
 	if gl_entries:
 		ple_map = get_payment_ledger_entries(gl_entries, cancel=cancel)
@@ -1517,7 +1516,7 @@ def create_payment_ledger_entry(
 			ple = frappe.get_doc(entry)
 
 			if cancel:
-				delink_original_entry(ple, partial_cancel=partial_cancel)
+				delink_original_entry(ple)
 
 			ple.flags.ignore_permissions = 1
 			ple.flags.adv_adj = adv_adj
@@ -1566,7 +1565,7 @@ def update_voucher_outstanding(voucher_type, voucher_no, account, party_type, pa
 		ref_doc.set_status(update=True)
 
 
-def delink_original_entry(pl_entry, partial_cancel=False):
+def delink_original_entry(pl_entry):
 	if pl_entry:
 		ple = qb.DocType("Payment Ledger Entry")
 		query = (
@@ -1586,9 +1585,6 @@ def delink_original_entry(pl_entry, partial_cancel=False):
 				& (ple.against_voucher_no == pl_entry.against_voucher_no)
 			)
 		)
-
-		if partial_cancel:
-			query = query.where(ple.voucher_detail_no == pl_entry.voucher_detail_no)
 
 		query.run()
 

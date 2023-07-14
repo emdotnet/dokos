@@ -3220,60 +3220,61 @@ class TestSalesInvoice(FrappeTestCase):
 			account.disabled = 0
 			account.save()
 
-	def test_gain_loss_with_advance_entry(self):
-		from erpnext.accounts.doctype.journal_entry.test_journal_entry import make_journal_entry
+	# TODO: Reimplement the advance feature
+	# def test_gain_loss_with_advance_entry(self):
+	# 	from erpnext.accounts.doctype.journal_entry.test_journal_entry import make_journal_entry
 
-		unlink_enabled = frappe.db.get_value(
-			"Accounts Settings", "Accounts Settings", "unlink_payment_on_cancel_of_invoice"
-		)
+	# 	unlink_enabled = frappe.db.get_value(
+	# 		"Accounts Settings", "Accounts Settings", "unlink_payment_on_cancel_of_invoice"
+	# 	)
 
-		frappe.db.set_single_value("Accounts Settings", "unlink_payment_on_cancel_of_invoice", 1)
+	# 	frappe.db.set_single_value("Accounts Settings", "unlink_payment_on_cancel_of_invoice", 1)
 
-		jv = make_journal_entry("_Test Receivable USD - _TC", "_Test Bank - _TC", -7000, save=False)
+	# 	jv = make_journal_entry("_Test Receivable USD - _TC", "_Test Bank - _TC", -7000, save=False)
 
-		jv.accounts[0].exchange_rate = 70
-		jv.accounts[0].credit_in_account_currency = 100
-		jv.accounts[0].party_type = "Customer"
-		jv.accounts[0].party = "_Test Customer USD"
+	# 	jv.accounts[0].exchange_rate = 70
+	# 	jv.accounts[0].credit_in_account_currency = 100
+	# 	jv.accounts[0].party_type = "Customer"
+	# 	jv.accounts[0].party = "_Test Customer USD"
 
-		jv.save()
-		jv.submit()
+	# 	jv.save()
+	# 	jv.submit()
 
-		si = create_sales_invoice(
-			customer="_Test Customer USD",
-			debit_to="_Test Receivable USD - _TC",
-			currency="USD",
-			conversion_rate=75,
-			do_not_save=1,
-			rate=100,
-		)
+	# 	si = create_sales_invoice(
+	# 		customer="_Test Customer USD",
+	# 		debit_to="_Test Receivable USD - _TC",
+	# 		currency="USD",
+	# 		conversion_rate=75,
+	# 		do_not_save=1,
+	# 		rate=100,
+	# 	)
 
-		si.append(
-			"advances",
-			{
-				"reference_type": "Journal Entry",
-				"reference_name": jv.name,
-				"reference_row": jv.accounts[0].name,
-				"advance_amount": 100,
-				"allocated_amount": 100,
-				"ref_exchange_rate": 70,
-			},
-		)
-		si.save()
-		si.submit()
+	# 	si.append(
+	# 		"advances",
+	# 		{
+	# 			"reference_type": "Journal Entry",
+	# 			"reference_name": jv.name,
+	# 			"reference_row": jv.accounts[0].name,
+	# 			"advance_amount": 100,
+	# 			"allocated_amount": 100,
+	# 			"ref_exchange_rate": 70,
+	# 		},
+	# 	)
+	# 	si.save()
+	# 	si.submit()
 
-		expected_gle = [
-			["_Test Exchange Gain/Loss - _TC", 500.0, 0.0, nowdate()],
-			["_Test Receivable USD - _TC", 7500.0, 0.0, nowdate()],
-			["_Test Receivable USD - _TC", 0.0, 500.0, nowdate()],
-			["Sales - _TC", 0.0, 7500.0, nowdate()],
-		]
+	# 	expected_gle = [
+	# 		["_Test Exchange Gain/Loss - _TC", 500.0, 0.0, nowdate()],
+	# 		["_Test Receivable USD - _TC", 7500.0, 0.0, nowdate()],
+	# 		["_Test Receivable USD - _TC", 0.0, 500.0, nowdate()],
+	# 		["Sales - _TC", 0.0, 7500.0, nowdate()],
+	# 	]
 
-		check_gl_entries(self, si.name, expected_gle, nowdate())
+	# 	check_gl_entries(self, si.name, expected_gle, nowdate())
 
-		frappe.db.set_single_value(
-			"Accounts Settings", "unlink_payment_on_cancel_of_invoice", unlink_enabled
-		)
+	# 	frappe.db.set_single_value(
+	# 		"Accounts Settings", "unlink_payment_on_cancel_of_invoice", unlink_enabled
+	# 	)
 
 	def test_batch_expiry_for_sales_invoice_return(self):
 		from erpnext.controllers.sales_and_purchase_return import make_return_doc
@@ -3306,64 +3307,65 @@ class TestSalesInvoice(FrappeTestCase):
 
 		self.assertTrue(return_si.docstatus == 1)
 
-	def test_advance_entries_as_liability(self):
-		from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_payment_entry
+	# TODO: Reimplement the advance feature
+	# def test_advance_entries_as_liability(self):
+	# 	from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_payment_entry
 
-		account = create_account(
-			parent_account="Current Liabilities - _TC",
-			account_name="Advances Received",
-			company="_Test Company",
-			account_type="Receivable",
-		)
+	# 	account = create_account(
+	# 		parent_account="Current Liabilities - _TC",
+	# 		account_name="Advances Received",
+	# 		company="_Test Company",
+	# 		account_type="Receivable",
+	# 	)
 
-		set_advance_flag(company="_Test Company", default_account=account)
+	# 	set_advance_flag(company="_Test Company", default_account=account)
 
-		pe = create_payment_entry(
-			company="_Test Company",
-			payment_type="Receive",
-			party_type="Customer",
-			party="_Test Customer",
-			paid_from="Debtors - _TC",
-			paid_to="Cash - _TC",
-			paid_amount=1000,
-		)
-		pe.submit()
+	# 	pe = create_payment_entry(
+	# 		company="_Test Company",
+	# 		payment_type="Receive",
+	# 		party_type="Customer",
+	# 		party="_Test Customer",
+	# 		paid_from="Debtors - _TC",
+	# 		paid_to="Cash - _TC",
+	# 		paid_amount=1000,
+	# 	)
+	# 	pe.submit()
 
-		si = create_sales_invoice(
-			company="_Test Company",
-			customer="_Test Customer",
-			do_not_save=True,
-			do_not_submit=True,
-			rate=500,
-			price_list_rate=500,
-		)
-		si.base_grand_total = 500
-		si.grand_total = 500
-		si.set_advances()
-		for advance in si.advances:
-			advance.allocated_amount = 500 if advance.reference_name == pe.name else 0
-		si.save()
-		si.submit()
+	# 	si = create_sales_invoice(
+	# 		company="_Test Company",
+	# 		customer="_Test Customer",
+	# 		do_not_save=True,
+	# 		do_not_submit=True,
+	# 		rate=500,
+	# 		price_list_rate=500,
+	# 	)
+	# 	si.base_grand_total = 500
+	# 	si.grand_total = 500
+	# 	si.set_advances()
+	# 	for advance in si.advances:
+	# 		advance.allocated_amount = 500 if advance.reference_name == pe.name else 0
+	# 	si.save()
+	# 	si.submit()
 
-		self.assertEqual(si.advances[0].allocated_amount, 500)
+	# 	self.assertEqual(si.advances[0].allocated_amount, 500)
 
-		# Check GL Entry against payment doctype
-		expected_gle = [
-			["Advances Received - _TC", 500, 0.0, nowdate()],
-			["Cash - _TC", 1000, 0.0, nowdate()],
-			["Debtors - _TC", 0.0, 1000, nowdate()],
-			["Debtors - _TC", 0.0, 500, nowdate()],
-		]
+	# 	# Check GL Entry against payment doctype
+	# 	expected_gle = [
+	# 		["Advances Received - _TC", 500, 0.0, nowdate()],
+	# 		["Cash - _TC", 1000, 0.0, nowdate()],
+	# 		["Debtors - _TC", 0.0, 1000, nowdate()],
+	# 		["Debtors - _TC", 0.0, 500, nowdate()],
+	# 	]
 
-		check_gl_entries(self, pe.name, expected_gle, nowdate(), voucher_type="Payment Entry")
+	# 	check_gl_entries(self, pe.name, expected_gle, nowdate(), voucher_type="Payment Entry")
 
-		si.load_from_db()
-		self.assertEqual(si.outstanding_amount, 0)
+	# 	si.load_from_db()
+	# 	self.assertEqual(si.outstanding_amount, 0)
 
-		set_advance_flag(company="_Test Company", default_account="")
+	# 	set_advance_flag(company="_Test Company", default_account="")
 
 
-def set_advance_flag(company, flag, default_account):
+def set_advance_flag(company, default_account):
 	frappe.db.set_value(
 		"Company",
 		company,

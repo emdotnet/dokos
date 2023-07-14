@@ -54,7 +54,6 @@
   "default_cash_account",
   "inter_banks_transfer_account",
   "default_receivable_account",
-  "default_down_payment_receivable_account",
   "round_off_account",
   "round_off_cost_center",
   "write_off_account",
@@ -66,7 +65,6 @@
   "column_break0",
   "allow_account_creation_against_child_company",
   "default_payable_account",
-  "default_down_payment_payable_account",
   "default_expense_account",
   "default_income_account",
   "default_deferred_revenue_account",
@@ -670,23 +668,6 @@
    "options": "Warehouse"
   },
   {
-   "depends_on": "eval:!doc.__islocal",
-   "fieldname": "default_down_payment_receivable_account",
-   "fieldtype": "Link",
-   "ignore_user_permissions": 1,
-   "label": "Default Down Payment Receivable Account",
-   "no_copy": 1,
-   "options": "Account"
-  },
-  {
-   "fieldname": "default_down_payment_payable_account",
-   "fieldtype": "Link",
-   "ignore_user_permissions": 1,
-   "label": "Default Down Payment Payable Account",
-   "no_copy": 1,
-   "options": "Account"
-  },
-  {
    "fieldname": "discount_allowed_account",
    "fieldtype": "Link",
    "label": "Discount Allowed Account",
@@ -749,6 +730,7 @@
    "fieldtype": "Link",
    "label": "Default Advance Received Account",
    "mandatory_depends_on": "book_advance_payments_as_liability",
+   "no_copy": 1,
    "options": "Account"
   },
   {
@@ -768,7 +750,7 @@
  "image_field": "company_logo",
  "is_tree": 1,
  "links": [],
- "modified": "2023-06-23 18:22:27.219706",
+ "modified": "2023-07-13 18:22:27.219706",
  "modified_by": "Administrator",
  "module": "Setup",
  "name": "Company",

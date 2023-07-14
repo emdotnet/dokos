@@ -55,12 +55,8 @@ class PaymentReconciliation(Document):
 		self.add_payment_entries(non_reconciled_payments)
 
 	def get_payment_entries(self):
-		if self.default_advance_account:
-			party_account = [self.receivable_payable_account, self.default_advance_account]
-		else:
-			party_account = [self.receivable_payable_account]
-
 		order_doctype = "Sales Order" if self.party_type == "Customer" else "Purchase Order"
+
 		condition = frappe._dict(
 			{
 				"company": self.get("company"),
@@ -76,7 +72,7 @@ class PaymentReconciliation(Document):
 		payment_entries = get_advance_payment_entries(
 			self.party_type,
 			self.party,
-			party_account,
+			self.receivable_payable_account,
 			order_doctype,
 			against_all_orders=True,
 			limit=self.payment_limit,

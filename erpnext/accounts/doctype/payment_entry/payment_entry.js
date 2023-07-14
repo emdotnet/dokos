@@ -23,7 +23,6 @@ frappe.ui.form.on('Payment Entry', {
 
 			var account_types = in_list(["Pay", "Internal Transfer"], frm.doc.payment_type) ?
 				["Bank", "Cash"] : [frappe.boot.party_account_types[frm.doc.party_type]];
-
 			return {
 				filters: {
 					"account_type": ["in", account_types],
@@ -74,7 +73,6 @@ frappe.ui.form.on('Payment Entry', {
 
 			var account_types = in_list(["Receive", "Internal Transfer"], frm.doc.payment_type) ?
 				["Bank", "Cash"] : [frappe.boot.party_account_types[frm.doc.party_type]];
-
 			return {
 				filters: {
 					"account_type": ["in", account_types],
@@ -365,7 +363,7 @@ frappe.ui.form.on('Payment Entry', {
 					party_type: frm.doc.party_type,
 					party: frm.doc.party,
 					date: frm.doc.posting_date,
-					cost_center: frm.doc.cost_center,
+					cost_center: frm.doc.cost_center
 				},
 				callback: function(r, rt) {
 					if(r.message) {
@@ -767,7 +765,6 @@ frappe.ui.form.on('Payment Entry', {
 				if(r.message) {
 					var total_positive_outstanding = 0;
 					var total_negative_outstanding = 0;
-
 					$.each(r.message, function(i, d) {
 						var c = frm.add_child("references");
 						c.reference_doctype = d.voucher_type;
@@ -1496,7 +1493,6 @@ frappe.ui.form.on('Payment Entry', {
 		}
 	},
 })
-
 
 frappe.tour["Payment Entry"] = [
 	{

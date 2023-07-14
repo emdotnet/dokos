@@ -786,13 +786,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "accounting_journal",
-   "fieldtype": "Link",
-   "label": "Accounting Journal",
-   "options": "Accounting Journal",
-   "read_only": 1
-  },
-  {
    "depends_on": "eval:doc.docstatus==0",
    "fieldname": "get_outstanding_invoices",
    "fieldtype": "Button",
@@ -803,6 +796,13 @@
    "fieldname": "get_outstanding_orders",
    "fieldtype": "Button",
    "label": "Get Outstanding Orders"
+  },
+  {
+   "fieldname": "accounting_journal",
+   "fieldtype": "Link",
+   "label": "Accounting Journal",
+   "options": "Accounting Journal",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

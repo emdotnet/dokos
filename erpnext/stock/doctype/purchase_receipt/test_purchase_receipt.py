@@ -937,6 +937,7 @@ class TestPurchaseReceipt(FrappeTestCase):
 		self.assertEqual(pi2.items[1].qty, 1)
 
 		pr2.cancel()
+		pi1.reload()
 		pi1.cancel()
 		pr1.reload()
 		pr1.cancel()
@@ -1691,7 +1692,7 @@ class TestPurchaseReceipt(FrappeTestCase):
 
 		# Step - 3: Create back-date Stock Reconciliation [After DN and Before PR]
 		create_stock_reconciliation(
-			item_code=item,
+			item_code=item.name,
 			warehouse=target_warehouse,
 			qty=10,
 			rate=50,

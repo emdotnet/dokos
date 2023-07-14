@@ -1038,6 +1038,10 @@ class SalesInvoice(SellingController):
 			debit_to = get_party_account(
 				"Customer", self.customer, self.company, self.is_down_payment_invoice
 			)
+
+			if isinstance(debit_to, list):
+				debit_to = debit_to[-1]
+
 			for d in self.get("items"):
 				d.income_account = debit_to
 

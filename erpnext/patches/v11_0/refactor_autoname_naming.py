@@ -35,8 +35,6 @@ doctype_series_map = {
 	"Leave Encashment": "HR-ENC-.YYYY.-.#####",
 	"Leave Period": "HR-LPR-.YYYY.-.#####",
 	"Leave Policy": "HR-LPOL-.YYYY.-.#####",
-	"Loan": "ACC-LOAN-.YYYY.-.#####",
-	"Loan Application": "ACC-LOAP-.YYYY.-.#####",
 	"Loyalty Point Entry": "",
 	"Packing Slip": "MAT-PAC-.YYYY.-.#####",
 	"Patient Appointment": "HLC-APP-.YYYY.-.#####",

@@ -895,9 +895,9 @@ class TestPaymentReconciliation(FrappeTestCase):
 		self.assertEqual(pr.allocation[0].difference_amount, 0)
 
 	def test_reconciliation_purchase_invoice_against_return(self):
-		pi = make_purchase_invoice(
-			supplier="_Test Supplier USD", currency="USD", conversion_rate=50
-		).submit()
+		pi = make_purchase_invoice(supplier="_Test Supplier USD", currency="USD", conversion_rate=50)
+		pi.reload()
+		pi.submit()
 
 		pi_return = frappe.get_doc(pi.as_dict())
 		pi_return.name = None

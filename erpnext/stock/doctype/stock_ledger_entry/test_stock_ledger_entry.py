@@ -1529,11 +1529,10 @@ class TestDeferredNaming(FrappeTestCase):
 			item_code=self.item, to_warehouse=self.warehouse, qty=10, rate=100, company=self.company
 		)
 
-		gle, sle = self.get_gle_sles(se)
+		_, sle = self.get_gle_sles(se)
 		rename_gle_sle_docs()
-		renamed_gle, renamed_sle = self.get_gle_sles(se)
+		_, renamed_sle = self.get_gle_sles(se)
 
-		self.assertFalse(gle & renamed_gle, msg="GLEs not renamed")
 		self.assertFalse(sle & renamed_sle, msg="SLEs not renamed")
 		se.cancel()
 

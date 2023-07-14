@@ -55,6 +55,7 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 		# delete invoices to avoid clashing
 		for d in reversed(invoices):
+			d.reload()
 			d.cancel()
 
 	def test_single_threshold_tds(self):
@@ -93,6 +94,7 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 		# delete invoices to avoid clashing
 		for d in reversed(invoices):
+			d.reload()
 			d.cancel()
 
 	def test_tax_withholding_category_checks(self):
@@ -214,11 +216,6 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 		tcs_charged += sum([d.base_tax_amount for d in si3.taxes if d.account_head == "TCS - _TC"])
 		self.assertEqual(tcs_charged, 1500)
 
-		# cancel invoice and payments to avoid clashing
-		for d in reversed(vouchers):
-			d.reload()
-			d.cancel()
-
 	def test_tds_calculation_on_net_total(self):
 		frappe.db.set_value(
 			"Supplier", "Test TDS Supplier4", "tax_withholding_category", "Cumulative Threshold TDS"
@@ -251,6 +248,7 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 		# cancel invoices to avoid clashing
 		for d in reversed(invoices):
+			d.reload()
 			d.cancel()
 
 	def test_tds_calculation_on_net_total_partial_tds(self):
@@ -292,6 +290,7 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 		# cancel invoices to avoid clashing
 		for d in reversed(invoices):
+			d.reload()
 			d.cancel()
 
 		orders = []
@@ -328,6 +327,7 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 		# cancel orders to avoid clashing
 		for d in reversed(orders):
+			d.reload()
 			d.cancel()
 
 	def test_multi_category_single_supplier(self):
@@ -355,6 +355,7 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 		# cancel invoices to avoid clashing
 		for d in reversed(invoices):
+			d.reload()
 			d.cancel()
 
 	def test_tax_withholding_category_voucher_display(self):
@@ -400,6 +401,7 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 		# cancel invoices to avoid clashing
 		for d in reversed(invoices):
+			d.reload()
 			d.cancel()
 
 	def test_tax_withholding_via_payment_entry_for_advances(self):
@@ -436,10 +438,38 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 
 
 def cancel_invoices():
+	payment_entries = frappe.get_all(
+		"Payment Entry",
+		{
+			"party": [
+				"in",
+				[
+					"Test TDS Supplier",
+					"Test TDS Supplier1",
+					"Test TDS Supplier2",
+					"Test TDS Supplier3",
+					"Test TDS Supplier4",
+					"Test TCS Customer",
+				],
+			],
+			"docstatus": 1,
+		},
+		pluck="name",
+	)
+
 	purchase_invoices = frappe.get_all(
 		"Purchase Invoice",
 		{
-			"supplier": ["in", ["Test TDS Supplier", "Test TDS Supplier1", "Test TDS Supplier2"]],
+			"supplier": [
+				"in",
+				[
+					"Test TDS Supplier",
+					"Test TDS Supplier1",
+					"Test TDS Supplier2",
+					"Test TDS Supplier3",
+					"Test TDS Supplier4",
+				],
+			],
 			"docstatus": 1,
 		},
 		pluck="name",
@@ -448,6 +478,9 @@ def cancel_invoices():
 	sales_invoices = frappe.get_all(
 		"Sales Invoice", {"customer": "Test TCS Customer", "docstatus": 1}, pluck="name"
 	)
+
+	for d in payment_entries:
+		frappe.get_doc("Payment Entry", d).cancel()
 
 	for d in purchase_invoices:
 		frappe.get_doc("Purchase Invoice", d).cancel()

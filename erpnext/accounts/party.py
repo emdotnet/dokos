@@ -230,7 +230,7 @@ def set_address_details(
 			party_details.update(
 				shipping_address=shipping_address,
 				shipping_address_display=get_address_display(shipping_address),
-				**get_fetch_values(doctype, "shipping_address", shipping_address)
+				**get_fetch_values(doctype, "shipping_address", shipping_address),
 			)
 
 		if party_details.company_address:
@@ -240,7 +240,7 @@ def set_address_details(
 				billing_address_display=(
 					party_details.company_address_display or get_address_display(party_details.company_address)
 				),
-				**get_fetch_values(doctype, "billing_address", party_details.company_address)
+				**get_fetch_values(doctype, "billing_address", party_details.company_address),
 			)
 
 			# shipping address - if not already set
@@ -248,7 +248,7 @@ def set_address_details(
 				party_details.update(
 					shipping_address=party_details.billing_address,
 					shipping_address_display=party_details.billing_address_display,
-					**get_fetch_values(doctype, "shipping_address", party_details.billing_address)
+					**get_fetch_values(doctype, "shipping_address", party_details.billing_address),
 				)
 
 	party_address, shipping_address = (
@@ -369,9 +369,7 @@ def set_account_and_due_date(
 
 
 @frappe.whitelist()
-def get_party_account(
-	party_type, party=None, company=None, down_payment=None, include_advance=False
-):
+def get_party_account(party_type, party=None, company=None, down_payment=None):
 	"""Returns the account for the given `party`.
 	Will first search in party (Customer / Supplier) record, if not found,
 	will search in group (Customer Group / Supplier Group),
@@ -385,14 +383,6 @@ def get_party_account(
 		)
 
 		return frappe.get_cached_value("Company", company, default_account_name)
-
-	if cint(down_payment) and party_type in ["Customer", "Supplier"]:
-		query_field = (
-			"default_down_payment_receivable_account"
-			if party_type == "Customer"
-			else "default_down_payment_payable_account"
-		)
-		return frappe.get_cached_value("Company", company, query_field)
 
 	account = frappe.db.get_value(
 		"Party Account", {"parenttype": party_type, "parent": party, "company": company}, "account"
@@ -420,12 +410,9 @@ def get_party_account(
 		if (account and account_currency != existing_gle_currency) or not account:
 			account = get_party_gle_account(party_type, party, company)
 
-	if include_advance and party_type in ["Customer", "Supplier"]:
-		advance_account = get_party_advance_account(party_type, party, company)
-		if advance_account:
-			return [account, advance_account]
-		else:
-			return [account]
+	if down_payment and party_type in ["Customer", "Supplier"]:
+		if advance_account := get_party_advance_account(party_type, party, company):
+			return advance_account
 
 	return account
 
@@ -451,6 +438,13 @@ def get_party_advance_account(party_type, party, company):
 			"default_advance_received_account"
 			if party_type == "Customer"
 			else "default_advance_paid_account"
+		)
+		account = frappe.get_cached_value("Company", company, account_name)
+
+	# Fallback in case specific accounts are not defined
+	if not account:
+		account_name = (
+			"default_receivable_account" if party_type == "Customer" else "default_payable_account"
 		)
 		account = frappe.get_cached_value("Company", company, account_name)
 
@@ -559,10 +553,7 @@ def validate_party_accounts(doc):
 				)
 
 		# validate if account is mapped for same company
-		if account.account:
-			validate_account_head(account.idx, account.account, account.company)
-		if account.advance_account:
-			validate_account_head(account.idx, account.advance_account, account.company)
+		validate_account_head(account.idx, account.account, account.company)
 
 
 @frappe.whitelist()

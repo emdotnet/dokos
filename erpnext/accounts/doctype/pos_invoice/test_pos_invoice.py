@@ -25,7 +25,12 @@ class TestPOSInvoice(unittest.TestCase):
 		make_stock_entry(target="_Test Warehouse - _TC", item_code="_Test Item", qty=800, basic_rate=100)
 		frappe.db.sql("delete from `tabTax Rule`")
 
+	def setUp(self):
+		frappe.db.commit()
+
 	def tearDown(self):
+		frappe.db.rollback()
+
 		if frappe.session.user != "Administrator":
 			frappe.set_user("Administrator")
 
@@ -838,14 +843,6 @@ class TestPOSInvoice(unittest.TestCase):
 
 		self.assertRaises(BatchNegativeStockError, sn_doc.make_serial_and_batch_bundle)
 
-		# teardown
-		pos_inv1.reload()
-		pos_inv1.cancel()
-		pos_inv1.delete()
-		pos_inv2.reload()
-		pos_inv2.delete()
-		se.cancel()
-
 	def test_ignore_pricing_rule(self):
 		from erpnext.accounts.doctype.pricing_rule.test_pricing_rule import make_pricing_rule
 
@@ -861,28 +858,22 @@ class TestPOSInvoice(unittest.TestCase):
 		pr = make_pricing_rule(selling=1, priority=5, discount_percentage=10)
 		pr.save()
 
-		try:
-			pos_inv = create_pos_invoice(qty=1, do_not_submit=1)
-			pos_inv.items[0].rate = 300
-			pos_inv.save()
-			self.assertEquals(pos_inv.items[0].discount_percentage, 10)
-			# rate shouldn't change
-			self.assertEquals(pos_inv.items[0].rate, 405)
+		pos_inv = create_pos_invoice(qty=1, do_not_submit=1)
+		pos_inv.items[0].rate = 300
+		pos_inv.save()
+		self.assertEquals(pos_inv.items[0].discount_percentage, 10)
+		# rate shouldn't change
+		self.assertEquals(pos_inv.items[0].rate, 405)
 
-			pos_inv.ignore_pricing_rule = 1
-			pos_inv.save()
-			self.assertEquals(pos_inv.ignore_pricing_rule, 1)
-			# rate should reset since pricing rules are ignored
-			self.assertEquals(pos_inv.items[0].rate, 450)
+		pos_inv.ignore_pricing_rule = 1
+		pos_inv.save()
+		self.assertEquals(pos_inv.ignore_pricing_rule, 1)
+		# rate should reset since pricing rules are ignored
+		self.assertEquals(pos_inv.items[0].rate, 450)
 
-			pos_inv.items[0].rate = 300
-			pos_inv.save()
-			self.assertEquals(pos_inv.items[0].rate, 300)
-
-		finally:
-			item_price.delete()
-			pos_inv.delete()
-			pr.delete()
+		pos_inv.items[0].rate = 300
+		pos_inv.save()
+		self.assertEquals(pos_inv.items[0].rate, 300)
 
 	def test_delivered_serial_no_case(self):
 		from erpnext.accounts.doctype.pos_invoice_merge_log.test_pos_invoice_merge_log import (

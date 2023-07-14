@@ -11,6 +11,11 @@ from erpnext.stock.utils import get_stock_balance
 
 
 class TestStockReservationEntry(FrappeTestCase):
+	@classmethod
+	def setUpClass(cls):
+		frappe.db.delete("Bin")
+		frappe.db.set_single_value("Stock Settings", "allow_negative_stock", 0)
+
 	def setUp(self) -> None:
 		self.items = create_items()
 		create_material_receipt(self.items)
