@@ -38,25 +38,27 @@ def execute():
 				entry["closing_date"] = pcv_doc.posting_date
 				entry["period_closing_voucher"] = pcv_doc.name
 
-			# get all gl entries for the year
-			closing_entries = frappe.db.get_all(
-				"GL Entry",
-				filters={
-					"is_cancelled": 0,
-					"voucher_no": ["!=", pcv.name],
-					"posting_date": ["between", [pcv_doc.year_start_date, pcv.posting_date]],
-					"is_opening": "No",
-				},
-				fields=["*"],
-			)
+				if pcv.posting_date not in company_wise_order[pcv.company]:
+					# get all gl entries for the year
+					closing_entries = frappe.db.get_all(
+						"GL Entry",
+						filters={
+							"is_cancelled": 0,
+							"voucher_no": ["!=", pcv.name],
+							"posting_date": ["between", [pcv_doc.year_start_date, pcv.posting_date]],
+							"is_opening": "No",
+							"company": company,
+						},
+						fields=["*"],
+					)
 
-			if i == 0:
-				# add opening entries only for the first pcv
-				closing_entries += frappe.db.get_all(
-					"GL Entry",
-					filters={"is_cancelled": 0, "is_opening": "Yes"},
-					fields=["*"],
-				)
+				if i == 0:
+					# add opening entries only for the first pcv
+					closing_entries += frappe.db.get_all(
+						"GL Entry",
+						filters={"is_cancelled": 0, "is_opening": "Yes", "company": company},
+						fields=["*"],
+					)
 
 			for entry in closing_entries:
 				entry["closing_date"] = pcv_doc.posting_date
