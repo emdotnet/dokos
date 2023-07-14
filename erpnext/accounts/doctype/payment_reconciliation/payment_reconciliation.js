@@ -29,17 +29,6 @@ erpnext.accounts.PaymentReconciliationController = class PaymentReconciliationCo
 			};
 		});
 
-		this.frm.set_query('default_advance_account', () => {
-			return {
-				filters: {
-					"company": this.frm.doc.company,
-					"is_group": 0,
-					"account_type": this.frm.doc.party_type == 'Customer' ? "Receivable": "Payable",
-					"root_type": this.frm.doc.party_type == 'Customer' ? "Liability": "Asset"
-				}
-			};
-		});
-
 		this.frm.set_query('bank_cash_account', () => {
 			return {
 				filters:[
@@ -143,13 +132,11 @@ erpnext.accounts.PaymentReconciliationController = class PaymentReconciliationCo
 				args: {
 					company: this.frm.doc.company,
 					party_type: this.frm.doc.party_type,
-					party: this.frm.doc.party,
-					include_advance: 1
+					party: this.frm.doc.party
 				},
 				callback: (r) => {
 					if (!r.exc && r.message) {
-						this.frm.set_value("receivable_payable_account", r.message[0]);
-						this.frm.set_value("default_advance_account", r.message[1]);
+						this.frm.set_value("receivable_payable_account", r.message);
 					}
 					this.frm.refresh();
 				}

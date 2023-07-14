@@ -874,9 +874,7 @@ class AccountsController(TransactionBase):
 			order_field = "purchase_order"
 			order_doctype = "Purchase Order"
 
-		party_account = get_party_account(
-			party_type, party=party, company=self.company, include_advance=True
-		)
+		party_account = get_party_account(party_type, party=party, company=self.company)
 
 		order_list = list(set(d.get(order_field) for d in self.get("items") if d.get(order_field)))
 
@@ -893,9 +891,7 @@ class AccountsController(TransactionBase):
 		if self.doctype == "Sales Invoice" and order_list:
 			party_type = "Customer"
 			party = self.customer
-			party_account = [
-				get_party_account(party_type, party, self.company)
-			]  # TODO: Fix data consistency
+			party_account = (get_party_account(party_type, party, self.company),)
 			amount_field = "credit_in_account_currency"
 			order_doctype = "Sales Invoice"
 
@@ -2217,7 +2213,7 @@ def get_advance_journal_entries(
 			(journal_acc.exchange_rate),
 		)
 		.where(
-			journal_acc.account.isin(party_account)
+			(journal_acc.account == party_account)
 			& (journal_acc.party_type == party_type)
 			& (journal_acc.party == party)
 			& (journal_acc.is_advance == "Yes")
@@ -2325,11 +2321,11 @@ def get_common_query(
 	if party_type == "Customer":
 		q = q.select((payment_entry.paid_from_account_currency).as_("currency"))
 		q = q.select(payment_entry.paid_from)
-		q = q.where(payment_entry.paid_from.isin(party_account))
+		q = q.where(payment_entry.paid_from == party_account)
 	else:
 		q = q.select((payment_entry.paid_to_account_currency).as_("currency"))
 		q = q.select(payment_entry.paid_to)
-		q = q.where(payment_entry.paid_to.isin(party_account))
+		q = q.where(payment_entry.paid_to == party_account)
 
 	if payment_type == "Receive":
 		q = q.select((payment_entry.source_exchange_rate).as_("exchange_rate"))
