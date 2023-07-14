@@ -97,7 +97,7 @@ erpnext.accounts.dimensions = {
 			this.accounting_dimensions.forEach((dimension) => {
 				let row = frappe.get_doc(cdt, cdn);
 				// Copy from main document in first row, then from the first row
-				if (!frm.doc[fieldname].filter(r => r.name != row.name).length && frm.doc[dimension['fieldname']]) {
+				if (!frm.doc[fieldname].filter(r => r.name != row.name).length && dimension['fieldname'] in frm.doc && frm.doc[dimension['fieldname']]) {
 					frappe.model.set_value(cdt, cdn, dimension['fieldname'], frm.doc[dimension['fieldname']])
 				} else {
 					frm.script_manager.copy_from_first_row(fieldname, row, [dimension['fieldname']]);
