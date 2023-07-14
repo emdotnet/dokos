@@ -6,6 +6,7 @@ import json
 from datetime import date
 
 import frappe
+from babel import Locale
 from frappe import _, throw
 from frappe.model.document import Document
 from frappe.utils import formatdate, getdate, today
@@ -39,7 +40,15 @@ class HolidayList(Document):
 
 	@frappe.whitelist()
 	def get_supported_countries(self):
-		return list_supported_countries()
+		subdivisions_by_country = list_supported_countries()
+		countries = [
+			{"value": country, "label": local_country_name(country)}
+			for country in subdivisions_by_country.keys()
+		]
+		return {
+			"countries": countries,
+			"subdivisions_by_country": subdivisions_by_country,
+		}
 
 	@frappe.whitelist()
 	def get_local_holidays(self):
@@ -159,33 +168,6 @@ def is_holiday(holiday_list, date=None):
 		return False
 
 
-def replace_expired_holiday_lists():
-	applicable_holiday_lists = {
-		x.replaces_holiday_list: x.name
-		for x in frappe.get_all(
-			"Holiday List",
-			filters={"from_date": ("<=", nowdate()), "to_date": (">=", nowdate())},
-			fields=["name", "replaces_holiday_list"],
-		)
-		if x.replaces_holiday_list is not None
-	}
-	for dt in frappe.get_all(
-		"DocField",
-		filters={"fieldtype": "Link", "options": "Holiday List", "parent": ("!=", "Holiday List")},
-		fields=["parent", "fieldname"],
-	):
-		if not frappe.model.meta.is_single(dt.parent):
-			for doc in frappe.get_all(
-				dt.parent, filters={dt.fieldname: ("in", applicable_holiday_lists.keys())}
-			):
-				frappe.db.set_value(
-					dt.parent, doc.name, dt.fieldname, applicable_holiday_lists.get(doc.get(dt.fieldname))
-				)
-
-		elif (
-			frappe.model.meta.is_single(dt.parent)
-			and frappe.db.get_single_value(dt.parent, dt.fieldname) in applicable_holiday_lists.keys()
-		):
-			frappe.db.set_value(
-				dt.parent, doc.name, dt.fieldname, applicable_holiday_lists.get(doc.get(dt.fieldname))
-			)
+def local_country_name(country_code: str) -> str:
+	"""Return the localized country name for the given country code."""
+	return Locale.parse(frappe.local.lang).territories.get(country_code, country_code)
