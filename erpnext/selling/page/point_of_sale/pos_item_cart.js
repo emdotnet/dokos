@@ -947,7 +947,7 @@ erpnext.PointOfSale.ItemCart = class {
 					`<div class="no-transactions-placeholder">${ __("No recent transactions found") }</div>`
 				)
 				return;
-			};
+			}
 
 			const elapsed_time = moment(res[0].posting_date+" "+res[0].posting_time).fromNow();
 			this.$customer_section.find('.customer-desc').html(`Last transacted ${elapsed_time}`);
