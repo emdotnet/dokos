@@ -749,13 +749,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "0",
-   "description": "Enabling this option will allow you to record - <br><br> 1. Advances Received in a <b>Liability Account</b> instead of the <b>Asset Account</b><br><br>2. Advances Paid in an <b>Asset Account</b> instead of the <b> Liability Account</b>",
-   "fieldname": "book_advance_payments_in_separate_party_account",
-   "fieldtype": "Check",
-   "label": "Book Advance Payments in Separate Party Account"
-  },
-  {
    "fieldname": "exchange_rate_revaluation_settings_section",
    "fieldtype": "Section Break",
    "label": "Exchange Rate Revaluation Settings"
