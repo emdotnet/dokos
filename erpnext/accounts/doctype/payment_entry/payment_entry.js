@@ -1,9 +1,11 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-{% include "erpnext/public/js/controllers/accounts.js" %}
 frappe.provide("erpnext.accounts.dimensions");
 
 cur_frm.cscript.tax_table = "Advance Taxes and Charges";
+
+erpnext.accounts.taxes.setup_tax_validations("Payment Entry");
+erpnext.accounts.taxes.setup_tax_filters("Advance Taxes and Charges");
 
 frappe.ui.form.on('Payment Entry', {
 	onload: function(frm) {
@@ -102,12 +104,11 @@ frappe.ui.form.on('Payment Entry', {
 		});
 
 		frm.set_query("reference_doctype", "references", function() {
-			if (frm.doc.party_type=="Customer") {
-				var doctypes = ["Sales Order", "Sales Invoice", "Journal Entry", "Dunning"];
-			} else if (frm.doc.party_type=="Supplier") {
-				var doctypes = ["Purchase Order", "Purchase Invoice", "Journal Entry"];
-			} else {
-				var doctypes = ["Journal Entry"];
+			let doctypes = ["Journal Entry"];
+			if (frm.doc.party_type == "Customer") {
+				doctypes = ["Sales Order", "Sales Invoice", "Journal Entry", "Dunning"];
+			} else if (frm.doc.party_type == "Supplier") {
+				doctypes = ["Purchase Order", "Purchase Invoice", "Journal Entry"];
 			}
 
 			return {
@@ -184,6 +185,7 @@ frappe.ui.form.on('Payment Entry', {
 	},
 
 	company: function(frm) {
+		frm.trigger('party');
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype);
@@ -305,6 +307,13 @@ frappe.ui.form.on('Payment Entry', {
 		}
 	},
 
+	mode_of_payment: function(frm) {
+		erpnext.accounts.pos.get_payment_mode_account(frm, frm.doc.mode_of_payment, function(account){
+			let payment_account_field = frm.doc.payment_type == "Receive" ? "paid_to" : "paid_from";
+			frm.set_value(payment_account_field, account);
+		})
+	},
+
 	party_type: function(frm) {
 
 		let party_types = Object.keys(frappe.boot.party_account_types);
@@ -335,10 +344,6 @@ frappe.ui.form.on('Payment Entry', {
 					frm.set_value(field, null);
 				})
 		}
-	},
-
-	company: function(frm){
-		frm.trigger('party');
 	},
 
 	party: function(frm) {
@@ -1135,7 +1140,7 @@ frappe.ui.form.on('Payment Entry', {
 							if (tax.charge_type === 'On Net Total') {
 								tax.charge_type = 'On Paid Amount';
 							}
-							me.frm.add_child("taxes", tax);
+							frm.add_child("taxes", tax);
 						}
 						frm.events.apply_taxes(frm);
 						frm.events.set_unallocated_amount(frm);
@@ -1251,7 +1256,7 @@ frappe.ui.form.on('Payment Entry', {
 				tax.grand_total_fraction_for_current_item = 1 + tax.tax_fraction_for_current_item;
 			} else {
 				tax.grand_total_fraction_for_current_item =
-					me.frm.doc["taxes"][i-1].grand_total_fraction_for_current_item +
+					frm.doc["taxes"][i-1].grand_total_fraction_for_current_item +
 					tax.tax_fraction_for_current_item;
 			}
 
@@ -1298,7 +1303,7 @@ frappe.ui.form.on('Payment Entry', {
 			}
 		});
 
-		$.each(me.frm.doc["taxes"] || [], function(i, tax) {
+		$.each(frm.doc["taxes"] || [], function(i, tax) {
 			let current_tax_amount = frm.events.get_current_tax_amount(frm, tax);
 
 			// Adjust divisional loss to the last item

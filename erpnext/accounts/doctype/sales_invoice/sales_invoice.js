@@ -6,6 +6,11 @@
 {% include 'erpnext/selling/sales_common.js' %};
 frappe.provide("erpnext.accounts");
 
+erpnext.accounts.taxes.setup_tax_validations("Sales Invoice");
+erpnext.accounts.payment_triggers.setup("Sales Invoice");
+erpnext.accounts.pos.setup("Sales Invoice");
+erpnext.accounts.taxes.setup_tax_filters("Sales Taxes and Charges");
+
 erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends erpnext.selling.SellingController {
 	setup(doc) {
 		this.setup_posting_date_time_check();
