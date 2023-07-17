@@ -199,7 +199,7 @@ class PaymentEntry(AccountsController):
 			# The reference has already been fully paid
 			if not latest:
 				frappe.throw(
-					_("{0} {1} has already been fully paid.").format(d.reference_doctype, d.reference_name)
+					_("{0} {1} has already been fully paid.").format(_(d.reference_doctype), d.reference_name)
 				)
 			# The reference has already been partly paid
 			elif (
@@ -209,7 +209,7 @@ class PaymentEntry(AccountsController):
 				frappe.throw(
 					_(
 						"{0} {1} has already been partly paid. Please use the 'Get Outstanding Invoice' or the 'Get Outstanding Orders' button to get the latest outstanding amounts."
-					).format(d.reference_doctype, d.reference_name)
+					).format(_(d.reference_doctype), d.reference_name)
 				)
 
 			fail_message = _("Row #{0}: Allocated Amount cannot be greater than outstanding amount.")
@@ -420,7 +420,7 @@ class PaymentEntry(AccountsController):
 							)
 
 					if ref_doc.doctype != "Subscription" and ref_doc.docstatus != 1:
-						frappe.throw(_("{0} {1} must be submitted").format(d.reference_doctype, d.reference_name))
+						frappe.throw(_("{0} {1} must be submitted").format(_(d.reference_doctype), d.reference_name))
 
 	def validate_paid_invoices(self):
 		no_oustanding_refs = {}
