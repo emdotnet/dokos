@@ -383,6 +383,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		this.setup_sms();
 		this.setup_quality_inspection();
 		this.validate_has_items();
+		erpnext.set_accounting_journal(this.frm);
 		erpnext.utils.view_serial_batch_nos(this.frm);
 	}
 
