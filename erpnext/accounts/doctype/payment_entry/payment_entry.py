@@ -199,17 +199,16 @@ class PaymentEntry(AccountsController):
 			# The reference has already been fully paid
 			if not latest:
 				frappe.throw(
-					_("{0} {1} has already been fully paid.").format(d.reference_doctype, d.reference_name)
+					_("{0} {1} has already been fully paid.").format(_(d.reference_doctype), d.reference_name)
 				)
 			# The reference has already been partly paid
-			elif (
-				latest.outstanding_amount < latest.invoice_amount
-				and flt(d.outstanding_amount, d.precision("outstanding_amount")) != latest.outstanding_amount
-			):
+			elif latest.outstanding_amount < latest.invoice_amount and flt(
+				d.outstanding_amount, d.precision("outstanding_amount")
+			) != flt(latest.outstanding_amount, d.precision("outstanding_amount")):
 				frappe.throw(
 					_(
 						"{0} {1} has already been partly paid. Please use the 'Get Outstanding Invoice' or the 'Get Outstanding Orders' button to get the latest outstanding amounts."
-					).format(d.reference_doctype, d.reference_name)
+					).format(_(d.reference_doctype), d.reference_name)
 				)
 
 			fail_message = _("Row #{0}: Allocated Amount cannot be greater than outstanding amount.")
@@ -420,7 +419,7 @@ class PaymentEntry(AccountsController):
 							)
 
 					if ref_doc.doctype != "Subscription" and ref_doc.docstatus != 1:
-						frappe.throw(_("{0} {1} must be submitted").format(d.reference_doctype, d.reference_name))
+						frappe.throw(_("{0} {1} must be submitted").format(_(d.reference_doctype), d.reference_name))
 
 	def validate_paid_invoices(self):
 		no_oustanding_refs = {}
@@ -1426,6 +1425,9 @@ def get_outstanding_reference_documents(args, validate=False):
 	if not args.get("get_outstanding_invoices") and not args.get("get_orders_to_be_billed"):
 		args["get_outstanding_invoices"] = True
 
+	if not args.get("get_outstanding_invoices") and not args.get("get_orders_to_be_billed"):
+		args["get_outstanding_invoices"] = True
+
 	ple = qb.DocType("Payment Ledger Entry")
 	common_filter = []
 	accounting_dimensions_filter = []
@@ -1707,7 +1709,6 @@ def get_negative_outstanding_invoices(
 ):
 	if party_type not in ["Customer", "Supplier"]:
 		return []
-
 	voucher_type = "Sales Invoice" if party_type == "Customer" else "Purchase Invoice"
 	account = "debit_to" if voucher_type == "Sales Invoice" else "credit_to"
 	supplier_condition = ""
