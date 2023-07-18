@@ -19,6 +19,7 @@ from frappe.utils import (
 	getdate,
 	nowdate,
 )
+from frappe.utils.dateutils import get_dates_from_timegrain
 
 from erpnext.accounts.report.accounts_receivable.accounts_receivable import ReceivablePayableReport
 from erpnext.accounts.report.financial_statements import get_label, get_months
@@ -73,6 +74,9 @@ class CashFlowBudget:
 
 		# Salaries
 		# TODO: Link with payroll
+
+		self.result.append({})
+		self.get_cash_flow_budget_entries()
 
 		self.get_balances()
 		self.get_chart_data()
@@ -476,6 +480,58 @@ class CashFlowBudget:
 			self.result.append(self.unreconciled_payments)
 
 		self.append_details_to_results(details)
+
+	def get_cash_flow_budget_entries(self):
+		entries = frappe.get_all(
+			"Cash Flow Budget Entry",
+			filters={"date": ("between", [nowdate(), getdate(self.filters.period_end_date)])},
+			fields=["description", "amount", "date", "repeat"],
+		)
+
+		self.cash_flow_budget_entries = {"label": _("Manual Entries")}
+		details = []
+
+		for entry in entries:
+			repeated_dates = self.get_repeated_dates(entry)
+			for period in self.period_list:
+				if period.key not in self.cash_flow_budget_entries:
+					self.cash_flow_budget_entries[period.key] = 0.0
+
+				if getdate(entry.date) < getdate(period.from_date) or getdate(period.to_date) >= getdate(
+					entry.date
+				) >= getdate(period.from_date):
+					self.cash_flow_budget_entries[period.key] += flt(entry.amount)
+					self.add_details(
+						details,
+						entry.description,
+						"",
+						flt(entry.amount),
+						period.key,
+					)
+				elif repeated_dates and [
+					d
+					for d in repeated_dates
+					if d < getdate(period.from_date) or getdate(period.to_date) >= d >= getdate(period.from_date)
+				]:
+					self.cash_flow_budget_entries[period.key] += flt(entry.amount)
+					self.add_details(
+						details,
+						entry.description,
+						"",
+						flt(entry.amount),
+						period.key,
+					)
+
+		if len(self.cash_flow_budget_entries.keys()) > 1:
+			self.result.append(self.cash_flow_budget_entries)
+
+		self.append_details_to_results(details)
+
+	def get_repeated_dates(self, entry):
+		if entry.repeat:
+			return get_dates_from_timegrain(entry.date, getdate(self.filters.period_end_date), entry.repeat)
+
+		return []
 
 	def get_initial_bank_balance(self):
 		bt = DocType("Bank Transaction")
