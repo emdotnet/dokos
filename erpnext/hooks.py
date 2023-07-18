@@ -95,7 +95,27 @@ update_website_context = [
 my_account_context = "erpnext.e_commerce.shopping_cart.utils.update_my_account_context"
 webform_list_context = "erpnext.controllers.website_list_for_contact.get_webform_list_context"
 
-calendars = ["Task", "Work Order", "Sales Order", "Holiday List", "ToDo"]
+calendars = [
+	"Task",
+	"Work Order",
+	"Sales Order",
+	"Holiday List",
+	"Item Booking",
+	"Event Slot",
+	"Event Slot Booking",
+	"ToDo",
+]
+
+fullcalendar_scheduler_licence_key = "GPL-My-Project-Is-Open-Source"
+
+gcalendar_integrations = {
+	"Item Booking": {
+		"pull_insert": "erpnext.venue.doctype.item_booking.item_booking.insert_event_to_calendar",
+		"pull_update": "erpnext.venue.doctype.item_booking.item_booking.update_event_in_calendar",
+		"pull_delete": "erpnext.venue.doctype.item_booking.item_booking.cancel_event_in_calendar",
+	}
+}
+
 
 website_generators = ["Item Group", "Website Item", "BOM", "Sales Partner"]
 
