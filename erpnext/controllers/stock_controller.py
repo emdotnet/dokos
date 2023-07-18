@@ -200,7 +200,13 @@ class StockController(AccountsController):
 				elif self.get("is_internal_supplier"):
 					warehouse_asset_account = warehouse_account[item_row.get("warehouse")]["account"]
 
-				expense_account = frappe.db.get_value("Company", self.company, "default_expense_account")
+				expense_account = frappe.get_cached_value("Company", self.company, "default_expense_account")
+				if not expense_account:
+					frappe.throw(
+						_(
+							"Please set default cost of goods sold account in company {0} for booking rounding gain and loss during stock transfer"
+						).format(frappe.bold(self.company))
+					)
 
 				gl_list.append(
 					self.get_gl_dict(
