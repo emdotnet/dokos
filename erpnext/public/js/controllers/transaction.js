@@ -376,6 +376,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 	}
 
 	refresh() {
+
 		erpnext.toggle_naming_series();
 		erpnext.hide_company();
 		this.set_dynamic_labels();
@@ -383,6 +384,7 @@ erpnext.TransactionController = class TransactionController extends erpnext.taxe
 		this.setup_quality_inspection();
 		this.validate_has_items();
 		erpnext.set_accounting_journal(this.frm);
+		erpnext.utils.view_serial_batch_nos(this.frm);
 	}
 
 	scan_barcode() {
