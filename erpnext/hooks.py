@@ -98,7 +98,6 @@ webform_list_context = "erpnext.controllers.website_list_for_contact.get_webform
 calendars = [
 	"Task",
 	"Work Order",
-	"Leave Application",
 	"Sales Order",
 	"Holiday List",
 	"Item Booking",
@@ -116,6 +115,7 @@ gcalendar_integrations = {
 		"pull_delete": "erpnext.venue.doctype.item_booking.item_booking.cancel_event_in_calendar",
 	}
 }
+
 
 website_generators = ["Item Group", "Website Item", "BOM", "Sales Partner"]
 
