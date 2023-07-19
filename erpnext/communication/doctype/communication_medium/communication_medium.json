@@ -57,10 +57,10 @@
    "options": "Communication Medium Timeslot"
   },
   {
-    "fieldname": "communication_channel",
-    "fieldtype": "Select",
-    "label": "Communication Channel",
-    "options": "\nExotel"
+   "fieldname": "communication_channel",
+   "fieldtype": "Select",
+   "label": "Communication Channel",
+   "options": ""
   }
  ],
  "modified": "2020-10-27 16:22:08.068542",
