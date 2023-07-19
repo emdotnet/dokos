@@ -715,9 +715,16 @@ additional_timeline_content = {
 	"*": ["erpnext.telephony.doctype.call_log.call_log.get_linked_call_logs"]
 }
 
+
+extend_bootinfo = [
+	"erpnext.support.doctype.service_level_agreement.service_level_agreement.add_sla_doctypes",
+]
+
+
 override_e_commerce_settings = [
 	"erpnext.venue.doctype.venue_settings.venue_settings.override_e_commerce_settings"
 ]
+
 
 jinja = {
 	"filters": [
