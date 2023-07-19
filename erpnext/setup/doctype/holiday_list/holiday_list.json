@@ -11,6 +11,7 @@
   "holiday_list_name",
   "from_date",
   "to_date",
+  "replaces_holiday_list",
   "column_break_4",
   "total_holidays",
   "add_weekly_holidays",
@@ -136,6 +137,12 @@
    "fieldtype": "Button",
    "label": "Add to Holidays",
    "options": "get_local_holidays"
+  },
+  {
+   "fieldname": "replaces_holiday_list",
+   "fieldtype": "Link",
+   "label": "Replaces holiday list",
+   "options": "Holiday List"
   }
  ],
  "icon": "fa fa-calendar",
