@@ -13,13 +13,20 @@ test_dependencies = ["Supplier Group", "Customer Group"]
 
 class TestTaxWithholdingCategory(unittest.TestCase):
 	@classmethod
-	def setUpClass(self):
+	def setUpClass(cls):
 		# create relevant supplier, etc
 		create_records()
 		create_tax_withholding_category_records()
 
+	def setUp(self) -> None:
+		frappe.db.savepoint("savepoint")
+		super().setUp()
+
 	def tearDown(self):
+		# cancel invoice and payments to avoid clashing
+		frappe.db.rollback(save_point="savepoint")
 		cancel_invoices()
+		super().tearDown()
 
 	def test_cumulative_threshold_tds(self):
 		frappe.db.set_value(
@@ -122,9 +129,6 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 		# Second didn't breach, no TDS should be applied
 		self.assertEqual(pi1.taxes, [])
 
-		for d in reversed(invoices):
-			d.cancel()
-
 	def test_cumulative_threshold_tcs(self):
 		frappe.db.set_value(
 			"Customer", "Test TCS Customer", "tax_withholding_category", "Cumulative Threshold TCS"
@@ -159,10 +163,6 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 		self.assertEqual(tcs_charged, 500)
 		invoices.append(si)
 
-		# cancel invoices to avoid clashing
-		for d in reversed(invoices):
-			d.cancel()
-
 	def test_tcs_on_unallocated_advance_payments(self):
 		frappe.db.set_value(
 			"Customer", "Test TCS Customer", "tax_withholding_category", "Cumulative Threshold TCS"
@@ -177,13 +177,11 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 		pe.paid_from = "Debtors - _TC"
 		pe.paid_to = "Cash - _TC"
 		pe.submit()
-		pe.reload()
 		vouchers.append(pe)
 
 		# create invoice
 		si1 = create_sales_invoice(customer="Test TCS Customer", rate=5000)
 		si1.submit()
-		si1.reload()
 		vouchers.append(si1)
 
 		# reconcile
@@ -203,12 +201,10 @@ class TestTaxWithholdingCategory(unittest.TestCase):
 		# TDS should be calculated
 		si2 = create_sales_invoice(customer="Test TCS Customer", rate=15000)
 		si2.submit()
-		si2.reload()
 		vouchers.append(si2)
 
 		si3 = create_sales_invoice(customer="Test TCS Customer", rate=10000)
 		si3.submit()
-		si3.reload()
 		vouchers.append(si3)
 
 		# assert tax collection on total invoice amount created until now
