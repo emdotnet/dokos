@@ -48,7 +48,7 @@ frappe.query_reports["Monthly Recurring Revenue"] = {
 			"label": __("Start Year"),
 			"fieldtype": "Link",
 			"options": "Fiscal Year",
-			"default": frappe.defaults.get_user_default("fiscal_year"),
+			"default": erpnext.utils.get_fiscal_year(frappe.datetime.get_today()),
 			"reqd": 1
 		},
 		{
@@ -56,7 +56,7 @@ frappe.query_reports["Monthly Recurring Revenue"] = {
 			"label": __("End Year"),
 			"fieldtype": "Link",
 			"options": "Fiscal Year",
-			"default": frappe.defaults.get_user_default("fiscal_year"),
+			"default": erpnext.utils.get_fiscal_year(frappe.datetime.get_today()),
 			"reqd": 1
 		},
 		{
@@ -74,7 +74,7 @@ frappe.query_reports["Monthly Recurring Revenue"] = {
 		}
 	],
 	onload: function(report) {
-		let fiscal_year = frappe.defaults.get_user_default("fiscal_year")
+		let fiscal_year = erpnext.utils.get_fiscal_year(frappe.datetime.get_today())
 
 		frappe.model.with_doc("Fiscal Year", fiscal_year, function(r) {
 			var fy = frappe.model.get_doc("Fiscal Year", fiscal_year);
