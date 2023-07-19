@@ -117,6 +117,7 @@ def get_data(filters):
 		filters,
 		gl_entries_by_account,
 		ignore_closing_entries=not flt(filters.with_period_closing_entry),
+		ignore_opening_entries=True,
 	)
 
 	calculate_values(accounts, gl_entries_by_account, opening_balances)
@@ -220,7 +221,10 @@ def get_opening_balance(
 		)
 	else:
 		if start_date:
-			opening_balance = opening_balance.where(closing_balance.posting_date >= start_date)
+			opening_balance = opening_balance.where(
+				(closing_balance.posting_date >= start_date)
+				& (closing_balance.posting_date < filters.from_date)
+			)
 			opening_balance = opening_balance.where(closing_balance.is_opening == "No")
 		else:
 			opening_balance = opening_balance.where(
