@@ -257,20 +257,12 @@ frappe.ui.form.on("Item", {
 		}
 	},
 
-	toggle_simultaneous_bookings(frm) {
-		frm.trigger("show_auto_booking_note");
-		if (frm.doc.show_in_website && frm.doc.enable_item_booking) {
-			frappe.model.with_doctype("Venue Settings", () => {
-				frappe.perm.has_perm("Venue Settings", 0, "read")&&frappe.db.get_value("Venue Settings", "Venue Settings", "enable_simultaneous_booking", r => {
-					if (r) {
-						frm.toggle_display("simultaneous_bookings_allowed", parseInt(r.enable_simultaneous_booking, 10))
-					}
-				})
-			})
-		}
+	async toggle_simultaneous_bookings(frm) {
+		frm.trigger("refresh_item_booking_note");
 	},
 
 	simultaneous_bookings_allowed(frm) {
+		frm.trigger("refresh_item_booking_note");
 		const field = frm.fields_dict.simultaneous_bookings_allowed;
 		const df = field.df;
 		if (frm.doc.enable_item_booking && (!df.hidden) && frm.doc.simultaneous_bookings_allowed <= 0) {
@@ -283,31 +275,43 @@ frappe.ui.form.on("Item", {
 		}
 	},
 
-	show_auto_booking_note(frm) {
+	async refresh_item_booking_note(frm) {
+		let state = "hide-note";
 		if (frm.doc.enable_item_booking) {
-			const field = cur_frm.fields_dict.simultaneous_bookings_allowed;
-			if (field.df.description) {
-				return;
+			state = "show-note";
+			if (frm.doc.simultaneous_bookings_allowed > 1) {
+				const setting = await frappe.xcall("erpnext.venue.doctype.venue_settings.venue_settings.simultaneous_booking_enabled")
+				if (!setting) {
+					state = "show-warning";
+				}
 			}
+		}
 
+		const field = cur_frm.fields_dict.simultaneous_bookings_allowed;
+		if (state === "hide-note") {
+			field.set_description("");
+		} else if (state === "show-note") {
 			const msg = [
 				__("Note: {0}", [
 					__("You can set up subscriptions to automatically decrease the availability of booked items."),
 				]),
 				__("For more information, {0}.", [`<a target=_blank href="https://doc.dokos.io/dokos/lieu/abonnement-reservation">${__("Documentation")}</a>`]),
 			].join(" ");
-
-			const desc = `<div style="display:flex;align-items:center;gap:1ch;">
-				<div class="indicator-pill-round yellow" style="flex-shrink:0;--icon-stroke:currentColor;">
-					${frappe.utils.icon("small-message", "sm")}
-				</div>
-				<div>
-					${msg}
-				</div>
+			const desc = `<div class="d-block alert alert-warning" style="--icon-stroke:currentColor;">
+				${frappe.utils.icon("small-message", "sm")}
+				${msg}
 			</div>`;
 			field.set_description(desc);
+		} else if (state === "show-warning") {
+			const msg = __("Please enable simultaneous item bookings in Venue Settings.")
+			const href = frappe.utils.get_form_link("Venue Settings", "Venue Settings")
+			const desc = `<a class="d-block alert alert-danger" style="--icon-stroke: currentColor;" href="${href}">
+				${frappe.utils.icon("uil uil-exclamation-triangle", "sm")}
+				${msg}
+			</a>`;
+			field.set_description(desc);
 		}
-	},
+	}
 });
 
 frappe.ui.form.on('Item Reorder', {
