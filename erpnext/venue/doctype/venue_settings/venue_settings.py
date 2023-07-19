@@ -364,3 +364,8 @@ def get_duration_for_uom(uom, minute_uom):
 	return (
 		frappe.db.get_value("UOM Conversion Factor", dict(from_uom=uom, to_uom=minute_uom), "value") * 60
 	)
+
+
+@frappe.whitelist()
+def simultaneous_booking_enabled():
+	return bool(frappe.db.get_single_value("Venue Settings", "enable_simultaneous_booking"))
