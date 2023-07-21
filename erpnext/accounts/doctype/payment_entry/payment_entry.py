@@ -433,7 +433,17 @@ class PaymentEntry(AccountsController):
 							)
 
 					if ref_doc.doctype != "Subscription" and ref_doc.docstatus != 1:
-						frappe.throw(_("{0} {1} must be submitted").format(_(d.reference_doctype), d.reference_name))
+						frappe.throw(_("{0} {1} must be submitted").format(d.reference_doctype, d.reference_name))
+
+	def get_valid_reference_doctypes(self):
+		if self.party_type == "Customer":
+			return ("Sales Order", "Sales Invoice", "Journal Entry", "Dunning")
+		elif self.party_type == "Supplier":
+			return ("Purchase Order", "Purchase Invoice", "Journal Entry")
+		elif self.party_type == "Shareholder":
+			return ("Journal Entry",)
+		elif self.party_type == "Employee":
+			return ("Journal Entry",)
 
 	def validate_paid_invoices(self):
 		no_oustanding_refs = {}
@@ -2047,28 +2057,27 @@ def get_payment_entry(
 				pe.append("references", reference)
 		else:
 			if dt == "Dunning":
+				for overdue_payment in doc.overdue_payments:
+					pe.append(
+						"references",
+						{
+							"reference_doctype": "Sales Invoice",
+							"reference_name": overdue_payment.sales_invoice,
+							"payment_term": overdue_payment.payment_term,
+							"due_date": overdue_payment.due_date,
+							"total_amount": overdue_payment.outstanding,
+							"outstanding_amount": overdue_payment.outstanding,
+							"allocated_amount": overdue_payment.outstanding,
+						},
+					)
+
 				pe.append(
-					"references",
+					"deductions",
 					{
-						"reference_doctype": "Sales Invoice",
-						"reference_name": doc.get("sales_invoice"),
-						"bill_no": doc.get("bill_no"),
-						"due_date": doc.get("due_date"),
-						"total_amount": doc.get("outstanding_amount"),
-						"outstanding_amount": doc.get("outstanding_amount"),
-						"allocated_amount": doc.get("outstanding_amount"),
-					},
-				)
-				pe.append(
-					"references",
-					{
-						"reference_doctype": dt,
-						"reference_name": dn,
-						"bill_no": doc.get("bill_no"),
-						"due_date": doc.get("due_date"),
-						"total_amount": doc.get("dunning_amount"),
-						"outstanding_amount": doc.get("dunning_amount"),
-						"allocated_amount": doc.get("dunning_amount"),
+						"account": doc.income_account,
+						"cost_center": doc.cost_center,
+						"amount": -1 * doc.dunning_amount,
+						"description": _("Interest and/or dunning fee"),
 					},
 				)
 			else:
@@ -2164,8 +2173,10 @@ def set_party_account_currency(dt, party_account, doc):
 
 def set_payment_type(dt, doc):
 	if (
-		dt == "Sales Order" or (dt in ("Sales Invoice", "Dunning") and doc.outstanding_amount > 0)
-	) or (dt == "Purchase Invoice" and doc.outstanding_amount < 0):
+		(dt == "Sales Order" or (dt == "Sales Invoice" and doc.outstanding_amount > 0))
+		or (dt == "Purchase Invoice" and doc.outstanding_amount < 0)
+		or dt == "Dunning"
+	):
 		payment_type = "Receive"
 	else:
 		payment_type = "Pay"

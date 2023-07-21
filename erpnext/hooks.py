@@ -408,7 +408,10 @@ doc_events = {
 		]
 	},
 	"Payment Entry": {
-		"on_submit": "erpnext.accounts.doctype.dunning.dunning.resolve_dunning",
+		"on_submit": [
+			"erpnext.accounts.doctype.dunning.dunning.resolve_dunning",
+		],
+		"on_cancel": ["erpnext.accounts.doctype.dunning.dunning.resolve_dunning"]
 	},
 	"Address": {
 		"validate": [
