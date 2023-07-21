@@ -432,7 +432,7 @@ class PaymentEntry(AccountsController):
 								title=_("Invalid Invoice"),
 							)
 
-					if ref_doc.docstatus != 1:
+					if ref_doc.doctype != "Subscription" and ref_doc.docstatus != 1:
 						frappe.throw(_("{0} {1} must be submitted").format(d.reference_doctype, d.reference_name))
 
 	def get_valid_reference_doctypes(self):
