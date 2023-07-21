@@ -37,5 +37,36 @@ frappe.listview_settings['Bank Transaction'] = {
 	},
 	on_update: function(list_view) {
 		list_view.refresh()
+	},
+	button: {
+		show: () => {
+			return frappe.perm.has_perm("Bank Transaction", 0, 'write');
+		},
+		get_description: () => {
+			return __("Select a category")
+		},
+		get_label: () => {
+			return __("Action", null, "Bank Transaction")
+		},
+		action: (doc) => {
+			const d = new frappe.ui.Dialog({
+				title: __("Select a category"),
+				fields: [
+					{
+						label : __("Category"),
+						fieldname: "category",
+						fieldtype: "Link",
+						reqd: 1,
+						options: "Bank Transaction Category",
+						default: doc.category
+					},
+				],
+				primary_action: () => {
+					frappe.db.set_value("Bank Transaction", doc.name, "category", d.get_value("category"));
+					d.hide();
+				}
+			});
+			d.show();
+		}
 	}
 };
