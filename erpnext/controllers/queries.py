@@ -868,29 +868,14 @@ def get_fields(doctype, fields=None):
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def get_uoms(doctype, txt, searchfield, start, page_len, filters):
-	UOM = frappe.qb.DocType("UOM")
-	uom_list = []
-	if filters and filters.get("item_code"):
-		UOM_Conversion_Detail = frappe.qb.DocType("UOM Conversion Detail")
-
-		uom_list = (
-			frappe.qb.from_(UOM_Conversion_Detail)
-			.right_join(UOM)
-			.on(UOM_Conversion_Detail.uom == UOM.uom_name)
-			.select(UOM_Conversion_Detail.uom, UOM.must_be_whole_number)
-			.distinct()
-			.where(UOM_Conversion_Detail.parent == filters.get("item_code"))
-			.orderby(UOM_Conversion_Detail.uom, order=frappe.qb.desc)
-		).run()
-
-	if not (filters and filters.get("item_code")) or len(uom_list) < 2:
-		uom_list = frappe.get_list("UOM", fields=["uom_name", "must_be_whole_number"], as_list=True)
-
-	return tuple(
-		[
-			(v[0], v[1] and _("Must be a whole number"))
-			for v in list(uom_list)
-			if re.search(re.escape(txt) + ".*", _(v[0]), re.IGNORECASE)
-		]
-	)
+def get_payment_terms_for_references(doctype, txt, searchfield, start, page_len, filters) -> list:
+	terms = []
+	if filters:
+		terms = frappe.db.get_all(
+			"Payment Schedule",
+			filters={"parent": filters.get("reference")},
+			fields=["payment_term"],
+			limit=page_len,
+			as_list=1,
+		)
+	return terms
