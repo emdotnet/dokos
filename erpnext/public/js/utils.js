@@ -678,7 +678,7 @@ erpnext.utils.update_child_items = function(opts) {
 		})
 	}
 
-	new frappe.ui.Dialog({
+	let dialog = new frappe.ui.Dialog({
 		title: __("Update Items"),
 		size: "extra-large",
 		fields: [
@@ -715,7 +715,9 @@ erpnext.utils.update_child_items = function(opts) {
 			refresh_field("items");
 		},
 		primary_action_label: __('Update')
-	}).show();
+	})
+
+	dialog.show();
 }
 
 erpnext.utils.map_current_doc = function(opts) {
