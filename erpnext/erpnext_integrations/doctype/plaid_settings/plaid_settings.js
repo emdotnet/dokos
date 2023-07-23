@@ -96,8 +96,7 @@ erpnext.integrations.plaidLink = class plaidLink {
 	}
 
 	onScriptLoaded(me) {
-		const lang = ['fr', 'es'].includes(frappe.boot.lang) ? frappe.boot.lang : 'en'
-		me.linkHandler = Plaid.create({
+		me.linkHandler = Plaid.create({ // eslint-disable-line no-undef
 			clientName: me.client_name,
 			product: me.product,
 			env: me.plaid_env,
