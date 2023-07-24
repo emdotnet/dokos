@@ -1094,7 +1094,6 @@ class TestPaymentEntry(FrappeTestCase):
 		self.assertRaises(frappe.ValidationError, pe.save)
 		pe.delete()
 		si1.cancel()
-		si1.delete()
 
 		# Validate allocation on foreign currency
 		si2 = create_sales_invoice(
@@ -1122,7 +1121,6 @@ class TestPaymentEntry(FrappeTestCase):
 		self.assertRaises(frappe.ValidationError, pe.save)
 		pe.delete()
 		si2.cancel()
-		si2.delete()
 
 		# Validate allocation in base/company currency on a foreign currency document
 		# when invoice is made is foreign currency, but posted to base/company currency debtors account
@@ -1151,7 +1149,6 @@ class TestPaymentEntry(FrappeTestCase):
 		self.assertRaises(frappe.ValidationError, pe.save)
 		pe.delete()
 		si3.cancel()
-		si3.delete()
 
 
 def create_payment_entry(**args):
