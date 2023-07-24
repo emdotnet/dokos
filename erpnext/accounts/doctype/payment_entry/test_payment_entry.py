@@ -1063,7 +1063,6 @@ class TestPaymentEntry(FrappeTestCase):
 		"Accounts Settings",
 		{
 			"unlink_payment_on_cancellation_of_invoice": 1,
-			"delete_linked_ledger_entries": 1,
 			"allow_multi_currency_invoices_against_single_party_account": 1,
 		},
 	)
