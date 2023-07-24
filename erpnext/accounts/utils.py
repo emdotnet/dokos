@@ -1133,7 +1133,8 @@ def get_autoname_with_number(number_value, doc_title, company, suffix=None):
 
 def parse_naming_series_variable(doc, variable):
 	if variable == "FY":
-		return get_fiscal_year(date=doc.get("posting_date"), company=doc.get("company"))[0]
+		date = doc.get("posting_date") or doc.get("transaction_date") or getdate()
+		return get_fiscal_year(date=date, company=doc.get("company"))[0]
 
 
 @frappe.whitelist()
