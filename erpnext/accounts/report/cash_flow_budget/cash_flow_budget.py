@@ -19,6 +19,7 @@ from frappe.utils import (
 	getdate,
 	nowdate,
 )
+from frappe.utils.dateutils import get_dates_from_timegrain
 
 from erpnext.accounts.report.accounts_receivable.accounts_receivable import ReceivablePayableReport
 from erpnext.accounts.report.financial_statements import get_label, get_months
@@ -44,6 +45,8 @@ class CashFlowBudget:
 	def get_data(self):
 		self.get_initial_bank_balance()
 
+		self.result.append({"label": _("Cash Inflow"), "can_be_edited": True})
+
 		# Receivables
 		self.get_current_receivables()
 
@@ -53,7 +56,11 @@ class CashFlowBudget:
 		# Auto Repeat
 		self.get_revenue_from_auto_repeat()
 
+		self.get_cash_flow_budget_entries("Inflow")
+
 		self.result.append({})
+
+		self.result.append({"label": _("Cash Outflow"), "can_be_edited": True})
 
 		# Payables
 		self.get_current_payables()
@@ -73,6 +80,8 @@ class CashFlowBudget:
 
 		# Salaries
 		# TODO: Link with payroll
+
+		self.get_cash_flow_budget_entries("Outflow")
 
 		self.get_balances()
 		self.get_chart_data()
@@ -476,6 +485,61 @@ class CashFlowBudget:
 			self.result.append(self.unreconciled_payments)
 
 		self.append_details_to_results(details)
+
+	def get_cash_flow_budget_entries(self, category):
+		entries = frappe.get_all(
+			"Cash Flow Forecast Entry",
+			filters={
+				"scenario": self.filters.scenario,
+				"category": category,
+				"ifnull(repeat_end_date, '3000-12-31')": (">=", self.filters.period_end_date),
+			},
+			or_filters={"date": (">=", nowdate()), "repeat": ("is", "set")},
+			fields=[
+				"description",
+				"date",
+				"amount",
+				"category",
+				"scenario",
+				"repeat",
+				"repeat_end_date",
+				"name as docname",
+			],
+		)
+
+		repeated_entries = []
+		for entry in entries:
+			if entry.repeat:
+				dates = get_dates_from_timegrain(
+					entry.date, getdate(entry.repeat_end_date or self.filters.period_end_date), entry.repeat
+				)
+				for date in dates:
+					updated_entry = entry.copy().update({"date": date})
+					repeated_entries.append(updated_entry)
+			else:
+				repeated_entries.append(entry)
+
+		for entry in entries:
+			entry["label"] = entry["description"]
+			entry["doctype"] = "Cash Flow Forecast Entry"
+			entry["can_be_deleted"] = True
+
+			if entry.repeat:
+				entry["dates"] = get_dates_from_timegrain(
+					entry.date, getdate(entry.repeat_end_date or self.filters.period_end_date), entry.repeat
+				)
+			else:
+				entry["dates"] = [entry["date"]]
+
+			for period in self.period_list:
+				if period.key not in entry:
+					entry[period.key] = 0.0
+
+				for d in entry["dates"]:
+					if getdate(period.to_date) >= getdate(d) >= getdate(period.from_date):
+						entry[period.key] += flt(entry.amount) * (-1 if category == "Outflow" else 1)
+
+		self.result.extend(entries)
 
 	def get_initial_bank_balance(self):
 		bt = DocType("Bank Transaction")

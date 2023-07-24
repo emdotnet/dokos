@@ -12,7 +12,9 @@
   "rgt",
   "is_group",
   "old_parent",
-  "parent_bank_transaction_category"
+  "parent_bank_transaction_category",
+  "column_break_7",
+  "cash_flow_category"
  ],
  "fields": [
   {
@@ -43,6 +45,8 @@
    "default": "0",
    "fieldname": "is_group",
    "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Is Group"
   },
   {
@@ -57,15 +61,36 @@
    "fieldtype": "Link",
    "label": "Parent Bank Transaction Category",
    "options": "Bank Transaction Category"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "cash_flow_category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Cash Flow Category",
+   "options": "Outflow\nInflow"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_tree": 1,
- "links": [],
- "modified": "2022-03-17 22:35:42.777699",
+ "links": [
+  {
+   "group": "Bank Transactions",
+   "link_doctype": "Bank Transaction",
+   "link_fieldname": "category"
+  }
+ ],
+ "modified": "2023-07-22 16:41:05.941012",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Bank Transaction Category",
+ "naming_rule": "By fieldname",
  "nsm_parent_field": "parent_bank_transaction_category",
  "owner": "Administrator",
  "permissions": [
@@ -84,5 +109,6 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "states": []
 }
