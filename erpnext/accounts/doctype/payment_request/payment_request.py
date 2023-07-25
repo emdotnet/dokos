@@ -584,13 +584,17 @@ def make_payment_request(*args, **kwargs):
 			if existing_payment_request_amount:
 				grand_total -= existing_payment_request_amount
 
+		email_to = args.recipient_id or ref_doc.get("contact_email") or ref_doc.owner
+		if email_to in ["Administrator", "Guest"]:
+			email_to = None
+
 		pr = frappe.new_doc("Payment Request")
 		pr.update(
 			{
 				"currency": args.currency or ref_doc.currency,
 				"no_payment_link": args.no_payment_link,
 				"grand_total": grand_total,
-				"email_to": args.recipient_id or ref_doc.get("contact_email") or ref_doc.owner,
+				"email_to": email_to,
 				"subject": _("Payment Request for {0}").format(args.dn),
 				"reference_doctype": args.dt,
 				"reference_name": args.dn,
