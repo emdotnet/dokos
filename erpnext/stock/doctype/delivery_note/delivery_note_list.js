@@ -24,7 +24,7 @@ frappe.listview_settings['Delivery Note'] = {
 					if (!doc.docstatus) {
 						frappe.throw(__("Cannot create a Delivery Trip from Draft documents."));
 					}
-				};
+				}
 
 				frappe.new_doc("Delivery Trip")
 					.then(() => {
@@ -51,7 +51,7 @@ frappe.listview_settings['Delivery Note'] = {
 							}
 						});
 					})
-			};
+			}
 		};
 
 		doclist.page.add_action_item(__('Create Delivery Trip'), action);
@@ -75,4 +75,4 @@ frappe.listview_settings['Delivery Note'] = {
 			);
 		});
 	}
-};
+}
