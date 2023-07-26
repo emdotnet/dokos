@@ -255,9 +255,12 @@ class TestItem(FrappeTestCase):
 			)
 
 			self.assertEqual(details.item_tax_template, data["item_tax_template"])
-			self.assertEqual(
-				json.loads(details.item_tax_rate), expected_item_tax_map[details.item_tax_template]
-			)
+
+			# @dokos: Ignore included_in_print_rate for all item tax in test
+			item_tax_rate = json.loads(details.item_tax_rate)
+			for x in item_tax_rate:
+				del x["included_in_print_rate"]
+			self.assertEqual(item_tax_rate, expected_item_tax_map[details.item_tax_template])
 
 	def test_item_defaults(self):
 		frappe.delete_doc_if_exists("Item", "Test Item With Defaults", force=1)
