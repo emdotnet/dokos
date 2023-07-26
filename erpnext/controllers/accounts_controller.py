@@ -144,6 +144,8 @@ class AccountsController(TransactionBase):
 		if self.get("_action") and self._action != "update_after_submit":
 			self.set_missing_values(for_validate=True)
 
+		self.set_taxes()  # @dokos: set taxes if none set (checked inside set_taxes)
+
 		self.ensure_supplier_is_not_blocked()
 
 		self.validate_date_with_fiscal_year()
