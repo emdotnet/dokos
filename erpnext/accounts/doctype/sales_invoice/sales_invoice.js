@@ -778,6 +778,85 @@ frappe.ui.form.on('Sales Invoice', {
 		frm.redemption_conversion_factor = null;
 	},
 
+	update_stock: function(frm, dt, dn) {
+		frm.events.hide_fields(frm);
+		// frm.fields_dict.items.grid.toggle_reqd("item_code", frm.doc.update_stock);
+		frm.trigger('reset_posting_time');
+	},
+
+	redeem_loyalty_points: function(frm) {
+		frm.events.get_loyalty_details(frm);
+	},
+
+	loyalty_points: function(frm) {
+		if (frm.redemption_conversion_factor) {
+			frm.events.set_loyalty_points(frm);
+		} else {
+			frappe.call({
+				method: "erpnext.accounts.doctype.loyalty_program.loyalty_program.get_redeemption_factor",
+				args: {
+					"loyalty_program": frm.doc.loyalty_program
+				},
+				callback: function(r) {
+					if (r) {
+						frm.redemption_conversion_factor = r.message;
+						frm.events.set_loyalty_points(frm);
+					}
+				}
+			});
+		}
+	},
+
+	hide_fields: function(frm) {
+		let doc = frm.doc;
+		var parent_fields = ['project', 'due_date', 'is_opening', 'source', 'total_advance', 'get_advances',
+		'advances', 'from_date', 'to_date'];
+
+		if(cint(doc.is_pos) == 1) {
+			hide_field(parent_fields);
+		} else {
+			for (var i in parent_fields) {
+				var docfield = frappe.meta.docfield_map[doc.doctype][parent_fields[i]];
+				if(!docfield.hidden) unhide_field(parent_fields[i]);
+			}
+		}
+
+		frm.refresh_fields();
+	},
+
+	get_loyalty_details: function(frm) {
+		if (frm.doc.customer && frm.doc.redeem_loyalty_points) {
+			frappe.call({
+				method: "erpnext.accounts.doctype.loyalty_program.loyalty_program.get_loyalty_program_details",
+				args: {
+					"customer": frm.doc.customer,
+					"loyalty_program": frm.doc.loyalty_program,
+					"expiry_date": frm.doc.posting_date,
+					"company": frm.doc.company
+				},
+				callback: function(r) {
+					if (r) {
+						frm.set_value("loyalty_redemption_account", r.message.expense_account);
+						frm.set_value("loyalty_redemption_cost_center", r.message.cost_center);
+						frm.redemption_conversion_factor = r.message.conversion_factor;
+					}
+				}
+			});
+		}
+	},
+
+	set_loyalty_points: function(frm) {
+		if (frm.redemption_conversion_factor) {
+			let loyalty_amount = flt(frm.redemption_conversion_factor*flt(frm.doc.loyalty_points), precision("loyalty_amount"));
+			var remaining_amount = flt(frm.doc.grand_total) - flt(frm.doc.total_advance) - flt(frm.doc.write_off_amount);
+			if (frm.doc.grand_total && (remaining_amount < loyalty_amount)) {
+				let redeemable_points = parseInt(remaining_amount/frm.redemption_conversion_factor);
+				frappe.throw(__("You can only redeem max {0} points in this order.",[redeemable_points]));
+			}
+			frm.set_value("loyalty_amount", loyalty_amount);
+		}
+	},
+
 	project: function(frm) {
 		if (frm.doc.project) {
 			frm.events.add_timesheet_data(frm, {
