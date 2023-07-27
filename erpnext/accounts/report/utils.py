@@ -152,30 +152,39 @@ def get_invoiced_item_gross_margin(
 	return result
 
 
-def get_query_columns(report_columns):
-	if not report_columns:
-		return ""
+def get_party_details(party_type, party_list):
+	party_details = {}
+	party = frappe.qb.DocType(party_type)
+	query = frappe.qb.from_(party).select(party.name, party.tax_id).where(party.name.isin(party_list))
+	if party_type == "Supplier":
+		query = query.select(party.supplier_group)
+	else:
+		query = query.select(party.customer_group, party.territory)
 
-	columns = []
-	for column in report_columns:
-		fieldname = column["fieldname"]
-
-		if doctype := column.get("_doctype"):
-			columns.append(f"`{get_table_name(doctype)}`.`{fieldname}`")
-		else:
-			columns.append(fieldname)
-
-	return ", " + ", ".join(columns)
+	party_detail_list = query.run(as_dict=True)
+	for party_dict in party_detail_list:
+		party_details[party_dict.name] = party_dict
+	return party_details
 
 
-def get_values_for_columns(report_columns, report_row):
-	values = {}
+def get_taxes_query(invoice_list, doctype, parenttype):
+	taxes = frappe.qb.DocType(doctype)
 
-	if not report_columns:
-		return values
+	query = (
+		frappe.qb.from_(taxes)
+		.select(taxes.account_head)
+		.distinct()
+		.where(
+			(taxes.parenttype == parenttype)
+			& (taxes.docstatus == 1)
+			& (taxes.account_head.isnotnull())
+			& (taxes.parent.isin([inv.name for inv in invoice_list]))
+		)
+		.orderby(taxes.account_head)
+	)
 
-	for column in report_columns:
-		fieldname = column["fieldname"]
-		values[fieldname] = report_row.get(fieldname)
-
-	return values
+	if doctype == "Purchase Taxes and Charges":
+		return query.where(taxes.category.isin(["Total", "Valuation and Total"]))
+	elif doctype == "Sales Taxes and Charges":
+		return query.where(taxes.charge_type.isin(["Total", "Valuation and Total"]))
+	return query.where(taxes.charge_type.isin(["On Paid Amount", "Actual"]))
