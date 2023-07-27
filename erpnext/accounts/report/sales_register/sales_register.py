@@ -15,7 +15,9 @@ from erpnext.accounts.report.utils import (
 	get_journal_entries,
 	get_party_details,
 	get_payment_entries,
+	get_query_columns,
 	get_taxes_query,
+	get_values_for_columns,
 )
 
 
@@ -32,7 +34,8 @@ def _execute(filters, additional_table_columns=None):
 	if filters.get("include_payments"):
 		if not filters.get("customer"):
 			frappe.throw(_("Please select a customer for fetching payments."))
-		invoice_list += get_payments(filters, additional_query_columns)
+		invoice_list += get_payments(filters, additional_table_columns)
+
 	columns, income_accounts, tax_accounts, unrealized_profit_loss_accounts = get_columns(
 		invoice_list, additional_table_columns, include_payments
 	)

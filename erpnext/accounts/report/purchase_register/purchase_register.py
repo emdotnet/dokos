@@ -14,7 +14,9 @@ from erpnext.accounts.report.utils import (
 	get_journal_entries,
 	get_party_details,
 	get_payment_entries,
+	get_query_columns,
 	get_taxes_query,
+	get_values_for_columns,
 )
 
 
@@ -31,7 +33,8 @@ def _execute(filters=None, additional_table_columns=None):
 	if filters.get("include_payments"):
 		if not filters.get("supplier"):
 			frappe.throw(_("Please select a supplier for fetching payments."))
-		invoice_list += get_payments(filters, additional_query_columns)
+		invoice_list += get_payments(filters, additional_table_columns)
+
 	columns, expense_accounts, tax_accounts, unrealized_profit_loss_accounts = get_columns(
 		invoice_list, additional_table_columns, include_payments
 	)
@@ -58,14 +61,14 @@ def _execute(filters=None, additional_table_columns=None):
 		purchase_receipt = list(set(invoice_po_pr_map.get(inv.name, {}).get("purchase_receipt", [])))
 		project = list(set(invoice_po_pr_map.get(inv.name, {}).get("project", [])))
 
-		row = [inv.doctype, inv.name, inv.posting_date, inv.supplier, inv.supplier_name]
-
-		if additional_query_columns:
-			for col in additional_query_columns:
-				row.append(inv.get(col))
-
-		row += [
-			supplier_details.get(inv.supplier).get("supplier_group"),  # supplier_group
+		row = [
+			inv.doctype,
+			inv.name,
+			inv.posting_date,
+			inv.supplier,
+			inv.supplier_name,
+			*get_values_for_columns(additional_table_columns, inv).values(),
+			supplier_details.get(inv.supplier).get("supplier_group"),
 			supplier_details.get(inv.supplier).get("tax_id"),
 			inv.credit_to,
 			inv.mode_of_payment,
