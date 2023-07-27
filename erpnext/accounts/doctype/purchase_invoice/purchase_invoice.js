@@ -103,6 +103,12 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 			}
 		}
 
+		if (doc.outstanding_amount > 0 && !cint(doc.is_return) && !doc.on_hold) {
+			cur_frm.add_custom_button(__('Payment Request'), function() {
+				me.make_payment_request()
+			}, __('Create'));
+		}
+
 		if(doc.docstatus===0) {
 			this.frm.add_custom_button(__('Purchase Order'), function() {
 				erpnext.utils.map_current_doc({

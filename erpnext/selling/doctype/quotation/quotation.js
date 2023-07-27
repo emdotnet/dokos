@@ -128,11 +128,6 @@ erpnext.selling.QuotationController = class QuotationController extends erpnext.
 					this.frm.trigger('set_as_lost_dialog');
 				});
 
-				this.frm.add_custom_button(__('Extend validity period'), () => {
-					this.frm.trigger('extend_validity_dialog');
-				});
-			}
-
 			cur_frm.page.set_inner_btn_group_as_primary(__('Create'));
 		}
 
