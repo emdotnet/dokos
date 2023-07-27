@@ -88,9 +88,9 @@ def _execute(filters, additional_table_columns=None):
 			"customer": inv.customer,
 			"customer_name": inv.customer_name,
 			**get_values_for_columns(additional_table_columns, inv),
-			"customer_group": inv.get("customer_group"),
-			"territory": inv.get("territory"),
-			"tax_id": inv.get("tax_id"),
+			"customer_group": customer_details.get(inv.customer).get("customer_group"),
+			"territory": customer_details.get(inv.customer).get("territory"),
+			"tax_id": customer_details.get(inv.customer).get("tax_id"),
 			"receivable_account": inv.debit_to,
 			"mode_of_payment": ", ".join(mode_of_payments.get(inv.name, [])),
 			"project": inv.project,
@@ -183,6 +183,8 @@ def _execute(filters, additional_table_columns=None):
 		for row in range(1, len(res)):
 			running_balance += res[row]["debit"] - res[row]["credit"]
 			res[row].update({"balance": running_balance})
+
+	return columns, res, None, None, None, include_payments
 
 	return columns, res, None, None, None, include_payments
 
