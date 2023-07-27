@@ -778,6 +778,7 @@ frappe.ui.form.on('Sales Invoice', {
 		frm.redemption_conversion_factor = null;
 	},
 
+
 	project: function(frm) {
 		if (frm.doc.project) {
 			frm.events.add_timesheet_data(frm, {
@@ -927,7 +928,6 @@ frappe.ui.form.on('Sales Invoice', {
 
 	update_stock: function(frm, dt, dn) {
 		frm.events.hide_fields(frm);
-		frm.fields_dict.items.grid.toggle_reqd("item_code", frm.doc.update_stock);
 		frm.trigger('reset_posting_time');
 	},
 
