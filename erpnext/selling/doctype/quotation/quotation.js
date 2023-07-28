@@ -127,16 +127,6 @@ erpnext.selling.QuotationController = class QuotationController extends erpnext.
 				this.frm.add_custom_button(__('Set as Lost'), () => {
 					this.frm.trigger('set_as_lost_dialog');
 				});
-
-				this.frm.add_custom_button(__('Extend validity period'), () => {
-					this.frm.trigger('extend_validity_dialog');
-				});
-			}
-
-			if(!doc.auto_repeat) {
-				cur_frm.add_custom_button(__('Auto Repeat'), function() {
-					erpnext.utils.make_auto_repeat(doc.doctype, doc.name)
-				}, __('Create'))
 			}
 
 			cur_frm.page.set_inner_btn_group_as_primary(__('Create'));
