@@ -1,6 +1,7 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
+from typing import Literal
 from urllib.parse import quote
 
 import frappe
@@ -135,13 +136,20 @@ def add_context_for_checkout(doc, context):
 		]
 
 
-def get_current_route():
+def get_current_route() -> Literal["cart", "checkout"]:
+	"""Custom logic to infer the current route from the request @dokos"""
 	route = ""
 	if hasattr(frappe.local, "request"):
 		route = frappe.local.request.path.strip("/ ")
+		if route == "login":
+			# frappe.call from the website
+			route = ""
 		if not route:
 			route = frappe.local.request.environ.get("HTTP_REFERER")
 			route = route.split("/")[-1] if route else None
+
+	if route != "cart" and route != "checkout":
+		route = "cart"
 	return route
 
 
@@ -341,6 +349,8 @@ def render_quotation(context=None):
 	}
 
 	route = context.get("route")
+
+	print(route)
 
 	if route == "cart":
 		out["items"] = frappe.render_template("templates/includes/cart/cart_items.html", context)
