@@ -7,4 +7,5 @@ from frappe.model.document import Document
 
 
 class SalesTaxesandCharges(Document):
-	pass
+	def __repr__(self):
+		return super().__repr__() + "=" + self.as_dict().__repr__()
