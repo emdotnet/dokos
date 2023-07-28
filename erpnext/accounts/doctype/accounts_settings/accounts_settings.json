@@ -61,6 +61,7 @@
   "closing_settings_tab",
   "period_closing_settings_section",
   "acc_frozen_upto",
+  "ignore_account_closing_balance",
   "column_break_25",
   "frozen_accounts_modifier",
   "tab_break_dpet",
@@ -403,6 +404,13 @@
    "fieldname": "show_taxes_as_table_in_print",
    "fieldtype": "Check",
    "label": "Show Taxes as Table in Print"
+  },
+  {
+   "default": "0",
+   "description": "Financial reports will be generated using GL Entry doctypes (should be enabled if Period Closing Voucher is not posted for all years sequentially or missing) ",
+   "fieldname": "ignore_account_closing_balance",
+   "fieldtype": "Check",
+   "label": "Ignore Account Closing Balance"
   }
  ],
  "icon": "uil uil-setting",
@@ -410,7 +418,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-06-13 18:47:46.430291",
+ "modified": "2023-07-27 15:05:34.000264",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",
