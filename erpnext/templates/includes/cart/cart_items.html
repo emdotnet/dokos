@@ -1,7 +1,7 @@
 {% from "erpnext/templates/includes/macros.html" import product_image %}
 
 {% macro item_subtotal(item) %}
-<div>
+<div class="text-nowrap">
 	{% if item.is_free_item and item.item_booking %}
 	{% set item_booking = frappe.get_doc("Item Booking", item.item_booking) %}
 	{% set credits = item_booking.get_deducted_credits() %}
@@ -25,7 +25,7 @@
 	</span>
 </div>
 {% elif not item.is_free_item %}
-<span class="item-rate">
+<span class="item-rate text-nowrap">
 	{{ _('Rate:') }} {{ item.get_formatted('rate') }}
 </span>
 {% endif %}
