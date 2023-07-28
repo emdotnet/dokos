@@ -29,6 +29,10 @@
 	{{ _('Rate:') }} {{ item.get_formatted('rate') }}
 </span>
 {% endif %}
+
+<span class="item-unit text-nowrap">
+	{{ _(item.uom) }}
+</span>
 {% endmacro %}
 
 {% for d in doc.items %}
