@@ -186,7 +186,7 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
 	can_change_release_date(date) {
 		const diff = frappe.datetime.get_diff(date, frappe.datetime.nowdate());
 		if (diff < 0) {
-			frappe.throw(_('New release date should be in the future'));
+			frappe.throw(__('New release date should be in the future'));
 			return false;
 		} else {
 			return true;
