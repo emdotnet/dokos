@@ -1,0 +1,9 @@
+{% extends "frappe/website/doctype/web_form/templates/web_form.html" %}
+
+{% block header_buttons %}
+	{% if allow_edit and in_view_mode %}
+		<!-- archive button -->
+		<button onclick="archive_this_address({{ frappe.form_dict.name | json |e }})" class="btn btn-danger btn-sm mr-2">{{ _("Delete") }}</button>
+	{% endif %}
+	{{ super() }}
+{% endblock header_buttons %}
