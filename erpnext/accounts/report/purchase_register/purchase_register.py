@@ -311,7 +311,7 @@ def get_account_columns(invoice_list, include_payments):
 			and (expense_account is not null and expense_account != '')
 			and parent in (%s) order by expense_account"""
 			% ", ".join(["%s"] * len(invoice_list)),
-			tuple(inv.name for inv in invoice_list),
+			tuple([inv.name for inv in invoice_list]),
 		)
 
 		purchase_taxes_query = get_taxes_query(

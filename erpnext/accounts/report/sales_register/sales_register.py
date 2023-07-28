@@ -103,28 +103,6 @@ def _execute(filters, additional_table_columns=None):
 			"currency": company_currency,
 		}
 
-		if additional_query_columns:
-			for col in additional_query_columns:
-				row.update({col: inv.get(col)})
-
-		row.update(
-			{
-				"customer_group": customer_details.get(inv.customer).get("customer_group"),
-				"territory": customer_details.get(inv.customer).get("territory"),
-				"tax_id": customer_details.get(inv.customer).get("tax_id"),
-				"receivable_account": inv.debit_to,
-				"mode_of_payment": ", ".join(mode_of_payments.get(inv.name, [])),
-				"project": inv.project,
-				"owner": inv.owner,
-				"remarks": inv.remarks,
-				"sales_order": ", ".join(sales_order),
-				"delivery_note": ", ".join(delivery_note),
-				"cost_center": ", ".join(cost_center) if inv.doctype == "Sales Invoice" else inv.cost_center,
-				"warehouse": ", ".join(warehouse),
-				"currency": company_currency,
-			}
-		)
-
 		# map income values
 		base_net_total = 0
 		for income_acc in income_accounts:
@@ -183,8 +161,6 @@ def _execute(filters, additional_table_columns=None):
 		for row in range(1, len(res)):
 			running_balance += res[row]["debit"] - res[row]["credit"]
 			res[row].update({"balance": running_balance})
-
-	return columns, res, None, None, None, include_payments
 
 	return columns, res, None, None, None, include_payments
 
