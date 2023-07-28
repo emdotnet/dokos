@@ -127,6 +127,7 @@ erpnext.selling.QuotationController = class QuotationController extends erpnext.
 				this.frm.add_custom_button(__('Set as Lost'), () => {
 					this.frm.trigger('set_as_lost_dialog');
 				});
+			}
 
 			cur_frm.page.set_inner_btn_group_as_primary(__('Create'));
 		}
