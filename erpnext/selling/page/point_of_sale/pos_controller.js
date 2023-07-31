@@ -611,7 +611,6 @@ erpnext.PointOfSale.Controller = class {
 				i => i.item_code === item_code
 					&& (!has_batch_no || (has_batch_no && i.batch_no === batch_no))
 					&& (i.uom === uom)
-					&& (i.rate == rate)
 			);
 		}
 
