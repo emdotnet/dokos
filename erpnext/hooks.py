@@ -411,7 +411,7 @@ doc_events = {
 		"on_submit": [
 			"erpnext.accounts.doctype.dunning.dunning.resolve_dunning",
 		],
-		"on_cancel": ["erpnext.accounts.doctype.dunning.dunning.resolve_dunning"]
+		"on_cancel": ["erpnext.accounts.doctype.dunning.dunning.resolve_dunning"],
 	},
 	"Address": {
 		"validate": [
@@ -482,12 +482,12 @@ scheduler_events = {
 		],
 	},
 	"all": [
-		"erpnext.projects.doctype.project.project.project_status_update_reminder",
 		"erpnext.venue.doctype.item_booking.item_booking.clear_draft_bookings",
 		"erpnext.crm.doctype.social_media_post.social_media_post.process_scheduled_social_media_posts",
 	],
 	"hourly": [
 		"erpnext.erpnext_integrations.doctype.plaid_settings.plaid_settings.automatic_synchronization",
+		"erpnext.projects.doctype.project.project.project_status_update_reminder",
 		"erpnext.projects.doctype.project.project.hourly_reminder",
 		"erpnext.projects.doctype.project.project.collect_project_status",
 		"erpnext.crm.doctype.email_campaign.email_campaign.send_email_to_leads_or_contacts_hourly",
